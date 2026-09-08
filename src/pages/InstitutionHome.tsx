@@ -6,6 +6,7 @@ import { InstitutionHero } from '@/components/institution/InstitutionHero'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import {
+  getAvailableYears,
   getInstitutionBySlug,
   getInstitutionProjects,
   getProjectHref,
@@ -22,11 +23,11 @@ export function InstitutionHome() {
   }
 
   const projects = getInstitutionProjects(institution.id)
-  const featured = projects.filter((project) => project.isFeatured).slice(0, 3)
-  const areas = [...new Set(projects.map((project) => project.area))]
-  const years = [...new Set(projects.map((project) => project.year))]
-    .filter((year) => year >= 2024)
-    .sort((a, b) => b - a)
+  const featured = projects.filter((project) => project.isFeatured).slice(0, 6)
+  const areas = [...new Set(projects.map((project) => project.area))].sort((a, b) =>
+    a.localeCompare(b, 'es'),
+  )
+  const years = getAvailableYears(projects)
   const collections = [
     ...new Set(
       projects
@@ -36,9 +37,7 @@ export function InstitutionHome() {
   ]
   const projectsHref = `/instituciones/${institution.slug}/proyectos`
 
-  const allYears = [...new Set(projects.map((project) => project.year))].sort(
-    (a, b) => a - b,
-  )
+  const allYears = [...years].sort((a, b) => a - b)
   const yearRange =
     allYears.length > 1
       ? `${allYears[0]} – ${allYears[allYears.length - 1]}`
@@ -73,7 +72,7 @@ export function InstitutionHome() {
     <div className="explore-shell">
       <PublicHeader institution={institution} />
 
-      <main>
+      <main id="contenido">
         <InstitutionHero
           institution={institution}
           projectsHref={projectsHref}

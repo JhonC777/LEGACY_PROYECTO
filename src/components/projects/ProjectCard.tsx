@@ -2,13 +2,17 @@ import {
   ArrowRight,
   FileText,
   FileType2,
+  Library,
   Play,
   Star,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { SmartImage } from '@/components/ui/SmartImage'
-import type { DemoProject } from '@/data/demoData'
-import { getProjectHref } from '@/data/demoData'
+import {
+  DEMO_INSTITUTIONS,
+  getProjectHref,
+  type DemoProject,
+} from '@/data/demoData'
 
 type ProjectCardProps = {
   project: DemoProject
@@ -19,6 +23,19 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const from = `${location.pathname}${location.search}`
   const href = getProjectHref(project)
   const authors = project.authors.map((author) => author.name).join(', ')
+  const institution = DEMO_INSTITUTIONS.find(
+    (item) => item.id === project.institutionId,
+  )
+  const catalogPath = `/instituciones/${institution?.slug ?? 'fe-y-alegria'}/proyectos`
+
+  const filterHref = (key: 'area' | 'category' | 'collection', value: string) => {
+    const next =
+      location.pathname === catalogPath
+        ? new URLSearchParams(location.search)
+        : new URLSearchParams()
+    next.set(key, value)
+    return `${catalogPath}?${next.toString()}`
+  }
 
   const resources = [
     {
@@ -73,12 +90,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap gap-2">
-          <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase">
+          <Link
+            to={filterHref('area', project.area)}
+            className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase transition-colors hover:border-legacy-gold/35 hover:text-legacy-gold"
+            title={`Filtrar por área: ${project.area}`}
+          >
             {project.area}
-          </span>
-          <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase">
+          </Link>
+          <Link
+            to={filterHref('category', project.category)}
+            className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase transition-colors hover:border-legacy-gold/35 hover:text-legacy-gold"
+            title={`Filtrar por categoría: ${project.category}`}
+          >
             {project.category}
-          </span>
+          </Link>
         </div>
 
         <Link to={href} state={{ from }} className="block">
@@ -95,6 +120,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <span aria-hidden> · </span>
           <span>{project.year}</span>
         </p>
+        {project.collection ? (
+          <Link
+            to={filterHref('collection', project.collection)}
+            className="mt-2 inline-flex w-fit items-center gap-1.5 text-[11px] font-medium text-legacy-muted transition-colors hover:text-legacy-gold"
+            title={`Filtrar por colección: ${project.collection}`}
+          >
+            <Library className="h-3 w-3" aria-hidden />
+            {project.collection}
+          </Link>
+        ) : null}
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-4">
           <div className="resource-dock" aria-label="Recursos disponibles">

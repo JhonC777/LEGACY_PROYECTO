@@ -76,7 +76,7 @@ export const MOCK_STATS = [
 export const MOCK_FEATURED_PROJECTS: MockProject[] = DEMO_PROJECTS.filter(
   (project) => project.isFeatured,
 )
-  .slice(0, 4)
+  .slice(0, 6)
   .map((project) => ({
     id: project.id,
     title: project.title,

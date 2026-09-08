@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
+  ArrowUpDown,
   ChevronDown,
   Search,
   SlidersHorizontal,
@@ -23,18 +24,57 @@ import { PublicHeader } from '@/components/public/PublicHeader'
 import {
   DEMO_INSTITUTIONS,
   DEMO_PROJECTS,
+  getAvailableYears,
   getInstitutionBySlug,
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
 type LoadState = 'loading' | 'ready' | 'error'
+type FilterName = 'institution' | 'area' | 'category' | 'year' | 'collection'
 
-const YEAR_FILTER_OPTIONS = [
-  { value: '2024', label: '2024' },
-  { value: '2025', label: '2025' },
-  { value: '2026', label: '2026' },
-]
+type CatalogFilters = {
+  query: string
+  institution: string
+  area: string
+  category: string
+  year: string
+  collection: string
+}
+
+function projectMatches(
+  project: DemoProject,
+  filters: CatalogFilters,
+  omitted?: FilterName,
+) {
+  const normalized = filters.query.trim().toLocaleLowerCase('es')
+  const searchable = [
+    project.title,
+    project.subtitle,
+    project.description,
+    project.area,
+    project.category,
+    project.tags.join(' '),
+    project.authors.map((author) => author.name).join(' '),
+  ]
+    .join(' ')
+    .toLocaleLowerCase('es')
+
+  return (
+    (!normalized || searchable.includes(normalized)) &&
+    (omitted === 'area' || !filters.area || project.area === filters.area) &&
+    (omitted === 'category' ||
+      !filters.category ||
+      project.category === filters.category) &&
+    (omitted === 'year' || !filters.year || String(project.year) === filters.year) &&
+    (omitted === 'collection' ||
+      !filters.collection ||
+      project.collection === filters.collection) &&
+    (omitted === 'institution' ||
+      !filters.institution ||
+      project.institutionId === filters.institution)
+  )
+}
 
 export function ProjectsPage() {
   const { institutionSlug } = useParams()
@@ -58,64 +98,97 @@ export function ProjectsPage() {
     return () => window.clearTimeout(timer)
   }, [])
 
-  const available = useMemo(() => {
-    const source = institution
+  const source = useMemo(
+    () =>
+      institution
       ? DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
-      : DEMO_PROJECTS
-    return {
-      source,
-      areas: [...new Set(source.map((project) => project.area))].sort(),
-      categories: [...new Set(source.map((project) => project.category))].sort(),
-      collections: [
+        : DEMO_PROJECTS,
+    [institution],
+  )
+
+  const filters = useMemo<CatalogFilters>(
+    () => ({
+      query,
+      institution: institutionFilter,
+      area,
+      category,
+      year,
+      collection,
+    }),
+    [area, category, collection, institutionFilter, query, year],
+  )
+
+  const available = useMemo(() => {
+    const facet = (
+      values: string[],
+      name: FilterName,
+      predicate: (project: DemoProject, value: string) => boolean,
+    ) =>
+      values.map((value) => ({
+        value,
+        label: value,
+        count: source.filter(
+          (project) => projectMatches(project, filters, name) && predicate(project, value),
+        ).length,
+      }))
+
+    const areas = [...new Set(source.map((project) => project.area))].sort((a, b) =>
+      a.localeCompare(b, 'es'),
+    )
+    const categories = [...new Set(source.map((project) => project.category))].sort(
+      (a, b) => a.localeCompare(b, 'es'),
+    )
+    const years = getAvailableYears(source).map(String)
+    const collections = [
         ...new Set(
           source
             .map((project) => project.collection)
             .filter((value): value is string => Boolean(value)),
         ),
-      ].sort(),
+      ].sort((a, b) => a.localeCompare(b, 'es'))
+
+    return {
+      areas: facet(areas, 'area', (project, value) => project.area === value),
+      categories: facet(
+        categories,
+        'category',
+        (project, value) => project.category === value,
+      ),
+      years: facet(years, 'year', (project, value) => String(project.year) === value),
+      collections: facet(
+        collections,
+        'collection',
+        (project, value) => project.collection === value,
+      ),
     }
-  }, [institution])
+  }, [filters, source])
+
+  const institutionOptions = useMemo(
+    () =>
+      DEMO_INSTITUTIONS.map((item) => ({
+        value: item.id,
+        label: item.name,
+        count: DEMO_PROJECTS.filter(
+          (project) =>
+            projectMatches(project, filters, 'institution') &&
+            project.institutionId === item.id,
+        ).length,
+      })),
+    [filters],
+  )
 
   const projects = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase('es')
-    const filtered = available.source.filter((project) => {
-      const searchable = [
-        project.title,
-        project.subtitle,
-        project.description,
-        project.area,
-        project.category,
-        project.tags.join(' '),
-        project.authors.map((author) => author.name).join(' '),
-      ]
-        .join(' ')
-        .toLocaleLowerCase('es')
-
-      return (
-        (!normalized || searchable.includes(normalized)) &&
-        (!area || project.area === area) &&
-        (!category || project.category === category) &&
-        (!year || String(project.year) === year) &&
-        (!collection || project.collection === collection) &&
-        (!institutionFilter || project.institutionId === institutionFilter)
-      )
-    })
+    const filtered = source.filter((project) => projectMatches(project, filters))
 
     return [...filtered].sort((a, b) => {
       if (sort === 'title') return a.title.localeCompare(b.title, 'es')
       if (sort === 'oldest') return a.year - b.year
+      if (sort === 'featured') {
+        return Number(b.isFeatured) - Number(a.isFeatured) || b.year - a.year
+      }
       return b.year - a.year
     })
-  }, [
-    area,
-    available.source,
-    category,
-    collection,
-    institutionFilter,
-    query,
-    sort,
-    year,
-  ])
+  }, [filters, sort, source])
 
   const updateParam = (name: string, value: string) => {
     const next = new URLSearchParams(params)
@@ -124,7 +197,11 @@ export function ProjectsPage() {
     setParams(next)
   }
 
-  const clearFilters = () => setParams({})
+  const clearFilters = () => {
+    const next = new URLSearchParams()
+    if (sort !== 'recent') next.set('sort', sort)
+    setParams(next)
+  }
   const hasFilters = Boolean(
     query ||
       area ||
@@ -132,6 +209,40 @@ export function ProjectsPage() {
       year ||
       collection ||
       (!institution && institutionFilter),
+  )
+  const activeFilterCount = [
+    query,
+    area,
+    category,
+    year,
+    collection,
+    !institution ? institutionFilter : '',
+  ].filter(Boolean).length
+
+  const activeFilters = [
+    query
+      ? { key: 'q', label: `Búsqueda: “${query}”`, value: query }
+      : null,
+    !institution && institutionFilter
+      ? {
+          key: 'institution',
+          label: `Institución: ${
+            DEMO_INSTITUTIONS.find((item) => item.id === institutionFilter)?.name ??
+            institutionFilter
+          }`,
+          value: institutionFilter,
+        }
+      : null,
+    area ? { key: 'area', label: `Área: ${area}`, value: area } : null,
+    category
+      ? { key: 'category', label: `Categoría: ${category}`, value: category }
+      : null,
+    year ? { key: 'year', label: `Año: ${year}`, value: year } : null,
+    collection
+      ? { key: 'collection', label: `Colección: ${collection}`, value: collection }
+      : null,
+  ].filter(
+    (item): item is { key: string; label: string; value: string } => Boolean(item),
   )
 
   const retry = () => {
@@ -157,41 +268,32 @@ export function ProjectsPage() {
           label="Institución"
           value={institutionFilter}
           onChange={(value) => updateParam('institution', value)}
-          options={DEMO_INSTITUTIONS.map((item) => ({
-            value: item.id,
-            label: item.name,
-          }))}
+          options={institutionOptions}
         />
       ) : null}
       <FilterSelect
         label="Área"
         value={area}
         onChange={(value) => updateParam('area', value)}
-        options={available.areas.map((item) => ({ value: item, label: item }))}
+        options={available.areas}
       />
       <FilterSelect
         label="Categoría"
         value={category}
         onChange={(value) => updateParam('category', value)}
-        options={available.categories.map((item) => ({
-          value: item,
-          label: item,
-        }))}
+        options={available.categories}
       />
       <FilterSelect
         label="Año"
         value={year}
         onChange={(value) => updateParam('year', value)}
-        options={YEAR_FILTER_OPTIONS}
+        options={available.years}
       />
       <FilterSelect
         label="Colección"
         value={collection}
         onChange={(value) => updateParam('collection', value)}
-        options={available.collections.map((item) => ({
-          value: item,
-          label: item,
-        }))}
+        options={available.collections}
       />
       {hasFilters ? (
         <button
@@ -210,8 +312,11 @@ export function ProjectsPage() {
     <div className="explore-shell">
       <PublicHeader institution={institution} />
 
-      <main className="mx-auto grid max-w-[1400px] grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-white/8 px-5 py-7 lg:sticky lg:top-[68px] lg:block lg:self-start">
+      <main
+        id="contenido"
+        className="mx-auto grid max-w-[1400px] grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)]"
+      >
+        <aside className="hidden border-r border-white/8 px-5 py-7 lg:sticky lg:top-[var(--legacy-header-h,68px)] lg:block lg:self-start">
           <div className="mb-6 flex items-center gap-2">
             <SlidersHorizontal className="h-4 w-4 text-legacy-gold" aria-hidden />
             <h2 className="text-xs font-bold tracking-[0.14em] text-legacy-gold uppercase">
@@ -276,7 +381,7 @@ export function ProjectsPage() {
                   Filtros
                   {hasFilters ? (
                     <span className="rounded-full bg-legacy-gold/15 px-2 py-0.5 text-[10px] font-bold text-legacy-gold">
-                      Activos
+                      {activeFilterCount}
                     </span>
                   ) : null}
                 </span>
@@ -295,74 +400,59 @@ export function ProjectsPage() {
               ) : null}
             </div>
 
-            {(year || area || category || collection) ? (
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                {year ? (
+            {activeFilters.length > 0 ? (
+              <div className="mt-5 rounded-2xl border border-legacy-gold/15 bg-legacy-gold/[0.035] p-3.5">
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-bold tracking-[0.12em] text-legacy-muted uppercase">
+                    Selección activa · {activeFilterCount}
+                  </p>
                   <button
                     type="button"
-                    className="chip-liquid is-active"
-                    onClick={() => updateParam('year', '')}
+                    onClick={clearFilters}
+                    className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft"
                   >
-                    {year}
-                    <X className="h-3.5 w-3.5" aria-hidden />
+                    Limpiar todo
                   </button>
-                ) : null}
-                {area ? (
-                  <button
-                    type="button"
-                    className="chip-liquid is-active"
-                    onClick={() => updateParam('area', '')}
-                  >
-                    {area}
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                ) : null}
-                {category ? (
-                  <button
-                    type="button"
-                    className="chip-liquid is-active"
-                    onClick={() => updateParam('category', '')}
-                  >
-                    {category}
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                ) : null}
-                {collection ? (
-                  <button
-                    type="button"
-                    className="chip-liquid is-active"
-                    onClick={() => updateParam('collection', '')}
-                  >
-                    {collection}
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft"
-                >
-                  Limpiar todo
-                </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {activeFilters.map((filter) => (
+                    <button
+                      key={filter.key}
+                      type="button"
+                      className="chip-liquid is-active"
+                      onClick={() => updateParam(filter.key, '')}
+                      aria-label={`Quitar ${filter.label}`}
+                    >
+                      {filter.label}
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-white/10 py-3">
-              <p className="text-sm text-legacy-muted">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3.5 py-3">
+              <p className="text-sm text-legacy-muted" aria-live="polite">
                 <strong className="text-legacy-white">{projects.length}</strong>{' '}
-                {projects.length === 1 ? 'proyecto' : 'proyectos'}
+                {projects.length === 1 ? 'proyecto visible' : 'proyectos visibles'}
+                {hasFilters ? (
+                  <span className="text-legacy-muted/80"> de {source.length}</span>
+                ) : null}
               </p>
               <label className="flex items-center gap-2 text-sm text-legacy-muted">
-                Ordenar
+                <ArrowUpDown className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
+                <span className="hidden sm:inline">Clasificar por</span>
+                <span className="sm:hidden">Orden</span>
                 <select
                   value={sort}
                   onChange={(event) => updateParam('sort', event.target.value)}
-                  className="glass-select w-auto min-w-[10rem]"
-                  aria-label="Ordenar proyectos"
+                  className="glass-select w-auto min-w-[10.5rem]"
+                  aria-label="Clasificar proyectos"
                 >
                   <option value="recent">Más recientes</option>
                   <option value="oldest">Más antiguos</option>
                   <option value="title">Título A–Z</option>
+                  <option value="featured">Destacados primero</option>
                 </select>
               </label>
             </div>
@@ -398,7 +488,7 @@ function FilterSelect({
   label: string
   value: string
   onChange: (value: string) => void
-  options: Array<{ value: string; label: string }>
+  options: Array<{ value: string; label: string; count: number }>
 }) {
   return (
     <label className="mb-4 block">
@@ -412,8 +502,12 @@ function FilterSelect({
       >
         <option value="">Todos</option>
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
+          <option
+            key={option.value}
+            value={option.value}
+            disabled={option.count === 0 && option.value !== value}
+          >
+            {option.label} · {option.count}
           </option>
         ))}
       </select>

@@ -1,6 +1,10 @@
 .explore-shell {
   min-height: 100dvh;
-  overflow-x: hidden;
+  /*
+    `hidden` crea un scroll container y rompe los sticky descendientes cuando
+    el documento es quien desplaza. `clip` recorta sin cambiar el scrollport.
+  */
+  overflow-x: clip;
   overflow-y: visible;
   background:
     radial-gradient(ellipse 65% 40% at 82% 0%, rgb(118 98 201 / 0.12), transparent 55%),
@@ -13,6 +17,11 @@
 .explore-shell :focus-visible {
   outline: 2px solid var(--color-legacy-gold);
   outline-offset: 3px;
+}
+
+/* Los anclajes no deben quedar ocultos bajo el header pegajoso */
+.explore-shell [id] {
+  scroll-margin-top: calc(var(--legacy-header-h, 68px) + 1rem);
 }
 
 .explore-card {

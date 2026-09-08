@@ -7,6 +7,11 @@ const YEARS = [...new Set(DEMO_PROJECTS.map((project) => project.year))].sort(
 )
 
 const AREAS = [...new Set(DEMO_PROJECTS.map((project) => project.area))]
+  .map((name) => ({
+    name,
+    count: DEMO_PROJECTS.filter((project) => project.area === name).length,
+  }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'))
 
 const COLLECTIONS = [
   ...new Set(
@@ -15,6 +20,11 @@ const COLLECTIONS = [
     ),
   ),
 ]
+  .map((name) => ({
+    name,
+    count: DEMO_PROJECTS.filter((project) => project.collection === name).length,
+  }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'))
 
 function countByYear(year: number) {
   return DEMO_PROJECTS.filter((project) => project.year === year).length
@@ -65,11 +75,13 @@ export function LegacyTimeline() {
           <div className="flex flex-wrap gap-2">
             {AREAS.map((area) => (
               <Link
-                key={area}
-                to={`/proyectos?area=${encodeURIComponent(area)}`}
+                key={area.name}
+                to={`/proyectos?area=${encodeURIComponent(area.name)}`}
                 className="chip-liquid"
+                aria-label={`${area.name}, ${area.count} proyectos demo`}
               >
-                {area}
+                <span>{area.name}</span>
+                <span className="text-explore-muted">{area.count}</span>
               </Link>
             ))}
           </div>
@@ -84,11 +96,13 @@ export function LegacyTimeline() {
             <div className="flex flex-wrap gap-2">
               {COLLECTIONS.map((collection) => (
                 <Link
-                  key={collection}
-                  to={`/proyectos?collection=${encodeURIComponent(collection)}`}
+                  key={collection.name}
+                  to={`/proyectos?collection=${encodeURIComponent(collection.name)}`}
                   className="chip-liquid"
+                  aria-label={`${collection.name}, ${collection.count} proyectos demo`}
                 >
-                  {collection}
+                  <span>{collection.name}</span>
+                  <span className="text-explore-muted">{collection.count}</span>
                 </Link>
               ))}
             </div>
