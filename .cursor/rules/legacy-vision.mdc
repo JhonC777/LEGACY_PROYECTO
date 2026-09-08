@@ -1,0 +1,55 @@
+---
+description: Visión maestra de LEGACY — producto, UX, diseño y forma de trabajo (obligatoria)
+alwaysApply: true
+---
+
+# LEGACY — Visión obligatoria
+
+**Producto:** plataforma educativa multiinstitución para preservar y proyectar proyectos académicos.  
+**Piloto:** Fe y Alegría. **Frase:** "Los archivos no se guardan, trascienden."  
+**No es** una landing de scroll. **Es** una app: clic → vista/ruta/modal/panel.
+
+## Antes de editar
+
+1. Analizar estructura, rutas, componentes, estilos y dependencias existentes.
+2. No reconstruir desde cero. No destruir lo que funciona.
+3. Explicar el cambio mínimo, implementar por etapas pequeñas.
+4. No inventar datos institucionales, stats, premios ni autores reales. Mocks claramente marcados.
+5. No añadir funciones fuera de alcance ni dependencias innecesarias sin confirmación.
+
+## Navegación (flujo)
+
+`/` Home cósmico (marca + selector) → acceso invitado/admin → `/instituciones/:slug` → catálogo → detalle → admin.
+
+- Shell: `height: 100dvh; overflow: hidden`. Scroll solo en paneles con contenido largo.
+- Mantener contexto de institución. Siempre ofrecer volver.
+- Invitados: sin login. Estudiantes = invitados (sin cuentas en v1).
+- Admin institucional: solo su institución. Nunca mezclar datos entre instituciones.
+
+## Fuera de v1 (no construir)
+
+Cuentas estudiantes, Google login, perfiles, favoritos, likes, comentarios, pagos, membresías in-app, portafolios individuales, carga por estudiantes, rol docente, stats personales.
+
+## Diseño
+
+Paleta: `--legacy-black #08090c`, `--legacy-surface #11131a`, `--legacy-gold #d6b878`, `--legacy-white #f7f5ef`, `--legacy-muted #a6a8b2`, `--legacy-violet #7662c9`.  
+Dorado = acento. Violetas sutiles. Home cósmico elegante (CSS + Motion), no videojuego ni partículas excesivas.  
+Tipografía: editorial (titulares) + sans (UI). Iconos Lucide, sin emojis de UI. Respetar `prefers-reduced-motion`.
+
+## Stack (conservar)
+
+React + Vite, Tailwind, shadcn/ui, Framer Motion, Lucide, Supabase (Auth solo admins, DB, Storage, RLS).  
+No instalar Three.js / R3F / GSAP / Lenis / partículas salvo necesidad justificada.
+
+## Datos y seguridad
+
+Todo proyecto requiere `institution_id`. Estados: `draft | published | archived`.  
+Público: solo publicados. Admin: solo su institución. Nunca exponer `service_role` en frontend. RLS es la fuente de verdad.
+
+## Estados de UI obligatorios
+
+Loading, vacío, sin resultados, error+reintentar, progreso de subida, confirmación de guardado/publicación/eliminación, sin permisos.
+
+## Tras cada cambio
+
+Compilar, revisar consolas, probar rutas/botones, móvil y desktop, estados UI, aislamiento por institución, identidad visual LEGACY.

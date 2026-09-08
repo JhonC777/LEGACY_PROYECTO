@@ -1,0 +1,86 @@
+@import "tailwindcss";
+@import "./styles/cosmic.css";
+@import "./styles/explore.css";
+@import "./styles/institution.css";
+@import "./styles/glass.css";
+
+@theme {
+  --color-legacy-black: #08090c;
+  --color-legacy-surface: #11131a;
+  --color-legacy-surface-soft: #171923;
+  --color-legacy-gold: #d6b878;
+  --color-legacy-gold-soft: #f0d9a0;
+  --color-legacy-white: #f7f5ef;
+  --color-legacy-muted: #a6a8b2;
+  --color-legacy-violet: #7662c9;
+  --color-legacy-border: rgb(255 255 255 / 0.12);
+
+  --color-explore-bg: #ffffff;
+  --color-explore-ink: #1f2430;
+  --color-explore-muted: #6b7280;
+  --color-explore-line: #e8eaf0;
+  --color-explore-panel: #f6f7fb;
+  --color-explore-purple: #6b5ce6;
+  --color-explore-purple-deep: #5848d4;
+  --color-explore-gold: #c4a35a;
+
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+  Un solo scrollport de documento (rueda / trackpad / teclado).
+  No poner overflow-y en html Y body a la vez: genera doble barra.
+*/
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-legacy-white);
+  background: var(--color-legacy-black);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.legacy-modal-open {
+  overflow: hidden;
+}
+
+/* Solo vistas de pantalla fija (login); no usar en catálogo público */
+.app-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-legacy-gold);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
