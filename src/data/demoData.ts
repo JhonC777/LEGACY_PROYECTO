@@ -1,3 +1,5 @@
+import { FE_Y_ALEGRIA_IDENTITY } from './institutionalIdentity'
+
 /**
  * Contenido de DEMOSTRACIÓN de LEGACY.
  *
@@ -13,11 +15,15 @@ export type DemoAuthor = {
   role: string
 }
 
+/** Ciclo de vida de un proyecto. El sitio público solo muestra `published`. */
+export type ProjectStatus = 'draft' | 'published' | 'archived'
+
 export type DemoInstitution = {
   id: string
   name: string
   slug: string
   shortName: string
+  logoUrl?: string
   description: string
   accent: string
   isActive: boolean
@@ -49,15 +55,16 @@ export type DemoProject = {
   videoUrl?: string
   pdfUrl?: string
   isFeatured: boolean
-  status: 'published'
+  status: ProjectStatus
 }
 
 export const DEMO_INSTITUTIONS: DemoInstitution[] = [
   {
     id: 'inst-demo-fya',
-    name: 'Fe y Alegría',
+    name: FE_Y_ALEGRIA_IDENTITY.name,
     slug: 'fe-y-alegria',
-    shortName: 'FyA',
+    shortName: FE_Y_ALEGRIA_IDENTITY.shortName,
+    logoUrl: FE_Y_ALEGRIA_IDENTITY.logoUrl,
     description:
       'Espacio demostrativo de preservación académica. El contenido de esta versión no representa información institucional oficial.',
     accent: '#6b5ce6',

@@ -31,6 +31,7 @@ export type MockInstitutionCard = {
   variant: 'active' | 'demo' | 'locked'
   logoLabel: string
   logoColor: string
+  logoUrl?: string
 }
 
 const uniqueCategories = new Set(DEMO_PROJECTS.map((project) => project.category))
@@ -116,6 +117,7 @@ export const MOCK_INSTITUTION_CARDS: MockInstitutionCard[] = [
     variant: (index === 1 ? 'demo' : 'active') as 'active' | 'demo',
     logoLabel: institution.shortName,
     logoColor: institution.accent,
+    logoUrl: institution.logoUrl,
   })),
   {
     id: 'i3',

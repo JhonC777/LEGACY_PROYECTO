@@ -294,6 +294,7 @@ export function ProjectDetail() {
                   <SmartImage
                     src={project.coverImage}
                     alt={`Portada demostrativa de ${project.title}`}
+                    priority
                   />
                   <div className="project-hero-cover-caption">
                     <span className="project-hero-cover-tag">

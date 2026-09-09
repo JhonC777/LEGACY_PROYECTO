@@ -8,6 +8,8 @@ type SmartImageProps = {
   className?: string
   /** Etiqueta corta mostrada si la imagen no carga */
   fallbackLabel?: string
+  /** Para portadas visibles al entrar: evita el retraso de la carga diferida */
+  priority?: boolean
 }
 
 /**
@@ -19,8 +21,17 @@ export function SmartImage({
   alt,
   className,
   fallbackLabel = 'Portada demo no disponible',
+  priority = false,
 }: SmartImageProps) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [trackedSrc, setTrackedSrc] = useState(src)
+
+  // El componente sobrevive a la navegación entre fichas: sin este reinicio, un
+  // error previo dejaría el respaldo fijo para todas las portadas siguientes.
+  if (src !== trackedSrc) {
+    setTrackedSrc(src)
+    setStatus('loading')
+  }
 
   if (status === 'error') {
     return (
@@ -48,7 +59,8 @@ export function SmartImage({
       <img
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         onLoad={() => setStatus('ready')}
         onError={() => setStatus('error')}

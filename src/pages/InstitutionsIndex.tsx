@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Building2 } from 'lucide-react'
 import { CosmicBackground } from '@/components/entry/CosmicBackground'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { MOCK_INSTITUTIONS } from '@/data/mockInstitutions'
 
 /** Placeholder — listado completo de instituciones */
@@ -41,7 +42,18 @@ export function InstitutionsIndex() {
                   : 'pointer-events-none border-legacy-border/50 bg-legacy-surface/40 opacity-55'
               }`}
             >
-              <Building2 className="h-5 w-5 text-legacy-gold" aria-hidden />
+              {institution.logoUrl ? (
+                <InstitutionLogo
+                  name={institution.name}
+                  logoUrl={institution.logoUrl}
+                  fallback=""
+                  decorative
+                  className="h-11 w-11 rounded-xl border border-legacy-gold/25"
+                  imageClassName="bg-white/95 p-1"
+                />
+              ) : (
+                <Building2 className="h-5 w-5 text-legacy-gold" aria-hidden />
+              )}
               <span>
                 <span className="block font-medium text-legacy-white">
                   {institution.name}

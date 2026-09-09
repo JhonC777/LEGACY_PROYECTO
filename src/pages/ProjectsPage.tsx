@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowUpDown,
@@ -29,6 +29,7 @@ import {
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { useDeferredAction } from '@/lib/useDeferredAction'
 
 type LoadState = 'loading' | 'ready' | 'error'
 type FilterName = 'institution' | 'area' | 'category' | 'year' | 'collection'
@@ -84,6 +85,8 @@ export function ProjectsPage() {
   const [params, setParams] = useSearchParams()
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const defer = useDeferredAction()
 
   const query = params.get('q') ?? ''
   const area = params.get('area') ?? ''
@@ -96,6 +99,18 @@ export function ProjectsPage() {
   useEffect(() => {
     const timer = window.setTimeout(() => setLoadState('ready'), 280)
     return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        searchRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', focusSearch)
+    return () => window.removeEventListener('keydown', focusSearch)
   }, [])
 
   const source = useMemo(
@@ -190,15 +205,22 @@ export function ProjectsPage() {
     })
   }, [filters, sort, source])
 
-  const updateParam = (name: string, value: string) => {
+  const updateParam = (name: string, value: string, replace = false) => {
     const next = new URLSearchParams(params)
     if (value) next.set(name, value)
     else next.delete(name)
-    setParams(next)
+    setParams(next, { replace })
   }
 
   const clearFilters = () => {
     const next = new URLSearchParams()
+    if (sort !== 'recent') next.set('sort', sort)
+    setParams(next)
+  }
+
+  const exploreArea = (value: string) => {
+    const next = new URLSearchParams()
+    next.set('area', value)
     if (sort !== 'recent') next.set('sort', sort)
     setParams(next)
   }
@@ -247,7 +269,7 @@ export function ProjectsPage() {
 
   const retry = () => {
     setLoadState('loading')
-    window.setTimeout(() => setLoadState('ready'), 450)
+    defer(() => setLoadState('ready'), 450)
   }
 
   const visibleState =
@@ -360,11 +382,28 @@ export function ProjectsPage() {
                 <span className="sr-only">Buscar en el catálogo</span>
                 <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-legacy-muted" />
                 <input
+                  ref={searchRef}
+                  type="search"
                   value={query}
-                  onChange={(event) => updateParam('q', event.target.value)}
+                  onChange={(event) => updateParam('q', event.target.value, true)}
                   placeholder="Buscar por título, autor, área o tema..."
-                  className="glass-input liquid-field w-full rounded-full py-3 pr-4 pl-10 text-sm"
+                  className="glass-input liquid-field w-full rounded-full py-3 pr-16 pl-10 text-sm"
+                  autoComplete="off"
                 />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={() => updateParam('q', '', true)}
+                    className="absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted transition-colors hover:bg-white/[0.06] hover:text-legacy-white"
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                ) : (
+                  <kbd className="header-kbd pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
+                    Ctrl K
+                  </kbd>
+                )}
               </label>
             </div>
 
@@ -374,6 +413,7 @@ export function ProjectsPage() {
                 type="button"
                 className="btn btn-secondary btn-sm w-full justify-between"
                 aria-expanded={filtersOpen}
+                aria-controls="mobile-catalog-filters"
                 onClick={() => setFiltersOpen((open) => !open)}
               >
                 <span className="inline-flex items-center gap-2">
@@ -394,7 +434,10 @@ export function ProjectsPage() {
                 />
               </button>
               {filtersOpen ? (
-                <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div
+                  id="mobile-catalog-filters"
+                  className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
                   {filterPanel}
                 </div>
               ) : null}
@@ -462,7 +505,14 @@ export function ProjectsPage() {
               {visibleState === 'error' ? <ProjectsError onRetry={retry} /> : null}
               {visibleState === 'empty' ? <ProjectsEmpty /> : null}
               {visibleState === 'ready' && projects.length === 0 ? (
-                <ProjectsNoResults onClear={clearFilters} />
+                <ProjectsNoResults
+                  onClear={clearFilters}
+                  suggestions={available.areas
+                    .filter((option) => option.count > 0 && option.value !== area)
+                    .slice(0, 3)
+                    .map((option) => option.label)}
+                  onSuggestion={exploreArea}
+                />
               ) : null}
               {visibleState === 'ready' && projects.length > 0 ? (
                 <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">

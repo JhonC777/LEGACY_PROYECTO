@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
+  Archive,
   ArrowRight,
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronRight,
   Compass,
   Layers3,
   Library,
@@ -14,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
   DEMO_INSTITUTIONS,
   DEMO_PROJECTS,
@@ -65,6 +68,9 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
     ? location.pathname.startsWith(`${institutionBase}/proyectos`)
     : location.pathname === '/proyectos' ||
       location.pathname.startsWith('/proyectos/')
+  const onProjectDetail = institution
+    ? location.pathname.startsWith(`${institutionBase}/proyectos/`)
+    : /^\/proyectos\/[^/]+/.test(location.pathname)
   const onExploreView =
     location.pathname === '/explorar' || location.pathname === '/instituciones'
 
@@ -256,13 +262,15 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
               onClick={() => toggleMenu('institution')}
             >
               {institution ? (
-                <span
+                <InstitutionLogo
+                  name={institution.name}
+                  logoUrl={institution.logoUrl}
+                  fallback={institution.shortName}
+                  accent={institution.accent}
+                  decorative
                   className="header-avatar"
-                  style={{ backgroundColor: institution.accent }}
-                  aria-hidden
-                >
-                  {institution.shortName}
-                </span>
+                  imageClassName="bg-white/95 p-0.5"
+                />
               ) : (
                 <Compass className="h-4 w-4 text-legacy-gold" aria-hidden />
               )}
@@ -289,13 +297,15 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
                           className={cn('header-menu-item', isCurrent && 'is-current')}
                           aria-current={isCurrent ? 'true' : undefined}
                         >
-                          <span
+                          <InstitutionLogo
+                            name={item.name}
+                            logoUrl={item.logoUrl}
+                            fallback={item.shortName}
+                            accent={item.accent}
+                            decorative
                             className="header-avatar"
-                            style={{ backgroundColor: item.accent }}
-                            aria-hidden
-                          >
-                            {item.shortName}
-                          </span>
+                            imageClassName="bg-white/95 p-0.5"
+                          />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-medium text-legacy-white">
                               {item.name}
@@ -386,7 +396,7 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
           <Link
             to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
             className={cn('btn btn-secondary btn-sm shrink-0', !showToolbar && 'ml-auto lg:ml-0')}
-            title="Administrador (próximamente)"
+            title="Panel de administración institucional"
           >
             <UserRound className="h-4 w-4" aria-hidden />
             <span className="hidden sm:inline">Administrador</span>
@@ -468,7 +478,50 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
               </p>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="header-contextbar hidden lg:block">
+            <div className="mx-auto flex max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+              <div className="header-context-path min-w-0">
+                <span className="header-context-kicker">
+                  <Archive className="h-3.5 w-3.5" aria-hidden />
+                  Archivo académico
+                </span>
+                <span className="header-context-divider" aria-hidden />
+                <Link
+                  to={institution ? institutionBase : '/explorar'}
+                  className="header-context-link"
+                >
+                  {institution ? institution.shortName : 'Red institucional'}
+                </Link>
+                <ChevronRight className="h-3 w-3 shrink-0 text-white/25" aria-hidden />
+                {onProjectDetail ? (
+                  <>
+                    <Link to={projectsHref} className="header-context-link">
+                      Proyectos
+                    </Link>
+                    <ChevronRight className="h-3 w-3 shrink-0 text-white/25" aria-hidden />
+                    <span className="header-context-current">Ficha académica</span>
+                  </>
+                ) : (
+                  <span className="header-context-current">Catálogo de proyectos</span>
+                )}
+              </div>
+
+              <p className="header-context-summary ml-auto">
+                <span>
+                  <strong>{scoped.length}</strong> publicados
+                </span>
+                <span className="header-context-separator" aria-hidden />
+                <span>{yearRange}</span>
+                <span className="header-context-separator" aria-hidden />
+                <span>
+                  <strong>{areas.length}</strong> áreas
+                </span>
+                <span className="header-demo-pill">Contenido demo</span>
+              </p>
+            </div>
+          </div>
+        )}
 
         <span
           className="header-progress"
@@ -479,16 +532,28 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
 
       {sheetOpen ? (
         <div id="public-mobile-nav" className="header-sheet lg:hidden">
-          <form role="search" onSubmit={submitSearch} className="header-search w-full">
-            <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
-            <input
-              type="search"
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-              placeholder="Buscar proyectos..."
-              aria-label="Buscar en el catálogo"
-            />
-          </form>
+          {showToolbar ? (
+            <form role="search" onSubmit={submitSearch} className="header-search w-full">
+              <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
+              <input
+                type="search"
+                value={term}
+                onChange={(event) => setTerm(event.target.value)}
+                placeholder="Buscar proyectos..."
+                aria-label="Buscar en el catálogo"
+              />
+            </form>
+          ) : null}
+
+          <div className={cn('header-sheet-context', !showToolbar && 'mt-0')}>
+            <span className="header-context-kicker">
+              <Archive className="h-3.5 w-3.5" aria-hidden />
+              {onProjectDetail ? 'Ficha académica' : 'Archivo académico'}
+            </span>
+            <p>
+              {scoped.length} proyectos publicados · {yearRange} · {areas.length} áreas
+            </p>
+          </div>
 
           <nav className="mt-3 flex flex-col gap-1" aria-label="Secciones móviles">
             {institution ? (
@@ -524,13 +589,15 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
                     to={`/instituciones/${item.slug}`}
                     className={cn('header-menu-item', isCurrent && 'is-current')}
                   >
-                    <span
+                    <InstitutionLogo
+                      name={item.name}
+                      logoUrl={item.logoUrl}
+                      fallback={item.shortName}
+                      accent={item.accent}
+                      decorative
                       className="header-avatar"
-                      style={{ backgroundColor: item.accent }}
-                      aria-hidden
-                    >
-                      {item.shortName}
-                    </span>
+                      imageClassName="bg-white/95 p-0.5"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-legacy-white">
                         {item.name}

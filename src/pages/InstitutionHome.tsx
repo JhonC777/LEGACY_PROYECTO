@@ -144,6 +144,7 @@ export function InstitutionHome() {
             {...sectionReveal(0.08)}
           >
             <InstitutionPanel
+              id="areas-de-conocimiento"
               title="Áreas de conocimiento"
               items={areas}
               href={projectsHref}
@@ -151,6 +152,7 @@ export function InstitutionHome() {
               delay={0}
             />
             <InstitutionPanel
+              id="anos-de-legado"
               title="Años de legado"
               items={years.map(String)}
               href={projectsHref}
@@ -158,6 +160,7 @@ export function InstitutionHome() {
               delay={0.08}
             />
             <InstitutionPanel
+              id="colecciones"
               title="Colecciones"
               items={collections}
               href={projectsHref}
@@ -174,12 +177,14 @@ export function InstitutionHome() {
 }
 
 function InstitutionPanel({
+  id,
   title,
   items,
   href,
   query,
   delay = 0,
 }: {
+  id: string
   title: string
   items: string[]
   href: string
@@ -190,7 +195,8 @@ function InstitutionPanel({
 
   return (
     <motion.section
-      className="institution-panel rounded-2xl p-5 lg:p-6"
+      id={id}
+      className="institution-panel scroll-mt-[calc(var(--legacy-header-h,68px)+1rem)] rounded-2xl p-5 lg:p-6"
       initial={reduceMotion ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}

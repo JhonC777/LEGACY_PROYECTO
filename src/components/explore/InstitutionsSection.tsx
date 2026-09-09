@@ -1,6 +1,7 @@
 import { Lock, MapPin } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { MOCK_INSTITUTION_CARDS } from '@/data/mockExplore'
 
 export function InstitutionsSection() {
@@ -47,12 +48,15 @@ export function InstitutionsSection() {
                 className="explore-card flex flex-col rounded-2xl p-5"
               >
                 <div className="mb-4 flex items-center gap-3">
-                  <span
+                  <InstitutionLogo
+                    name={institution.name}
+                    logoUrl={institution.logoUrl}
+                    fallback={institution.logoLabel}
+                    accent={institution.logoColor}
+                    decorative
                     className="flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white"
-                    style={{ backgroundColor: institution.logoColor }}
-                  >
-                    {institution.logoLabel}
-                  </span>
+                    imageClassName="rounded-lg bg-white/95 p-1"
+                  />
                   <div>
                     <h3 className="font-semibold text-legacy-white">{institution.name}</h3>
                     <p className="flex items-center gap-1 text-xs text-legacy-muted">
@@ -94,12 +98,15 @@ export function InstitutionsSection() {
               className="explore-card flex flex-col rounded-2xl p-5"
             >
               <div className="mb-4 flex items-center gap-3">
-                <span
+                <InstitutionLogo
+                  name={institution.name}
+                  logoUrl={institution.logoUrl}
+                  fallback={institution.logoLabel}
+                  accent={institution.logoColor}
+                  decorative
                   className="flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white"
-                  style={{ backgroundColor: institution.logoColor }}
-                >
-                  {institution.logoLabel}
-                </span>
+                  imageClassName="rounded-lg bg-white/95 p-1"
+                />
                 <div>
                   <h3 className="font-semibold text-legacy-white">{institution.name}</h3>
                   <p className="flex items-center gap-1 text-xs text-legacy-muted">

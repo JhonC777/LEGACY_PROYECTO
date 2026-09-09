@@ -3,6 +3,7 @@ import { ArrowLeft, LockKeyhole, UserRound } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { GlassSurface } from '@/components/ui/GlassSurface'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
 
 type AccessModeDialogProps = {
@@ -61,14 +62,14 @@ export function AccessModeDialog({
           >
             <GlassSurface variant="strong" className="rounded-[1.75rem] p-7 lg:p-8">
               <div className="mb-7 text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-legacy-gold/35 bg-legacy-black/45 shadow-[inset_0_0_20px_rgb(214_184_120_/_0.08)]">
-                  <span
-                    className="font-display text-2xl font-semibold text-legacy-gold"
-                    aria-hidden
-                  >
-                    {institution.name.slice(0, 1)}
-                  </span>
-                </div>
+                <InstitutionLogo
+                  name={institution.name}
+                  logoUrl={institution.logoUrl}
+                  fallback={institution.name.slice(0, 1)}
+                  decorative
+                  className="mx-auto mb-4 h-16 w-16 rounded-2xl border border-legacy-gold/35 bg-legacy-black/45 text-2xl text-legacy-gold shadow-[inset_0_0_20px_rgb(214_184_120_/_0.08)]"
+                  imageClassName="rounded-xl bg-white/95 p-1.5"
+                />
                 <h2
                   id="access-dialog-title"
                   className="font-display text-3xl font-semibold text-legacy-white"

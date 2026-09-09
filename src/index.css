@@ -5,6 +5,7 @@
 @import "./styles/glass.css";
 @import "./styles/header.css";
 @import "./styles/project.css";
+@import "./styles/admin.css";
 
 @theme {
   --color-legacy-black: #08090c;
@@ -74,6 +75,21 @@ body.legacy-modal-open {
 :focus-visible {
   outline: 2px solid var(--color-legacy-gold);
   outline-offset: 3px;
+}
+
+.route-fallback-ring {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 2px solid rgb(255 255 255 / 0.1);
+  border-top-color: var(--color-legacy-gold);
+  animation: route-fallback-spin 0.9s linear infinite;
+}
+
+@keyframes route-fallback-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

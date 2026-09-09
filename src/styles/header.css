@@ -347,6 +347,92 @@
   color: var(--color-legacy-gold);
 }
 
+/* Contexto del catálogo y de las fichas académicas */
+
+.header-contextbar {
+  position: relative;
+  border-top: 1px solid rgb(255 255 255 / 0.06);
+  background:
+    linear-gradient(90deg, rgb(214 184 120 / 0.045), transparent 35%),
+    rgb(8 9 12 / 0.42);
+}
+
+.header-contextbar > div {
+  min-height: 2.7rem;
+}
+
+.header-context-path,
+.header-context-summary,
+.header-context-kicker {
+  display: inline-flex;
+  align-items: center;
+}
+
+.header-context-path {
+  gap: 0.45rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.header-context-kicker {
+  flex-shrink: 0;
+  gap: 0.42rem;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-legacy-gold);
+}
+
+.header-context-divider {
+  width: 1px;
+  height: 1rem;
+  margin: 0 0.2rem;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.header-context-link {
+  overflow: hidden;
+  max-width: 11rem;
+  color: var(--color-legacy-muted);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.header-context-link:hover {
+  color: var(--color-legacy-white);
+}
+
+.header-context-current {
+  overflow: hidden;
+  color: rgb(247 245 239 / 0.9);
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.header-context-summary {
+  flex-shrink: 0;
+  gap: 0.6rem;
+  color: var(--color-legacy-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.header-context-summary strong {
+  color: var(--color-legacy-white);
+  font-weight: 700;
+}
+
+.header-context-separator {
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(214 184 120 / 0.55);
+}
+
 .header-pill {
   display: inline-flex;
   align-items: center;
@@ -564,6 +650,24 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.header-sheet-context {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgb(214 184 120 / 0.14);
+  border-radius: 0.8rem;
+  background:
+    linear-gradient(110deg, rgb(214 184 120 / 0.08), transparent 62%),
+    rgb(255 255 255 / 0.025);
+}
+
+.header-sheet-context p {
+  margin: 0.3rem 0 0;
+  color: var(--color-legacy-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
 }
 
 .header-sheet-link {

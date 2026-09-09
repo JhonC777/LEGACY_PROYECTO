@@ -7,6 +7,7 @@ import {
   Star,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { SmartImage } from '@/components/ui/SmartImage'
 import {
   DEMO_INSTITUTIONS,
@@ -26,13 +27,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const institution = DEMO_INSTITUTIONS.find(
     (item) => item.id === project.institutionId,
   )
-  const catalogPath = `/instituciones/${institution?.slug ?? 'fe-y-alegria'}/proyectos`
+  const institutionCatalogPath = `/instituciones/${institution?.slug ?? 'fe-y-alegria'}/proyectos`
+  const isGlobalCatalog = location.pathname === '/proyectos'
+  const isInstitutionCatalog = location.pathname === institutionCatalogPath
+  const catalogPath =
+    isGlobalCatalog || isInstitutionCatalog ? location.pathname : institutionCatalogPath
 
   const filterHref = (key: 'area' | 'category' | 'collection', value: string) => {
-    const next =
-      location.pathname === catalogPath
-        ? new URLSearchParams(location.search)
-        : new URLSearchParams()
+    const next = new URLSearchParams(
+      isGlobalCatalog || isInstitutionCatalog ? location.search : '',
+    )
     next.set(key, value)
     return `${catalogPath}?${next.toString()}`
   }
@@ -89,6 +93,25 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </Link>
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
+        {isGlobalCatalog && institution ? (
+          <Link
+            to={`/instituciones/${institution.slug}`}
+            className="mb-3 inline-flex w-fit max-w-full items-center gap-2 text-xs font-medium text-legacy-muted transition-colors hover:text-legacy-gold"
+            title={`Abrir ${institution.name}`}
+          >
+            <InstitutionLogo
+              name={institution.name}
+              logoUrl={institution.logoUrl}
+              fallback={institution.shortName}
+              accent={institution.accent}
+              decorative
+              className="header-avatar"
+              imageClassName="bg-white/95 p-0.5"
+            />
+            <span className="truncate">{institution.name}</span>
+          </Link>
+        ) : null}
+
         <div className="mb-3 flex flex-wrap gap-2">
           <Link
             to={filterHref('area', project.area)}
@@ -115,7 +138,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </p>
         </Link>
 
-        <p className="mt-4 text-xs text-legacy-muted">
+        <p className="mt-4 line-clamp-1 text-xs text-legacy-muted" title={`${authors} · ${project.year}`}>
           <span className="text-legacy-white/80">{authors}</span>
           <span aria-hidden> · </span>
           <span>{project.year}</span>
@@ -172,6 +195,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             to={href}
             state={{ from }}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-legacy-gold transition-all duration-300 hover:gap-2.5 hover:text-legacy-gold-soft"
+            aria-label={`Abrir ficha de ${project.title}`}
           >
             Abrir ficha
             <ArrowRight className="h-4 w-4" aria-hidden />

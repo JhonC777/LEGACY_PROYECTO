@@ -1,3 +1,5 @@
+import { FE_Y_ALEGRIA_IDENTITY } from './institutionalIdentity'
+
 export type Institution = {
   id: string
   name: string
@@ -5,6 +7,7 @@ export type Institution = {
   location: string
   description: string
   primaryColor: string
+  logoUrl?: string
   isActive: boolean
   isPilot?: boolean
 }
@@ -13,11 +16,12 @@ export type Institution = {
 export const MOCK_INSTITUTIONS: Institution[] = [
   {
     id: 'mock-feyalegria',
-    name: 'Fe y Alegría',
+    name: FE_Y_ALEGRIA_IDENTITY.name,
     slug: 'fe-y-alegria',
     location: 'Institución piloto',
     description: 'Legado académico institucional',
     primaryColor: '#d6b878',
+    logoUrl: FE_Y_ALEGRIA_IDENTITY.logoUrl,
     isActive: true,
     isPilot: true,
   },

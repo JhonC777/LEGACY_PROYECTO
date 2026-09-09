@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
 import { cn } from '@/lib/cn'
 
@@ -12,10 +13,12 @@ type InstitutionCardProps = {
 
 function InstitutionMark({
   name,
+  logoUrl,
   active,
   compact,
 }: {
   name: string
+  logoUrl?: string
   active: boolean
   compact?: boolean
 }) {
@@ -28,25 +31,21 @@ function InstitutionMark({
     .toUpperCase()
 
   return (
-    <span
+    <InstitutionLogo
+      name={name}
+      logoUrl={logoUrl}
+      fallback={initials}
+      decorative
       className={cn(
         'relative flex shrink-0 items-center justify-center rounded-xl border',
         compact ? 'h-11 w-11' : 'h-12 w-12',
+        compact ? 'text-sm' : 'text-base',
         active
-          ? 'border-legacy-gold/35 bg-legacy-black/55 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]'
-          : 'border-legacy-border/50 bg-legacy-black/30',
+          ? 'border-legacy-gold/35 bg-legacy-black/55 text-legacy-gold-soft shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]'
+          : 'border-legacy-border/50 bg-legacy-black/30 text-legacy-muted',
       )}
-    >
-      <span
-        className={cn(
-          'font-display font-semibold tracking-wide',
-          compact ? 'text-sm' : 'text-base',
-          active ? 'text-legacy-gold-soft' : 'text-legacy-muted',
-        )}
-      >
-        {initials}
-      </span>
-    </span>
+      imageClassName="rounded-[0.6rem] bg-white/95 p-1.5"
+    />
   )
 }
 
@@ -97,6 +96,7 @@ export function InstitutionCard({
       <div className={cn(compact && 'flex items-start justify-between gap-2')}>
         <InstitutionMark
           name={institution.name}
+          logoUrl={institution.logoUrl}
           active={!disabled}
           compact={compact}
         />

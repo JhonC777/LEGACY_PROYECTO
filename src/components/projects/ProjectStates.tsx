@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { AlertCircle, FolderOpen, SearchX } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -34,15 +35,38 @@ export function ProjectsEmpty() {
   )
 }
 
-export function ProjectsNoResults({ onClear }: { onClear: () => void }) {
+export function ProjectsNoResults({
+  onClear,
+  suggestions = [],
+  onSuggestion,
+}: {
+  onClear: () => void
+  suggestions?: string[]
+  onSuggestion?: (suggestion: string) => void
+}) {
   return (
     <StateCard
       icon={SearchX}
       title="No encontramos coincidencias"
-      description="Prueba otra búsqueda o elimina algunos filtros."
+      description="Prueba otra búsqueda, explora una de estas áreas o elimina los filtros activos."
       actionLabel="Limpiar filtros"
       onAction={onClear}
-    />
+    >
+      {suggestions.length > 0 && onSuggestion ? (
+        <div className="mt-5 flex flex-wrap justify-center gap-2" aria-label="Áreas sugeridas">
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              className="chip-liquid"
+              onClick={() => onSuggestion(suggestion)}
+            >
+              Explorar {suggestion}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </StateCard>
   )
 }
 
@@ -64,6 +88,7 @@ type StateCardProps = {
   description: string
   actionLabel?: string
   onAction?: () => void
+  children?: ReactNode
 }
 
 function StateCard({
@@ -72,6 +97,7 @@ function StateCard({
   description,
   actionLabel,
   onAction,
+  children,
 }: StateCardProps) {
   return (
     <div className="glass-surface flex min-h-[280px] flex-col items-center justify-center rounded-2xl border-dashed px-6 py-10 text-center">
@@ -82,6 +108,7 @@ function StateCard({
       <p className="mt-2 max-w-md text-sm leading-relaxed text-legacy-muted">
         {description}
       </p>
+      {children}
       {actionLabel && onAction ? (
         <Button variant="primary" className="mt-5" onClick={onAction}>
           {actionLabel}
