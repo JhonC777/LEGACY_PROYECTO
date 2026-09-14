@@ -1,6 +1,6 @@
 import { CalendarDays, Layers3, Library } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DEMO_PROJECTS } from '@/data/demoData'
+import { DEMO_PROJECTS, PILOT_CATALOG_PATH } from '@/data/demoData'
 
 const YEARS = [...new Set(DEMO_PROJECTS.map((project) => project.year))].sort(
   (a, b) => b - a,
@@ -57,7 +57,7 @@ export function LegacyTimeline() {
             {YEARS.map((year) => (
               <Link
                 key={year}
-                to={`/proyectos?year=${year}`}
+                to={`${PILOT_CATALOG_PATH}?year=${year}`}
                 className="chip-liquid"
               >
                 <span className="font-semibold">{year}</span>
@@ -76,7 +76,7 @@ export function LegacyTimeline() {
             {AREAS.map((area) => (
               <Link
                 key={area.name}
-                to={`/proyectos?area=${encodeURIComponent(area.name)}`}
+                to={`${PILOT_CATALOG_PATH}?area=${encodeURIComponent(area.name)}`}
                 className="chip-liquid"
                 aria-label={`${area.name}, ${area.count} proyectos demo`}
               >
@@ -97,7 +97,7 @@ export function LegacyTimeline() {
               {COLLECTIONS.map((collection) => (
                 <Link
                   key={collection.name}
-                  to={`/proyectos?collection=${encodeURIComponent(collection.name)}`}
+                  to={`${PILOT_CATALOG_PATH}?collection=${encodeURIComponent(collection.name)}`}
                   className="chip-liquid"
                   aria-label={`${collection.name}, ${collection.count} proyectos demo`}
                 >

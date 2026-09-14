@@ -53,9 +53,9 @@
 
 .glass-header {
   border-bottom: 1px solid rgb(255 255 255 / 0.08);
-  background: rgb(8 9 12 / 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgb(8 9 12 / 0.58);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
   overflow: visible;
 }
 
@@ -380,30 +380,56 @@
 .liquid-card {
   --rx: 0deg;
   --ry: 0deg;
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  isolation: isolate;
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(17, 19, 26, 0.78) 48%,
-    rgba(8, 9, 12, 0.62) 100%
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(17, 19, 26, 0.62) 46%,
+    rgba(8, 9, 12, 0.52) 100%
   );
   box-shadow:
-    0 0.5px 0 rgba(255, 255, 255, 0.28) inset,
-    0 14px 36px -18px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+    0 0.5px 0 rgba(255, 255, 255, 0.38) inset,
+    0 1px 1px rgba(255, 255, 255, 0.08) inset,
+    0 18px 42px -18px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
   transition:
-    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.3s ease,
     box-shadow 0.4s ease;
 }
 
+.liquid-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    transparent 28%,
+    transparent 62%,
+    rgba(214, 184, 120, 0.08) 100%
+  );
+  opacity: 0.7;
+}
+
+.liquid-card > * {
+  position: relative;
+  z-index: 2;
+}
+
 .liquid-card:hover {
-  border-color: rgba(214, 184, 120, 0.28);
+  border-color: rgba(214, 184, 120, 0.38);
   box-shadow:
-    0 0.5px 0 rgba(255, 255, 255, 0.35) inset,
-    0 22px 44px -20px rgba(0, 0, 0, 0.58);
-  transform: translateY(-4px);
+    0 0.5px 0 rgba(255, 255, 255, 0.45) inset,
+    0 26px 50px -18px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(214, 184, 120, 0.08);
+  transform: translateY(-5px);
 }
 
 .liquid-icon {

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ChevronRight,
   CloudUpload,
@@ -17,6 +18,7 @@ import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { cn } from '@/lib/cn'
 import { useAdminSession } from '../session'
 import { useAdminStore } from '../store'
+import { LivingField } from '@/components/atmosphere/LivingField'
 import { ConfirmDialog } from './ConfirmDialog'
 
 type NavItem = {
@@ -142,47 +144,49 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     </>
   )
 
-  return (
-    <div
-      className="admin-shell grid h-dvh w-full max-w-full grid-cols-1 overflow-hidden lg:grid-cols-[264px_minmax(0,1fr)]"
-      data-status={status}
-    >
-      <aside className="admin-sidebar hidden h-full min-h-0 flex-col overflow-y-auto lg:flex">
-        {sidebar}
-      </aside>
-
-      {drawerOpen ? (
-        <div
-          className="admin-drawer fixed inset-0 z-[60] lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menú del panel"
-        >
-          <button
-            type="button"
-            className="admin-drawer-backdrop"
-            aria-label="Cerrar menú"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <aside className="admin-sidebar admin-sidebar-drawer flex h-full flex-col overflow-y-auto">
+  const drawer =
+    drawerOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="admin-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú del panel"
+          >
             <button
               type="button"
-              className="btn btn-ghost btn-sm absolute top-3 right-3"
-              onClick={() => setDrawerOpen(false)}
+              className="admin-drawer-backdrop"
               aria-label="Cerrar menú"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-            {sidebar}
-          </aside>
-        </div>
-      ) : null}
+              onClick={() => setDrawerOpen(false)}
+            />
+            <aside className="admin-sidebar admin-sidebar-drawer">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm absolute top-3 right-3"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Cerrar menú"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+              {sidebar}
+            </aside>
+          </div>,
+          document.body,
+        )
+      : null
 
-      <div className="admin-main flex min-h-0 min-w-0 flex-col">
-        <header className="admin-topbar flex min-h-[3.75rem] items-center gap-3">
+  return (
+    <div className="admin-shell" data-status={status}>
+      <LivingField variant="page" />
+      <aside className="admin-sidebar">{sidebar}</aside>
+
+      {drawer}
+
+      <div className="admin-main">
+        <header className="admin-topbar">
           <button
             type="button"
-            className="admin-menu-toggle btn btn-ghost btn-sm lg:hidden"
+            className="admin-menu-toggle btn btn-ghost btn-sm"
             aria-expanded={drawerOpen}
             onClick={() => setDrawerOpen(true)}
           >
@@ -190,7 +194,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <span className="sr-only">Abrir menú</span>
           </button>
 
-          <nav className="admin-crumbs flex min-w-0 items-center gap-1.5 overflow-hidden" aria-label="Ruta">
+          <nav className="admin-crumbs" aria-label="Ruta">
             <Link to={base} className="admin-crumb">
               {settings.shortName}
             </Link>
@@ -226,8 +230,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main id="contenido" className="admin-content min-h-0 flex-1 overflow-y-auto">
-          <div className="admin-content-inner mx-auto w-full max-w-[1240px] px-4 py-6 pb-16 lg:px-7 lg:pt-8 lg:pb-20">
+        <main id="contenido" className="admin-content">
+          <div className="admin-content-inner">
             {children}
           </div>
         </main>

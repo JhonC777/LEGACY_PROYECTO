@@ -20,10 +20,15 @@ import {
   ProjectsLoading,
   ProjectsNoResults,
 } from '@/components/projects/ProjectStates'
+import { ExploreShell } from '@/components/layout/ExploreShell'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import {
+  resolveInstitution,
+  resolveInstitutionProjects,
+  useArchiveRevision,
+} from '@/admin/archiveBridge'
+import {
   DEMO_INSTITUTIONS,
-  DEMO_PROJECTS,
   getAvailableYears,
   getInstitutionBySlug,
   type DemoProject,
@@ -79,9 +84,9 @@ function projectMatches(
 
 export function ProjectsPage() {
   const { institutionSlug } = useParams()
-  const institution = institutionSlug
-    ? getInstitutionBySlug(institutionSlug)
-    : undefined
+  const revision = useArchiveRevision()
+  const base = institutionSlug ? getInstitutionBySlug(institutionSlug) : undefined
+  const institution = base ? resolveInstitution(base) : undefined
   const [params, setParams] = useSearchParams()
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -116,9 +121,9 @@ export function ProjectsPage() {
   const source = useMemo(
     () =>
       institution
-      ? DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
-        : DEMO_PROJECTS,
-    [institution],
+        ? resolveInstitutionProjects(institution, true)
+        : DEMO_INSTITUTIONS.flatMap((item) => resolveInstitutionProjects(item, true)),
+    [institution, revision],
   )
 
   const filters = useMemo<CatalogFilters>(
@@ -183,13 +188,13 @@ export function ProjectsPage() {
       DEMO_INSTITUTIONS.map((item) => ({
         value: item.id,
         label: item.name,
-        count: DEMO_PROJECTS.filter(
+        count: resolveInstitutionProjects(item, true).filter(
           (project) =>
             projectMatches(project, filters, 'institution') &&
             project.institutionId === item.id,
         ).length,
       })),
-    [filters],
+    [filters, revision],
   )
 
   const projects = useMemo(() => {
@@ -331,7 +336,7 @@ export function ProjectsPage() {
   )
 
   return (
-    <div className="explore-shell">
+    <ExploreShell>
       <PublicHeader institution={institution} />
 
       <main
@@ -349,7 +354,7 @@ export function ProjectsPage() {
           <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-relaxed text-legacy-muted">
             Contenidos de demostración. No representan información institucional oficial.
             <span className="mt-2 block font-medium text-legacy-gold/90">
-              Los archivos no se guardan, trascenden.
+              Los archivos no se guardan, trascienden.
             </span>
           </div>
         </aside>
@@ -525,7 +530,7 @@ export function ProjectsPage() {
           </div>
         </div>
       </main>
-    </div>
+    </ExploreShell>
   )
 }
 

@@ -1,94 +1,83 @@
-import { Archive, FolderOpen, Users } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/cn'
 
 type EntryMessageProps = {
-  subtitleDelay?: number
+  quoteDelay?: number
   welcomeDelay?: number
-  chipsDelay?: number
-  messageDelay?: number
   align?: 'center' | 'start'
+  awakened?: boolean
+  actions?: ReactNode
 }
 
-const VALUE_CHIPS = [
-  { label: 'Proyectos publicados', icon: FolderOpen },
-  { label: 'Colecciones', icon: Archive },
-  { label: 'Acceso invitado', icon: Users },
-] as const
+const EASE = [0.22, 1, 0.36, 1] as const
 
 export function EntryMessage({
-  subtitleDelay = 0.42,
-  welcomeDelay = 0.52,
-  chipsDelay = 0.62,
-  messageDelay = 0.78,
+  quoteDelay = 0.46,
+  welcomeDelay = 0.62,
   align = 'center',
+  awakened = true,
+  actions,
 }: EntryMessageProps) {
   const reduceMotion = useReducedMotion()
   const start = align === 'start'
 
   const fadeUp = (delay: number) =>
     reduceMotion
-      ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+      ? {
+          initial: { opacity: awakened ? 1 : 0 },
+          animate: { opacity: awakened ? 1 : 0 },
+        }
       : {
-          initial: { opacity: 0, y: 12 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] as const },
+          initial: { opacity: 0, y: 14 },
+          animate: awakened ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 },
+          transition: {
+            duration: 0.85,
+            delay: awakened ? delay : 0,
+            ease: EASE,
+          },
         }
 
   return (
     <div
-      className={cn(
-        'mt-5 space-y-4 lg:mt-6 lg:space-y-5',
-        start
-          ? 'mx-auto max-w-lg text-center lg:mx-0 lg:max-w-xl lg:text-left'
-          : 'mx-auto max-w-lg text-center',
-      )}
+        className={cn(
+          'mt-6 space-y-5 lg:mt-9 lg:space-y-6',
+          start
+            ? 'mx-auto max-w-lg text-center lg:mx-0 lg:max-w-[34rem] lg:text-left'
+            : 'mx-auto max-w-lg text-center',
+        )}
     >
-      <motion.p
-        {...fadeUp(subtitleDelay)}
-        className="font-display text-[clamp(1.35rem,3vw,1.85rem)] leading-snug text-legacy-gold-soft/95"
-      >
-        Museo Digital del Legado Estudiantil
-      </motion.p>
+      <motion.blockquote {...fadeUp(quoteDelay)} className="home-quote">
+        <p>
+          Los archivos no se guardan.
+          <br />
+          <span className="home-quote-accent">Trascienden.</span>
+        </p>
+      </motion.blockquote>
 
       <motion.p
         {...fadeUp(welcomeDelay)}
         className={cn(
-          'text-[0.95rem] leading-relaxed text-legacy-muted lg:text-base',
+          'home-welcome',
           start ? 'mx-auto max-w-md lg:mx-0 lg:max-w-lg' : 'mx-auto max-w-md',
         )}
       >
-        Un archivo vivo donde los proyectos académicos permanecen visibles,
-        organizados y listos para trascender.
+        El conocimiento de cada generación merece permanecer. LEGACY es la
+        plataforma donde cada institución educativa preserva, organiza y exhibe
+        los proyectos de grado de sus estudiantes.
       </motion.p>
 
-      <motion.ul
-        className={cn(
-          'flex flex-wrap gap-2 pt-1',
-          start ? 'justify-center lg:justify-start' : 'justify-center',
-        )}
-      >
-        {VALUE_CHIPS.map(({ label, icon: Icon }, i) => (
-          <motion.li
-            key={label}
-            className="archive-value-chip"
-            {...fadeUp(chipsDelay + i * 0.08)}
-            whileHover={reduceMotion ? undefined : { y: -2 }}
-          >
-            <Icon className="h-3.5 w-3.5 shrink-0 text-legacy-gold/80" aria-hidden />
-            <span>{label}</span>
-          </motion.li>
-        ))}
-      </motion.ul>
-
-      <motion.p
-        {...fadeUp(messageDelay)}
-        className={cn(
-          'pt-1 text-[0.68rem] font-semibold tracking-[0.22em] text-legacy-muted/90 uppercase lg:hidden',
-        )}
-      >
-        Selecciona una institución
-      </motion.p>
+      {actions ? (
+        <motion.div
+          {...fadeUp(welcomeDelay + 0.12)}
+          className={cn(
+            'home-hero-actions',
+            start ? 'justify-center lg:justify-start' : 'justify-center',
+          )}
+        >
+          {actions}
+        </motion.div>
+      ) : null}
     </div>
   )
 }

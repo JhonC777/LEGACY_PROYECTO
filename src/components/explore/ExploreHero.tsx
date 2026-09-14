@@ -2,6 +2,7 @@ import { Landmark, Play, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GlassSurface } from '@/components/ui/GlassSurface'
+import { PILOT_CATALOG_PATH } from '@/data/demoData'
 import { HERO_IMAGE } from '@/data/mockExplore'
 
 export function ExploreHero() {
@@ -25,7 +26,7 @@ export function ExploreHero() {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link to="/proyectos" className="btn btn-primary btn-md">
+            <Link to={PILOT_CATALOG_PATH} className="btn btn-primary btn-md">
               Explorar proyectos
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>

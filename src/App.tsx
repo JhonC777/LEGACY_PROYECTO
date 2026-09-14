@@ -4,6 +4,7 @@ import { RouteScrollManager } from '@/components/navigation/RouteScrollManager'
 import { RouteFallback } from '@/components/navigation/RouteFallback'
 import { GlassButtonEffects } from '@/components/ui/GlassButtonEffects'
 import { AdminSessionProvider } from '@/admin/session'
+import { PILOT_CATALOG_PATH, PILOT_COLLECTIONS_PATH } from '@/data/demoData'
 import { ExploreHome } from '@/pages/ExploreHome'
 import { HomeEntry } from '@/pages/HomeEntry'
 import { InstitutionHome } from '@/pages/InstitutionHome'
@@ -49,7 +50,14 @@ export default function App() {
             <Route path="/" element={<HomeEntry />} />
             <Route path="/explorar" element={<ExploreHome />} />
             <Route path="/instituciones" element={<ExploreHome />} />
-            <Route path="/proyectos" element={<ProjectsPage />} />
+            <Route
+              path="/proyectos"
+              element={<Navigate to={PILOT_CATALOG_PATH} replace />}
+            />
+            <Route
+              path="/colecciones"
+              element={<Navigate to={PILOT_COLLECTIONS_PATH} replace />}
+            />
             <Route
               path="/instituciones/:institutionSlug/proyectos/:projectSlug"
               element={<ProjectDetail />}

@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { clearArchiveSnapshot } from './archiveBridge'
 
 /**
  * Sesión administrativa DEMO.
@@ -51,9 +52,11 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(() => {
+    const slug = session?.institutionSlug
+    if (slug) clearArchiveSnapshot(slug)
     window.sessionStorage.removeItem(STORAGE_KEY)
     setSession(null)
-  }, [])
+  }, [session])
 
   const value = useMemo(() => ({ session, signIn, signOut }), [session, signIn, signOut])
 

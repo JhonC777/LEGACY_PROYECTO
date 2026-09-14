@@ -2,16 +2,17 @@ import { ChevronDown, Search, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlassInput } from '@/components/ui/GlassInput'
+import { PILOT_CATALOG_PATH } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
 const NAV = [
-  { label: 'Explorar', to: '/proyectos', match: (path: string) => path.startsWith('/proyectos') },
+  { label: 'Explorar', to: PILOT_CATALOG_PATH, match: (path: string) => path.includes('/proyectos') },
   {
     label: 'Instituciones',
     to: '/explorar#instituciones',
     match: (path: string) => path === '/explorar' || path === '/instituciones',
   },
-  { label: 'Categorías', to: '/proyectos', match: () => false },
+  { label: 'Categorías', to: '/explorar#categorias', match: () => false },
   { label: 'Destacados', to: '/explorar#proyectos', match: () => false },
   { label: 'Sobre LEGACY', to: '/explorar#mision', match: () => false },
 ]
@@ -73,7 +74,7 @@ export function ExploreHeader() {
             onSubmit={(event) => {
               event.preventDefault()
               navigate(
-                `/proyectos${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ''}`,
+                `${PILOT_CATALOG_PATH}${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ''}`,
               )
             }}
           >

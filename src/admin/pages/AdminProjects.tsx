@@ -51,11 +51,15 @@ export function AdminProjects() {
   const query = params.get('q') ?? ''
   const statusFilter = (params.get('status') as StatusFilter | null) ?? 'all'
   const sort = (params.get('sort') as SortKey | null) ?? 'updated'
+  const areaFilter = params.get('area') ?? ''
+  const yearFilter = params.get('year') ?? ''
+  const collectionFilter = params.get('collection') ?? ''
 
   const updateParam = (key: string, value: string) => {
     const next = new URLSearchParams(params)
-    if (value && value !== 'all' && value !== 'updated') next.set(key, value)
-    else next.delete(key)
+    const defaults: Record<string, string> = { status: 'all', sort: 'updated' }
+    if (!value || value === defaults[key]) next.delete(key)
+    else next.set(key, value)
     setParams(next, { replace: key === 'q' })
   }
 
@@ -85,10 +89,30 @@ export function AdminProjects() {
     [projects],
   )
 
+  const filterOptions = useMemo(() => {
+    const areas = [...new Set(projects.map((project) => project.area).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'es'),
+    )
+    const years = [...new Set(projects.map((project) => String(project.year)))].sort(
+      (a, b) => Number(b) - Number(a),
+    )
+    const collections = [
+      ...new Set(
+        projects
+          .map((project) => project.collection)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'es'))
+    return { areas, years, collections }
+  }, [projects])
+
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase('es')
     const filtered = projects.filter((project) => {
       if (statusFilter !== 'all' && project.status !== statusFilter) return false
+      if (areaFilter && project.area !== areaFilter) return false
+      if (yearFilter && String(project.year) !== yearFilter) return false
+      if (collectionFilter && project.collection !== collectionFilter) return false
       if (!normalized) return true
       const haystack = [
         project.title,
@@ -108,9 +132,11 @@ export function AdminProjects() {
       if (sort === 'year') return b.year - a.year
       return b.updatedAt.localeCompare(a.updatedAt)
     })
-  }, [projects, query, statusFilter, sort])
+  }, [projects, query, statusFilter, sort, areaFilter, yearFilter, collectionFilter])
 
-  const hasFilters = Boolean(query || statusFilter !== 'all')
+  const hasFilters = Boolean(
+    query || statusFilter !== 'all' || areaFilter || yearFilter || collectionFilter,
+  )
 
   const runPublish = (project: AdminProject) => {
     const result = setProjectStatus(project.id, 'published')
@@ -156,7 +182,7 @@ export function AdminProjects() {
     <PageHeader
       eyebrow="Gestión"
       title="Proyectos"
-      description="Crea, edita, publica y archiva las fichas académicas de tu institución."
+      description="Inventario completo de tu institución: publicados, borradores y archivados."
       actions={
         <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
           <Plus className="h-4 w-4" aria-hidden />
@@ -222,7 +248,7 @@ export function AdminProjects() {
 
       <div className="admin-toolbar mt-7 flex flex-wrap items-center justify-between gap-3">
         <div
-          className="admin-tabs flex flex-wrap items-center gap-1 rounded-full p-1"
+          className="admin-tabs"
           role="tablist"
           aria-label="Filtrar por estado"
         >
@@ -232,10 +258,7 @@ export function AdminProjects() {
               type="button"
               role="tab"
               aria-selected={statusFilter === tab.key}
-              className={cn(
-                'admin-tab inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm',
-                statusFilter === tab.key && 'is-active',
-              )}
+              className={cn('admin-tab', statusFilter === tab.key && 'is-active')}
               onClick={() => updateParam('status', tab.key)}
             >
               {tab.label}
@@ -283,6 +306,59 @@ export function AdminProjects() {
         </div>
       </div>
 
+      <div className="admin-filters mt-3">
+        <label className="flex items-center gap-2 text-xs text-legacy-muted">
+          <span className="sr-only">Área</span>
+          <select
+            value={areaFilter}
+            onChange={(event) => updateParam('area', event.target.value)}
+            className="glass-select w-auto min-w-[8.5rem]"
+            aria-label="Filtrar por área"
+          >
+            <option value="">Todas las áreas</option>
+            {filterOptions.areas.map((area) => (
+              <option key={area} value={area}>
+                {area}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-legacy-muted">
+          <span className="sr-only">Año</span>
+          <select
+            value={yearFilter}
+            onChange={(event) => updateParam('year', event.target.value)}
+            className="glass-select w-auto min-w-[7rem]"
+            aria-label="Filtrar por año"
+          >
+            <option value="">Todos los años</option>
+            {filterOptions.years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </label>
+        {filterOptions.collections.length > 0 ? (
+          <label className="flex items-center gap-2 text-xs text-legacy-muted">
+            <span className="sr-only">Colección</span>
+            <select
+              value={collectionFilter}
+              onChange={(event) => updateParam('collection', event.target.value)}
+              className="glass-select w-auto min-w-[9rem]"
+              aria-label="Filtrar por colección"
+            >
+              <option value="">Todas las colecciones</option>
+              {filterOptions.collections.map((collection) => (
+                <option key={collection} value={collection}>
+                  {collection}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
+
       <p className="mt-4 text-xs text-legacy-muted" aria-live="polite">
         <strong className="text-legacy-white">{visible.length}</strong>{' '}
         {visible.length === 1 ? 'proyecto' : 'proyectos'}
@@ -307,15 +383,21 @@ export function AdminProjects() {
           />
         ) : (
           <div className="admin-table" role="table" aria-label="Lista de proyectos">
-            <div
-              className="admin-table-head grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-4 px-4 py-3 md:grid-cols-[minmax(0,1fr)_7.5rem_6.5rem_auto] lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.8fr)_7.5rem_6.5rem_auto]"
-              role="row"
-            >
+            <div className="admin-table-head" role="row">
               <span role="columnheader">Proyecto</span>
-              <span role="columnheader" className="hidden lg:block">Área · Año</span>
+              <span role="columnheader" className="hidden lg:block">
+                Área · Año
+              </span>
+              <span role="columnheader" className="hidden lg:block">
+                Ficha
+              </span>
               <span role="columnheader">Estado</span>
-              <span role="columnheader" className="hidden md:block">Editado</span>
-              <span role="columnheader" className="sr-only">Acciones</span>
+              <span role="columnheader" className="hidden md:block">
+                Editado
+              </span>
+              <span role="columnheader" className="sr-only">
+                Acciones
+              </span>
             </div>
             {visible.map((project) => {
               const issues = getProjectIssues(project)
@@ -323,7 +405,7 @@ export function AdminProjects() {
               return (
                 <div
                   key={project.id}
-                  className="admin-table-row grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-4 px-4 py-3 md:grid-cols-[minmax(0,1fr)_7.5rem_6.5rem_auto] lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.8fr)_7.5rem_6.5rem_auto]"
+                  className="admin-table-row"
                   role="row"
                 >
                   <div role="cell" className="flex min-w-0 items-center gap-3">
@@ -362,6 +444,13 @@ export function AdminProjects() {
                   <div role="cell" className="hidden text-xs text-legacy-muted lg:block">
                     <span className="block truncate text-legacy-white/85">{project.area || '—'}</span>
                     <span>{project.year}</span>
+                  </div>
+                  <div role="cell" className="hidden lg:block">
+                    <span className={cn('admin-complete', !issues.complete && 'is-pending')}>
+                      {issues.complete
+                        ? 'Lista'
+                        : `${issues.errors.length} pendiente${issues.errors.length === 1 ? '' : 's'}`}
+                    </span>
                   </div>
                   <div role="cell">
                     <StatusBadge status={project.status} />

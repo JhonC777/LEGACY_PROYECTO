@@ -10,7 +10,7 @@ import {
 import { Link } from 'react-router-dom'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { MOCK_FEATURED_PROJECTS } from '@/data/mockExplore'
-import { DEMO_PROJECTS, getProjectHref } from '@/data/demoData'
+import { DEMO_PROJECTS, getProjectHref, PILOT_CATALOG_PATH } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
 function hrefFor(projectId: string) {
@@ -74,7 +74,7 @@ export function FeaturedProjects() {
 
         <div className="flex items-center gap-3">
           <Link
-            to="/proyectos"
+            to={PILOT_CATALOG_PATH}
             className="text-sm font-semibold text-explore-purple transition-opacity hover:opacity-80"
           >
             Ver todos los proyectos →

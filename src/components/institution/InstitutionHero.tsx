@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { GlassBadge } from '@/components/ui/GlassBadge'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
@@ -84,6 +84,7 @@ export function InstitutionHero({
   topAreas,
 }: InstitutionHeroProps) {
   const reduceMotion = useReducedMotion()
+  const location = useLocation()
   const [lead, ...rest] = preview
   const secondary = rest.slice(0, 2)
   const statDetails = {
@@ -175,11 +176,7 @@ export function InstitutionHero({
               {...reveal(0.22, 28)}
               className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center"
             >
-              <motion.div
-                className="shrink-0"
-                whileHover={reduceMotion ? undefined : { scale: 1.04, rotate: -2 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-              >
+              <motion.div className="shrink-0">
                 <InstitutionLogo
                   name={institution.name}
                   logoUrl={institution.logoUrl}
@@ -361,7 +358,7 @@ export function InstitutionHero({
                 }
               >
                 <Link
-                  to={target || projectsHref}
+                  to={target ? `${location.pathname}${target}` : projectsHref}
                   className={cn(
                     'institution-stat group flex h-full min-h-[12rem] flex-col rounded-2xl p-4 text-inherit no-underline hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-legacy-gold lg:p-5',
                     key === 'projects' && 'border-legacy-gold/25',

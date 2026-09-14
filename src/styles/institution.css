@@ -1,3 +1,154 @@
+/* Portada institucional — umbral de un núcleo de conocimiento */
+
+.institution-cover {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - var(--legacy-header-h, 68px));
+  overflow: hidden;
+  padding: 1.5rem 1.25rem 2rem;
+}
+
+.institution-cover-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.institution-cover-nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+}
+
+.institution-cover-nebula.is-gold {
+  top: 12%;
+  left: 8%;
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, rgb(214 184 120 / 0.16), transparent 70%);
+}
+
+.institution-cover-nebula.is-violet {
+  right: 4%;
+  bottom: 10%;
+  width: 22rem;
+  height: 22rem;
+  background: radial-gradient(circle, rgb(118 98 201 / 0.14), transparent 72%);
+}
+
+.institution-cover-dust {
+  position: absolute;
+  inset: 0;
+  opacity: 0.7;
+  background-image:
+    radial-gradient(1px 1px at 18% 22%, rgb(247 245 239 / 0.4), transparent),
+    radial-gradient(1.2px 1.2px at 42% 16%, rgb(214 184 120 / 0.35), transparent),
+    radial-gradient(1px 1px at 71% 28%, rgb(247 245 239 / 0.28), transparent),
+    radial-gradient(1px 1px at 84% 62%, rgb(186 174 235 / 0.28), transparent),
+    radial-gradient(1.1px 1.1px at 28% 74%, rgb(214 184 120 / 0.26), transparent),
+    radial-gradient(1px 1px at 56% 82%, rgb(247 245 239 / 0.2), transparent);
+}
+
+.institution-cover-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(42rem, 100%);
+  text-align: center;
+}
+
+.institution-cover-kicker {
+  margin: 0 0 1.25rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgb(214 184 120 / 0.82);
+}
+
+.institution-cover-mark {
+  margin-bottom: 1.35rem;
+}
+
+.institution-cover-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: 0.02em;
+  color: var(--color-legacy-white);
+  text-wrap: balance;
+}
+
+.institution-cover-copy {
+  margin: 1.15rem 0 0;
+  max-width: 34rem;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: rgb(166 168 178 / 0.92);
+  text-wrap: pretty;
+}
+
+.institution-cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem 0.85rem;
+  margin-top: 1.75rem;
+}
+
+.institution-cover-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.2rem;
+  color: rgb(166 168 178 / 0.9);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.institution-cover-change:hover {
+  color: var(--color-legacy-gold-soft);
+}
+
+.institution-cover-phrase {
+  margin: 2.4rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 500;
+  color: rgb(247 245 239 / 0.42);
+}
+
+.institution-cover-phrase em {
+  color: rgb(240 217 160 / 0.72);
+  font-style: italic;
+}
+
+@media (max-height: 740px) {
+  .institution-cover {
+    padding-top: 1rem;
+    padding-bottom: 1.1rem;
+  }
+
+  .institution-cover-phrase {
+    margin-top: 1.4rem;
+  }
+
+  .institution-cover-title {
+    font-size: clamp(1.85rem, 6vw, 2.6rem);
+  }
+}
+
 /* Hero institucional — sala de archivo cinematográfica */
 
 .institution-logo[data-has-logo='true'] {

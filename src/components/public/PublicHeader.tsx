@@ -10,20 +10,26 @@ import {
   Layers3,
   Library,
   Menu,
+  MessageSquareText,
   Search,
   UserRound,
   X,
 } from 'lucide-react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
+import { ArchiveAssistantPanel } from '@/components/assistant/ArchiveAssistantPanel'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
   DEMO_INSTITUTIONS,
-  DEMO_PROJECTS,
+  PILOT_CATALOG_PATH,
   getAvailableYears,
-  getInstitutionProjects,
   type DemoInstitution,
 } from '@/data/demoData'
+import {
+  resolveInstitution,
+  resolveInstitutionProjects,
+  useArchiveRevision,
+} from '@/admin/archiveBridge'
 
 type PublicHeaderProps = {
   institution?: DemoInstitution
@@ -38,7 +44,9 @@ function navClass(active: boolean) {
   )
 }
 
-export function PublicHeader({ institution }: PublicHeaderProps) {
+export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
+  const revision = useArchiveRevision()
+  const institution = incoming ? resolveInstitution(incoming) : undefined
   const location = useLocation()
   const navigate = useNavigate()
   const headerRef = useRef<HTMLElement>(null)
@@ -46,6 +54,7 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
 
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [assistantOpen, setAssistantOpen] = useState(false)
   const [condensed, setCondensed] = useState(false)
   const [progress, setProgress] = useState(0)
   const [term, setTerm] = useState('')
@@ -58,12 +67,21 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
   const institutionBase = institution
     ? `/instituciones/${institution.slug}`
     : '/explorar'
+  const archiveHref = institution
+    ? `/instituciones/${institution.slug}?vista=archivo`
+    : '/explorar'
   const projectsHref = institution
     ? `/instituciones/${institution.slug}/proyectos`
-    : '/proyectos'
+    : PILOT_CATALOG_PATH
 
+  const onCoverView =
+    Boolean(institution) &&
+    location.pathname === institutionBase &&
+    new URLSearchParams(location.search).get('vista') !== 'archivo'
   const onInstitutionView =
-    Boolean(institution) && location.pathname === institutionBase
+    Boolean(institution) &&
+    location.pathname === institutionBase &&
+    new URLSearchParams(location.search).get('vista') === 'archivo'
   const onProjectsView = institution
     ? location.pathname.startsWith(`${institutionBase}/proyectos`)
     : location.pathname === '/proyectos' ||
@@ -74,12 +92,15 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
   const onExploreView =
     location.pathname === '/explorar' || location.pathname === '/instituciones'
 
-  /** En el catálogo la página ya trae su buscador y su panel de filtros. */
-  const showToolbar = !onProjectsView
+  /** En portada y catálogo no se vuelca el archivo: la portada es solo umbral. */
+  const showToolbar = !onProjectsView && !onCoverView
 
   const scoped = useMemo(
-    () => (institution ? getInstitutionProjects(institution.id) : DEMO_PROJECTS),
-    [institution],
+    () =>
+      institution
+        ? resolveInstitutionProjects(institution, true)
+        : DEMO_INSTITUTIONS.flatMap((item) => resolveInstitutionProjects(item, true)),
+    [institution, revision],
   )
 
   const areas = useMemo(
@@ -101,17 +122,16 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
             .filter((value): value is string => Boolean(value)),
         ),
       ].sort((a, b) => a.localeCompare(b, 'es')),
-    [scoped],
+    [scoped, revision],
   )
 
   const institutionOptions = useMemo(
     () =>
       DEMO_INSTITUTIONS.map((item) => ({
-        item,
-        count: DEMO_PROJECTS.filter((project) => project.institutionId === item.id)
-          .length,
+        item: resolveInstitution(item),
+        count: resolveInstitutionProjects(item, true).length,
       })),
-    [],
+    [revision],
   )
 
   const yearRange =
@@ -125,6 +145,10 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
     setOpenMenu(null)
     setSheetOpen(false)
   }, [location.pathname, location.search])
+
+  useEffect(() => {
+    setAssistantOpen(false)
+  }, [location.pathname, institution?.id])
 
   useEffect(() => {
     if (!openMenu && !sheetOpen) return
@@ -195,6 +219,7 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
     if (!showToolbar) return
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (assistantOpen) return
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
         searchRef.current?.focus()
@@ -203,7 +228,7 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [showToolbar])
+  }, [showToolbar, assistantOpen])
 
   const filterHref = (key: string, value: string | number) =>
     `${projectsHref}?${key}=${encodeURIComponent(String(value))}`
@@ -221,6 +246,12 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
 
   const toggleMenu = (key: MenuKey) =>
     setOpenMenu((current) => (current === key ? null : key))
+
+  const openAssistant = () => {
+    setOpenMenu(null)
+    setSheetOpen(false)
+    setAssistantOpen(true)
+  }
 
   return (
     <>
@@ -331,8 +362,8 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
                   <Link to="/" className="header-menu-action">
                     Ver todas las instituciones
                   </Link>
-                  <Link to="/proyectos" className="header-menu-action">
-                    Catálogo general
+                  <Link to={projectsHref} className="header-menu-action">
+                    Catálogo de la institución
                   </Link>
                 </div>
               </div>
@@ -344,14 +375,13 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
             aria-label="Secciones"
           >
             {institution ? (
-              <NavLink
-                to={institutionBase}
-                end
+              <Link
+                to={archiveHref}
                 className={navClass(onInstitutionView)}
                 aria-current={onInstitutionView ? 'page' : undefined}
               >
                 Institución
-              </NavLink>
+              </Link>
             ) : null}
             <NavLink
               to={projectsHref}
@@ -393,14 +423,38 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
             </form>
           ) : null}
 
-          <Link
-            to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
-            className={cn('btn btn-secondary btn-sm shrink-0', !showToolbar && 'ml-auto lg:ml-0')}
-            title="Panel de administración institucional"
+          <div
+            className={cn(
+              'flex shrink-0 items-center gap-2',
+              !showToolbar && 'ml-auto lg:ml-0',
+            )}
           >
-            <UserRound className="h-4 w-4" aria-hidden />
-            <span className="hidden sm:inline">Administrador</span>
-          </Link>
+            {institution ? (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm whitespace-nowrap"
+                aria-expanded={assistantOpen}
+                aria-controls="archive-assistant-panel"
+                aria-haspopup="dialog"
+                aria-label="Consultar el archivo"
+                title="Consultar el archivo"
+                onClick={openAssistant}
+              >
+                <MessageSquareText className="h-4 w-4" aria-hidden />
+                <span className="hidden sm:inline xl:hidden">Consultar</span>
+                <span className="hidden xl:inline">Consultar el archivo</span>
+              </button>
+            ) : null}
+
+            <Link
+              to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
+              className="btn btn-secondary btn-sm shrink-0"
+              title="Panel de administración institucional"
+            >
+              <UserRound className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">Administrador</span>
+            </Link>
+          </div>
 
           <button
             type="button"
@@ -555,10 +609,24 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
             </p>
           </div>
 
+          {institution ? (
+            <button
+              type="button"
+              className="btn btn-primary btn-md mt-3 w-full"
+              aria-expanded={assistantOpen}
+              aria-controls="archive-assistant-panel"
+              aria-haspopup="dialog"
+              onClick={openAssistant}
+            >
+              <MessageSquareText className="h-4 w-4" aria-hidden />
+              Consultar el archivo
+            </button>
+          ) : null}
+
           <nav className="mt-3 flex flex-col gap-1" aria-label="Secciones móviles">
             {institution ? (
               <Link
-                to={institutionBase}
+                to={archiveHref}
                 className={cn('header-sheet-link', onInstitutionView && 'is-current')}
               >
                 Institución
@@ -619,6 +687,15 @@ export function PublicHeader({ institution }: PublicHeaderProps) {
             Contenido de demostración. No representa información institucional oficial.
           </p>
         </div>
+      ) : null}
+
+      {institution ? (
+        <ArchiveAssistantPanel
+          institution={institution}
+          projects={scoped}
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+        />
       ) : null}
     </>
   )

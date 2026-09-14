@@ -1,29 +1,44 @@
 import { ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'
+import { ExploreShell } from '@/components/layout/ExploreShell'
+import { InstitutionCover } from '@/components/institution/InstitutionCover'
 import { InstitutionHero } from '@/components/institution/InstitutionHero'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import {
+  resolveInstitution,
+  resolveInstitutionProjects,
+  useArchiveRevision,
+} from '@/admin/archiveBridge'
+import {
   getAvailableYears,
   getInstitutionBySlug,
-  getInstitutionProjects,
   getProjectHref,
 } from '@/data/demoData'
 
-/** Home del espacio institucional (entrada desde Home). */
+/** Espacio institucional: portada primero; el archivo se abre desde Institución. */
 export function InstitutionHome() {
   const { institutionSlug } = useParams()
-  const institution = getInstitutionBySlug(institutionSlug)
+  const [searchParams] = useSearchParams()
+  const revision = useArchiveRevision()
+  const base = getInstitutionBySlug(institutionSlug)
+  const institution = base ? resolveInstitution(base) : undefined
   const reduceMotion = useReducedMotion()
+  const showArchive = searchParams.get('vista') === 'archivo'
 
   if (!institution) {
     return <Navigate to="/" replace />
   }
 
-  const projects = getInstitutionProjects(institution.id)
-  const featured = projects.filter((project) => project.isFeatured).slice(0, 6)
+  const projects = resolveInstitutionProjects(institution, true)
+  void revision
+  const featuredSource = projects.filter((project) => project.isFeatured)
+  const featured = (featuredSource.length > 0 ? featuredSource : projects).slice(
+    0,
+    6,
+  )
   const areas = [...new Set(projects.map((project) => project.area))].sort((a, b) =>
     a.localeCompare(b, 'es'),
   )
@@ -36,6 +51,7 @@ export function InstitutionHome() {
     ),
   ]
   const projectsHref = `/instituciones/${institution.slug}/proyectos`
+  const archiveHref = `/instituciones/${institution.slug}?vista=archivo`
 
   const allYears = [...years].sort((a, b) => a - b)
   const yearRange =
@@ -68,8 +84,21 @@ export function InstitutionHome() {
           },
         }
 
+  if (!showArchive) {
+    return (
+      <ExploreShell className="is-institution-cover">
+        <PublicHeader institution={institution} />
+        <InstitutionCover
+          institution={institution}
+          projectsHref={projectsHref}
+          archiveHref={archiveHref}
+        />
+      </ExploreShell>
+    )
+  }
+
   return (
-    <div className="explore-shell">
+    <ExploreShell>
       <PublicHeader institution={institution} />
 
       <main id="contenido">
@@ -172,7 +201,7 @@ export function InstitutionHome() {
       </main>
 
       <ExploreFooter />
-    </div>
+    </ExploreShell>
   )
 }
 

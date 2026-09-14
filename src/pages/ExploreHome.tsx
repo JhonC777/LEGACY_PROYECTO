@@ -1,3 +1,4 @@
+import { ExploreShell } from '@/components/layout/ExploreShell'
 import { CategorySidebar } from '@/components/explore/CategorySidebar'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'
 import { ExploreHeader } from '@/components/explore/ExploreHeader'
@@ -11,7 +12,7 @@ import { StatsBar } from '@/components/explore/StatsBar'
 /** Vista pública post-Home — réplica del mockup claro de LEGACY (datos MOCK). */
 export function ExploreHome() {
   return (
-    <div className="explore-shell">
+    <ExploreShell>
       <ExploreHeader />
       <ExploreHero />
       <StatsBar />
@@ -32,6 +33,6 @@ export function ExploreHome() {
       </div>
 
       <ExploreFooter />
-    </div>
+    </ExploreShell>
   )
 }

@@ -8,7 +8,7 @@ import {
   Users,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DEMO_PROJECTS } from '@/data/demoData'
+import { DEMO_PROJECTS, PILOT_CATALOG_PATH } from '@/data/demoData'
 import type { MockCategory } from '@/data/mockExplore'
 
 const ICONS = {
@@ -46,7 +46,7 @@ export function CategorySidebar() {
           Explora por categoría
         </h2>
         <Link
-          to="/proyectos"
+          to={PILOT_CATALOG_PATH}
           className="text-sm font-semibold text-explore-purple hover:opacity-80"
         >
           Ver todas →
@@ -59,7 +59,7 @@ export function CategorySidebar() {
           return (
             <li key={category.id}>
               <Link
-                to={`/proyectos?category=${encodeURIComponent(category.name)}`}
+                to={`${PILOT_CATALOG_PATH}?category=${encodeURIComponent(category.name)}`}
                 className="group flex items-center gap-3 rounded-xl border border-transparent px-2.5 py-2.5 transition-colors hover:border-white/8 hover:bg-explore-panel"
                 aria-label={`${category.name}, ${category.count} proyectos demo`}
               >

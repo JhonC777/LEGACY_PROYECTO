@@ -83,6 +83,12 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
   },
 ]
 
+/** En v1 el archivo público vive en la institución piloto, no en /proyectos suelto. */
+export const PILOT_SLUG = 'fe-y-alegria' as const
+export const PILOT_HOME_PATH = `/instituciones/${PILOT_SLUG}`
+export const PILOT_CATALOG_PATH = `${PILOT_HOME_PATH}/proyectos`
+export const PILOT_COLLECTIONS_PATH = `${PILOT_HOME_PATH}#colecciones`
+
 const gallery = {
   technology: [
     'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=80',
@@ -762,6 +768,23 @@ export const getInstitutionBySlug = (slug?: string) =>
 export const getInstitutionProjects = (institutionId: string) =>
   DEMO_PROJECTS.filter((project) => project.institutionId === institutionId)
 
+export const getPublishedProjects = (projects: readonly DemoProject[] = DEMO_PROJECTS) =>
+  projects.filter((project) => project.status === 'published')
+
+/** Conteo publicado por slug institucional. Si no hay institución o proyectos, 0. */
+export const getPublishedProjectCountBySlug = (slug?: string) => {
+  const institution = getInstitutionBySlug(slug)
+  if (!institution) return 0
+  return getPublishedProjects(getInstitutionProjects(institution.id)).length
+}
+
+/** Destacados publicados, del más reciente al más antiguo. No inventa fichas. */
+export const getPublishedFeaturedProjects = (limit = 3) =>
+  getPublishedProjects()
+    .filter((project) => project.isFeatured)
+    .sort((a, b) => b.year - a.year || a.title.localeCompare(b.title, 'es'))
+    .slice(0, limit)
+
 export const getProjectBySlug = (institutionId: string, slug?: string) =>
   DEMO_PROJECTS.find(
     (project) => project.institutionId === institutionId && project.slug === slug,
@@ -783,8 +806,12 @@ export const getAvailableYears = (projects: DemoProject[] = DEMO_PROJECTS) =>
  * el área, y el área más que la categoría. Si no hay coincidencias, completa
  * con los más recientes de la misma institución.
  */
-export const getRelatedProjects = (project: DemoProject, limit = 3) => {
-  const sameInstitution = DEMO_PROJECTS.filter(
+export const getRelatedProjects = (
+  project: DemoProject,
+  limit = 3,
+  pool: readonly DemoProject[] = DEMO_PROJECTS,
+) => {
+  const sameInstitution = pool.filter(
     (candidate) =>
       candidate.institutionId === project.institutionId &&
       candidate.id !== project.id,

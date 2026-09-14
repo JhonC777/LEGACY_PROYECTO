@@ -68,7 +68,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   ]
 
   return (
-    <article className="liquid-card group flex h-full flex-col overflow-hidden rounded-2xl">
+    <article className="liquid-card knowledge-fragment group flex h-full flex-col overflow-hidden rounded-2xl">
       <Link
         to={href}
         state={{ from }}
@@ -138,10 +138,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </p>
         </Link>
 
-        <p className="mt-4 line-clamp-1 text-xs text-legacy-muted" title={`${authors} · ${project.year}`}>
+        <p className="knowledge-fragment-meta mt-4 line-clamp-1 text-xs text-legacy-muted" title={`${authors} · ${project.year}`}>
           <span className="text-legacy-white/80">{authors}</span>
           <span aria-hidden> · </span>
-          <span>{project.year}</span>
+          <span className="knowledge-fragment-year">{project.year}</span>
         </p>
         {project.collection ? (
           <Link

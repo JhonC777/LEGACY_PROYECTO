@@ -24,6 +24,7 @@ import {
   type ProjectDraftInput,
   type StoreStatus,
 } from './types'
+import { readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
 
 /**
  * Store DEMO del panel: todo vive en memoria y está aislado por institución.
@@ -397,7 +398,18 @@ export function AdminStoreProvider({
         dispatch({ type: 'FAILED' })
         return
       }
-      dispatch({ type: 'LOADED', payload: seed(institution) })
+      const stored = readArchiveSnapshot(institution.slug)
+      dispatch({
+        type: 'LOADED',
+        payload: stored
+          ? {
+              projects: stored.projects,
+              media: stored.media,
+              activity: stored.activity,
+              settings: stored.settings,
+            }
+          : seed(institution),
+      })
     }, 520)
     timers.current.add(timer)
   }, [institution, simulateError])
@@ -413,6 +425,24 @@ export function AdminStoreProvider({
       pending.clear()
     }
   }, [load])
+
+  useEffect(() => {
+    if (state.status !== 'ready') return
+    writeArchiveSnapshot({
+      slug: institution.slug,
+      projects: state.projects,
+      media: state.media,
+      activity: state.activity,
+      settings: state.settings,
+    })
+  }, [
+    institution.slug,
+    state.status,
+    state.projects,
+    state.media,
+    state.activity,
+    state.settings,
+  ])
 
   const log = useCallback<StoreContextValue['log']>(
     (type, message, project) => {

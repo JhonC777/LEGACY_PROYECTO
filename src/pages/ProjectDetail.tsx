@@ -19,6 +19,7 @@ import {
   useParams,
 } from 'react-router-dom'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'
+import { ExploreShell } from '@/components/layout/ExploreShell'
 import { ProcessTimeline } from '@/components/project/ProcessTimeline'
 import { ProjectGallery } from '@/components/project/ProjectGallery'
 import { ProjectPager } from '@/components/project/ProjectPager'
@@ -28,11 +29,13 @@ import { ProjectCard } from '@/components/projects/ProjectCard'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { SmartImage } from '@/components/ui/SmartImage'
 import {
-  getInstitutionBySlug,
-  getInstitutionProjects,
-  getProjectBySlug,
-  getRelatedProjects,
-} from '@/data/demoData'
+  resolveInstitution,
+  resolveInstitutionProjects,
+  resolveProjectBySlug,
+  resolveRelatedProjects,
+  useArchiveRevision,
+} from '@/admin/archiveBridge'
+import { getInstitutionBySlug } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
 const SECTIONS = [
@@ -62,11 +65,12 @@ export function ProjectDetail() {
   const reduceMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
   const [activeSection, setActiveSection] = useState<SectionId>('resumen')
+  const revision = useArchiveRevision()
 
-  const institution = getInstitutionBySlug(institutionSlug)
-  const project = institution
-    ? getProjectBySlug(institution.id, projectSlug)
-    : undefined
+  const base = getInstitutionBySlug(institutionSlug)
+  const institution = base ? resolveInstitution(base) : undefined
+  const project = institution ? resolveProjectBySlug(institution, projectSlug) : undefined
+  void revision
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -104,9 +108,8 @@ export function ProjectDetail() {
   }
 
   const catalogHref = `/instituciones/${institution.slug}/proyectos`
-  const related = getRelatedProjects(project)
-
-  const allProjects = getInstitutionProjects(institution.id)
+  const related = resolveRelatedProjects(institution, project)
+  const allProjects = resolveInstitutionProjects(institution, true)
   const index = allProjects.findIndex((candidate) => candidate.id === project.id)
   const nextProject = allProjects[(index + 1) % allProjects.length] ?? project
   const previousProject =
@@ -127,7 +130,7 @@ export function ProjectDetail() {
   const heroStyle = { '--project-accent': institution.accent } as CSSProperties
 
   return (
-    <div className="explore-shell" style={heroStyle}>
+    <ExploreShell style={heroStyle}>
       <PublicHeader institution={institution} />
 
       <main id="contenido">
@@ -400,7 +403,7 @@ export function ProjectDetail() {
       </main>
 
       <ExploreFooter />
-    </div>
+    </ExploreShell>
   )
 }
 

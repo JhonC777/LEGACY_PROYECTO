@@ -1,80 +1,98 @@
 import { Compass } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
 import type { Institution } from '@/data/mockInstitutions'
+import { HomeIsland } from './HomeIsland'
 import { InstitutionCard } from './InstitutionCard'
 
 type InstitutionSelectorProps = {
   institutions: Institution[]
   onSelect: (institution: Institution) => void
   onExploreAll: () => void
+  awakened?: boolean
+  projectCounts?: Record<string, number>
 }
 
 const VISIBLE_COUNT = 3
+const EASE = [0.22, 1, 0.36, 1] as const
 
 export function InstitutionSelector({
   institutions,
   onSelect,
   onExploreAll,
+  awakened = true,
+  projectCounts,
 }: InstitutionSelectorProps) {
   const reduceMotion = useReducedMotion()
   const visible = institutions.slice(0, VISIBLE_COUNT)
+  const openCount = visible.filter((institution) => institution.isActive).length
+  const soonCount = visible.length - openCount
 
   return (
-    <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
+    <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col lg:mx-0 lg:max-w-none lg:flex-none">
       <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 18 }}
+        animate={
+          reduceMotion
+            ? { opacity: awakened ? 1 : 0 }
+            : awakened
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 18 }
+        }
         transition={
           reduceMotion
             ? { duration: 0 }
-            : { duration: 0.55, delay: 0.72, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.75, delay: awakened ? 0.7 : 0, ease: EASE }
         }
-        className="entry-panel archive-vitrine entry-panel-live relative overflow-hidden rounded-2xl p-4 sm:p-5"
       >
-        <div aria-hidden className="archive-vitrine-rails" />
-        <div aria-hidden className="archive-vitrine-glow" />
-
-        <div className="relative mb-4 flex items-end justify-between gap-3 px-0.5">
-          <div>
-            <p className="text-[0.65rem] font-semibold tracking-[0.2em] text-legacy-gold/80 uppercase">
-              Salón de instituciones
+        <HomeIsland panelClassName="home-threshold-panel flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-none">
+          <div className="home-threshold-head">
+            <p className="home-threshold-kicker">Casas del archivo</p>
+            <p className="home-threshold-title">Instituciones</p>
+            <p className="home-threshold-copy">
+              Cada institución conserva su propio archivo académico. Hoy está
+              abierto el piloto; las demás casas siguen en preparación.
             </p>
-            <p className="mt-1.5 font-display text-xl font-semibold tracking-wide text-legacy-white sm:text-[1.35rem]">
-              Selecciona una institución
+            <p className="home-threshold-ledger">
+              {openCount} disponible
+              {soonCount > 0 ? ` · ${soonCount} próxima${soonCount === 1 ? '' : 's'}` : null}
             </p>
           </div>
-          <span className="shrink-0 rounded-md border border-white/10 bg-black/25 px-2 py-1 text-[0.65rem] tabular-nums tracking-wide text-legacy-muted/80">
-            {Math.min(VISIBLE_COUNT, institutions.length)} / {institutions.length}
-          </span>
-        </div>
 
-        <div className="relative flex flex-col gap-2.5">
-          {visible.map((institution, index) => (
-            <InstitutionCard
-              key={institution.id}
-              institution={institution}
-              index={index}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
+          <div className="relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
+            {visible.map((institution, index) => (
+              <InstitutionCard
+                key={institution.id}
+                institution={institution}
+                index={index}
+                onSelect={onSelect}
+                awakened={awakened}
+                projectCount={projectCounts?.[institution.slug]}
+              />
+            ))}
+          </div>
+        </HomeIsland>
       </motion.div>
 
       <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 10 }}
+        animate={
+          reduceMotion
+            ? { opacity: awakened ? 1 : 0 }
+            : awakened
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 10 }
+        }
         transition={
           reduceMotion
             ? { duration: 0 }
-            : { duration: 0.5, delay: 1.1, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.55, delay: awakened ? 1.05 : 0, ease: EASE }
         }
-        className="mt-4"
+        className="mt-4 shrink-0"
       >
-        <Button variant="secondary" className="w-full" onClick={onExploreAll}>
-          <Compass className="h-4 w-4" aria-hidden />
-          Explorar todas las instituciones
-        </Button>
+        <button type="button" className="home-explore-link" onClick={onExploreAll}>
+          <Compass className="h-3.5 w-3.5" aria-hidden />
+          Explorar el archivo público
+        </button>
       </motion.div>
     </div>
   )

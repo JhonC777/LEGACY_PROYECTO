@@ -1,4 +1,6 @@
 .explore-shell {
+  position: relative;
+  isolation: isolate;
   min-height: 100dvh;
   /*
     `hidden` crea un scroll container y rompe los sticky descendientes cuando
@@ -7,11 +9,21 @@
   overflow-x: clip;
   overflow-y: visible;
   background:
-    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(118 98 201 / 0.12), transparent 55%),
+    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(118 98 201 / 0.1), transparent 55%),
     radial-gradient(ellipse 50% 35% at 8% 88%, rgb(214 184 120 / 0.05), transparent 50%),
-    linear-gradient(180deg, #08090c 0%, #0b0d14 42%, #08090c 100%);
+    linear-gradient(180deg, rgb(8 9 12 / 0.82) 0%, rgb(10 14 22 / 0.86) 42%, rgb(8 9 12 / 0.92) 100%);
   color: var(--color-legacy-white);
   font-family: var(--font-sans);
+}
+
+.explore-shell > *:not(.living-field) {
+  position: relative;
+  z-index: 1;
+}
+
+.explore-shell.is-institution-cover {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .explore-shell :focus-visible {

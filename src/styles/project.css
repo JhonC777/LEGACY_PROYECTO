@@ -1072,3 +1072,20 @@
     transform: translateY(-50%);
   }
 }
+
+/* Fragmento de conocimiento — presentación, sin cambiar datos */
+.knowledge-fragment:hover {
+  transform: translateY(-2px);
+}
+
+.knowledge-fragment-year {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  color: rgb(214 184 120 / 0.82);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knowledge-fragment:hover {
+    transform: none;
+  }
+}

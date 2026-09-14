@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { ArrowLeft, LockKeyhole, UserRound } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
-import { GlassSurface } from '@/components/ui/GlassSurface'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
+import { HomeIsland } from './HomeIsland'
 
 type AccessModeDialogProps = {
   institution: Institution | null
@@ -25,28 +25,35 @@ export function AccessModeDialog({
 
   useEffect(() => {
     if (!open) return
-    const previous = document.body.style.overflow
     document.body.classList.add('legacy-modal-open')
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+
     return () => {
       document.body.classList.remove('legacy-modal-open')
-      document.body.style.overflow = previous
+      window.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [open, onClose])
 
-  return (
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
     <AnimatePresence>
       {open && institution ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reduceMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.32 }}
         >
           <button
             type="button"
             aria-label="Cerrar"
-            className="absolute inset-0 bg-legacy-black/75 backdrop-blur-[4px]"
+            className="access-threshold-veil absolute inset-0"
             onClick={onClose}
           />
 
@@ -54,48 +61,58 @@ export function AccessModeDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="access-dialog-title"
-            initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.985 }}
+            aria-describedby="access-dialog-copy"
+            initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: 14, scale: 0.985 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-md"
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-[26.5rem]"
           >
-            <GlassSurface variant="strong" className="rounded-[1.75rem] p-7 lg:p-8">
-              <div className="mb-7 text-center">
+            <HomeIsland panelClassName="access-threshold max-h-[min(36rem,calc(100dvh-2rem))] overflow-y-auto p-6 sm:p-8">
+              <div className="relative mb-7 text-center">
+                <p className="home-threshold-kicker mb-5">Acceso</p>
                 <InstitutionLogo
                   name={institution.name}
                   logoUrl={institution.logoUrl}
                   fallback={institution.name.slice(0, 1)}
                   decorative
-                  className="mx-auto mb-4 h-16 w-16 rounded-2xl border border-legacy-gold/35 bg-legacy-black/45 text-2xl text-legacy-gold shadow-[inset_0_0_20px_rgb(214_184_120_/_0.08)]"
+                  className="mx-auto mb-4 h-14 w-14 rounded-2xl border border-legacy-gold/35 bg-legacy-black/45 text-2xl text-legacy-gold shadow-[inset_0_0_20px_rgb(214_184_120_/_0.08)]"
                   imageClassName="rounded-xl bg-white/95 p-1.5"
                 />
                 <h2
                   id="access-dialog-title"
-                  className="font-display text-3xl font-semibold text-legacy-white"
+                  className="font-display text-[1.75rem] leading-tight font-semibold tracking-[0.02em] text-legacy-white sm:text-[2rem]"
                 >
                   {institution.name}
                 </h2>
-                <p className="mt-1.5 text-sm text-legacy-muted">
-                  Legado académico institucional
+                {institution.isPilot ? (
+                  <span className="mt-2.5 inline-flex rounded-full border border-legacy-gold/45 bg-legacy-gold/10 px-2 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
+                    Institución piloto
+                  </span>
+                ) : null}
+                <p
+                  id="access-dialog-copy"
+                  className="mt-3 text-sm leading-relaxed text-legacy-muted"
+                >
+                  Cómo entrar. Los invitados consultan el archivo publicado, sin cuenta.
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="relative space-y-2.5">
                 <button
                   type="button"
                   onClick={() => onGuestAccess(institution)}
-                  className="glass-surface-gold flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition-transform hover:-translate-y-0.5"
+                  className="access-mode-option is-guest flex w-full items-center gap-3 rounded-xl px-3.5 py-3.5 text-left"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-legacy-gold/30 bg-legacy-black/30">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-legacy-gold/30 bg-legacy-black/30">
                     <UserRound className="h-5 w-5 text-legacy-gold" aria-hidden />
                   </span>
                   <span>
                     <span className="block text-sm font-semibold text-legacy-white">
-                      Acceder como invitado
+                      Entrar como invitado
                     </span>
-                    <span className="block text-xs text-legacy-muted">
-                      Explorar el legado público
+                    <span className="mt-0.5 block text-xs text-legacy-muted">
+                      Consulta el archivo publicado, sin iniciar sesión.
                     </span>
                   </span>
                 </button>
@@ -103,30 +120,31 @@ export function AccessModeDialog({
                 <button
                   type="button"
                   onClick={() => onAdminAccess(institution)}
-                  className="glass-surface flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:border-legacy-gold/30"
+                  className="access-mode-option flex w-full items-center gap-3 rounded-xl px-3.5 py-3.5 text-left"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-legacy-border bg-legacy-black/40">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-legacy-border bg-legacy-black/40">
                     <LockKeyhole className="h-5 w-5 text-legacy-muted" aria-hidden />
                   </span>
                   <span>
                     <span className="block text-sm font-semibold text-legacy-white">
-                      Acceder como administrador
+                      Entrar como administrador
                     </span>
-                    <span className="block text-xs text-legacy-muted">
-                      Gestión institucional
+                    <span className="mt-0.5 block text-xs text-legacy-muted">
+                      Custodia y publica los proyectos de esta institución.
                     </span>
                   </span>
                 </button>
               </div>
 
-              <Button variant="ghost" className="mt-6 w-full" onClick={onClose}>
-                <ArrowLeft className="h-4 w-4" aria-hidden />
-                Cambiar institución
-              </Button>
-            </GlassSurface>
+              <button type="button" className="home-explore-link mt-6" onClick={onClose}>
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                Cambiar de institución
+              </button>
+            </HomeIsland>
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

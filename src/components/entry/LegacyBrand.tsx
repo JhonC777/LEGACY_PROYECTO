@@ -4,26 +4,36 @@ import { cn } from '@/lib/cn'
 type LegacyBrandProps = {
   markDelay?: number
   titleDelay?: number
-  /** Desktop: left-aligned brand column */
   align?: 'center' | 'start'
+  awakened?: boolean
 }
 
-/** Marca editorial del Home — Archivo vivo con presencia */
+const EASE = [0.22, 1, 0.36, 1] as const
+
+/** Marca editorial del Home — sello de observatorio / casa de archivos. */
 export function LegacyBrand({
   markDelay = 0.12,
   titleDelay = 0.28,
   align = 'center',
+  awakened = true,
 }: LegacyBrandProps) {
   const reduceMotion = useReducedMotion()
   const start = align === 'start'
 
   const fadeUp = (delay: number) =>
     reduceMotion
-      ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+      ? {
+          initial: { opacity: awakened ? 1 : 0 },
+          animate: { opacity: awakened ? 1 : 0 },
+        }
       : {
-          initial: { opacity: 0, y: 14 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] as const },
+          initial: { opacity: 0, y: 16 },
+          animate: awakened ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 },
+          transition: {
+            duration: 0.9,
+            delay: awakened ? delay : 0,
+            ease: EASE,
+          },
         }
 
   return (
@@ -33,76 +43,46 @@ export function LegacyBrand({
         start ? 'items-center text-center lg:items-start lg:text-left' : 'items-center text-center',
       )}
     >
-      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-6 lg:mb-7">
-        <span
-          aria-hidden
-          className={cn(
-            'archive-mark-glow absolute inset-[-48%] rounded-full',
-            !reduceMotion && 'archive-mark-glow-live',
-          )}
-        />
-        <motion.span
-          className="archive-mark-frame relative flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-2xl lg:h-[4.75rem] lg:w-[4.75rem]"
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  boxShadow: [
-                    'inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1px rgb(214 184 120 / 0.1), 0 22px 48px rgb(0 0 0 / 0.4)',
-                    'inset 0 1px 0 rgb(255 255 255 / 0.1), 0 0 0 1px rgb(214 184 120 / 0.22), 0 22px 52px rgb(214 184 120 / 0.12)',
-                    'inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1px rgb(214 184 120 / 0.1), 0 22px 48px rgb(0 0 0 / 0.4)',
-                  ],
-                }
-          }
-          transition={
-            reduceMotion
-              ? undefined
-              : { duration: 4.5, repeat: Infinity, ease: 'easeInOut' }
-          }
-        >
+      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-5 lg:mb-8">
+        <span aria-hidden className="archive-mark-glow absolute inset-[-56%] rounded-full" />
+        <span aria-hidden className="archive-mark-orbit is-outer" />
+        <span aria-hidden className="archive-mark-orbit is-elliptic" />
+        <span aria-hidden className="archive-mark-tick" />
+        <span className="archive-mark-frame relative flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full lg:h-[5.15rem] lg:w-[5.15rem]">
           <span
             aria-hidden
-            className="absolute inset-[5px] rounded-[0.85rem] border border-legacy-gold/20"
+            className="absolute inset-[7px] rounded-full border border-legacy-gold/25"
           />
           <span
             aria-hidden
-            className="absolute inset-[10px] rounded-lg border border-legacy-gold/10"
+            className="absolute inset-[13px] rounded-full border border-legacy-gold/12"
           />
-          <span className="relative font-display text-[1.85rem] font-semibold tracking-[0.1em] text-legacy-gold-soft lg:text-[2.1rem]">
+          <span className="relative font-display text-[1.7rem] font-semibold tracking-[0.12em] text-legacy-gold-soft lg:text-[2.25rem]">
             L
           </span>
-        </motion.span>
+        </span>
       </motion.div>
 
       <motion.p
-        {...fadeUp(markDelay + 0.06)}
-        className="mb-2.5 text-[0.68rem] font-semibold tracking-[0.32em] text-legacy-muted uppercase lg:text-[0.72rem]"
+        {...fadeUp(markDelay + 0.08)}
+        className="home-brand-kicker mb-2.5 lg:mb-3"
       >
-        Archivo académico
+        Archivo académico institucional
       </motion.p>
 
-      <motion.h1
-        {...fadeUp(titleDelay)}
-        className="font-display text-[clamp(3.4rem,8vw,5.5rem)] leading-[0.9] font-semibold tracking-[0.16em] text-legacy-white"
-      >
+      <motion.h1 {...fadeUp(titleDelay)} className="home-brand-title">
         LEGACY
       </motion.h1>
 
       <motion.div
-        {...fadeUp(titleDelay + 0.08)}
+        {...fadeUp(titleDelay + 0.1)}
         aria-hidden
-        className={cn(
-          'mt-5 h-px w-20 bg-gradient-to-r from-transparent via-legacy-gold/60 to-transparent lg:mt-6 lg:w-24',
-          start && 'lg:from-legacy-gold/55 lg:via-legacy-gold/35 lg:to-transparent',
-        )}
-      />
-
-      <motion.p
-        {...fadeUp(titleDelay + 0.14)}
-        className="mt-4 text-[0.7rem] tracking-[0.22em] text-legacy-muted/85 uppercase lg:mt-5 lg:text-[0.72rem]"
+        className={cn('archive-rule mt-5 lg:mt-7', start && 'is-start')}
       >
-        Preservar · Organizar · Trascender
-      </motion.p>
+        <span className="archive-rule-line" />
+        <span className="archive-rule-diamond" />
+        <span className="archive-rule-line" />
+      </motion.div>
     </div>
   )
 }
