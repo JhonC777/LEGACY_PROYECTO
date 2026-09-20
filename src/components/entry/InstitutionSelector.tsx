@@ -26,6 +26,7 @@ export function InstitutionSelector({
   const visible = institutions.slice(0, VISIBLE_COUNT)
   const openCount = visible.filter((institution) => institution.isActive).length
   const soonCount = visible.length - openCount
+  const empty = visible.length === 0
 
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col lg:mx-0 lg:max-w-none lg:flex-none">
@@ -52,24 +53,34 @@ export function InstitutionSelector({
               Cada institución conserva su propio archivo académico. Hoy está
               abierto el piloto; las demás casas siguen en preparación.
             </p>
-            <p className="home-threshold-ledger">
-              {openCount} disponible
-              {soonCount > 0 ? ` · ${soonCount} próxima${soonCount === 1 ? '' : 's'}` : null}
-            </p>
+            {!empty ? (
+              <p className="home-threshold-ledger">
+                {openCount} disponible
+                {soonCount > 0
+                  ? ` · ${soonCount} próxima${soonCount === 1 ? '' : 's'}`
+                  : null}
+              </p>
+            ) : null}
           </div>
 
-          <div className="relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
-            {visible.map((institution, index) => (
-              <InstitutionCard
-                key={institution.id}
-                institution={institution}
-                index={index}
-                onSelect={onSelect}
-                awakened={awakened}
-                projectCount={projectCounts?.[institution.slug]}
-              />
-            ))}
-          </div>
+          {empty ? (
+            <p className="home-threshold-copy" role="status">
+              Aún no hay casas publicadas en este umbral.
+            </p>
+          ) : (
+            <div className="legacy-hidden-scroll relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
+              {visible.map((institution, index) => (
+                <InstitutionCard
+                  key={institution.id}
+                  institution={institution}
+                  index={index}
+                  onSelect={onSelect}
+                  awakened={awakened}
+                  projectCount={projectCounts?.[institution.slug]}
+                />
+              ))}
+            </div>
+          )}
         </HomeIsland>
       </motion.div>
 

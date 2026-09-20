@@ -34,7 +34,7 @@ export function HomeFeaturedRail({
   return (
     <motion.section
       id="home-fragmentos"
-      className="home-fragments"
+      className="home-fragments is-quiet"
       aria-labelledby="home-fragments-title"
       initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 16 }}
       animate={
@@ -47,7 +47,7 @@ export function HomeFeaturedRail({
       transition={
         reduceMotion
           ? { duration: 0 }
-          : { duration: 0.7, delay: awakened ? 0.95 : 0, ease: EASE }
+          : { duration: 0.7, delay: awakened ? 1.2 : 0, ease: EASE }
       }
     >
       <div className="home-fragments-head">

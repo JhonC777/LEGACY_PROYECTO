@@ -44,6 +44,7 @@ export function CosmicBackground() {
           <span className="cosmic-planet-sheen" />
         </div>
         <div className="cosmic-layer cosmic-hearth" />
+        <div className={cn('cosmic-layer cosmic-aurora', live && 'is-live')} />
         <div className={cn('cosmic-layer cosmic-horizon', live && 'is-live')} />
         <span className={cn('cosmic-sun', live && 'is-live')} />
       </div>

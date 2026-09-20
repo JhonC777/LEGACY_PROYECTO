@@ -41,17 +41,17 @@ export function EntryMessage({
   return (
     <div
         className={cn(
-          'mt-6 space-y-5 lg:mt-9 lg:space-y-6',
+          'mt-7 space-y-5 lg:mt-10 lg:space-y-7',
           start
-            ? 'mx-auto max-w-lg text-center lg:mx-0 lg:max-w-[34rem] lg:text-left'
+            ? 'mx-auto max-w-lg text-center lg:mx-0 lg:max-w-[38rem] lg:text-left'
             : 'mx-auto max-w-lg text-center',
         )}
     >
       <motion.blockquote {...fadeUp(quoteDelay)} className="home-quote">
         <p>
-          Los archivos no se guardan.
+          Donde el conocimiento
           <br />
-          <span className="home-quote-accent">Trascienden.</span>
+          <span className="home-quote-accent">deja legado.</span>
         </p>
       </motion.blockquote>
 

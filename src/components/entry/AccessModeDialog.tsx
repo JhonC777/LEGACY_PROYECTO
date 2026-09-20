@@ -68,7 +68,7 @@ export function AccessModeDialog({
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full max-w-[26.5rem]"
           >
-            <HomeIsland panelClassName="access-threshold max-h-[min(36rem,calc(100dvh-2rem))] overflow-y-auto p-6 sm:p-8">
+            <HomeIsland panelClassName="access-threshold legacy-hidden-scroll max-h-[min(36rem,calc(100dvh-2rem))] overflow-y-auto p-6 sm:p-8">
               <div className="relative mb-7 text-center">
                 <p className="home-threshold-kicker mb-5">Acceso</p>
                 <InstitutionLogo

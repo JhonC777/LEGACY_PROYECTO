@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { cn } from '@/lib/cn'
 
 const PILLARS = [
   { key: 'preservar', label: 'Preservar', hint: 'El trabajo no se pierde al cerrar el año.' },
@@ -9,16 +10,17 @@ const PILLARS = [
 
 type HomePurposeProps = {
   awakened?: boolean
+  quiet?: boolean
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
-export function HomePurpose({ awakened = true }: HomePurposeProps) {
+export function HomePurpose({ awakened = true, quiet = false }: HomePurposeProps) {
   const reduceMotion = useReducedMotion()
 
   return (
     <motion.div
-      className="home-purpose"
+      className={cn('home-purpose', quiet && 'is-quiet')}
       initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 10 }}
       animate={
         reduceMotion
@@ -30,13 +32,13 @@ export function HomePurpose({ awakened = true }: HomePurposeProps) {
       transition={
         reduceMotion
           ? { duration: 0 }
-          : { duration: 0.7, delay: awakened ? 0.82 : 0, ease: EASE }
+          : { duration: 0.7, delay: awakened ? (quiet ? 1.12 : 0.82) : 0, ease: EASE }
       }
     >
       <p className="home-purpose-line">Los proyectos terminan. El conocimiento permanece.</p>
       <ul className="home-purpose-list">
         {PILLARS.map((pillar) => (
-          <li key={pillar.key} className="home-purpose-item">
+          <li key={pillar.key} className="home-purpose-item" title={pillar.hint}>
             <span>{pillar.label}</span>
             <em>{pillar.hint}</em>
           </li>
