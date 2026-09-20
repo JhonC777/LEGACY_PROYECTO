@@ -29,8 +29,9 @@ export function InstitutionSelector({
   const empty = visible.length === 0
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col lg:mx-0 lg:max-w-none lg:flex-none">
+    <div className="home-threshold-stack mx-auto flex min-h-0 w-full max-w-md flex-col lg:mx-0 lg:max-w-none">
       <motion.div
+        className="home-threshold-island-wrap"
         initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 18 }}
         animate={
           reduceMotion
@@ -45,7 +46,10 @@ export function InstitutionSelector({
             : { duration: 0.75, delay: awakened ? 0.7 : 0, ease: EASE }
         }
       >
-        <HomeIsland panelClassName="home-threshold-panel flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-5 sm:py-5 lg:flex-none">
+        <HomeIsland
+          className="home-threshold-island"
+          panelClassName="home-threshold-panel flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-5 sm:py-5"
+        >
           <div className="home-threshold-head">
             <p className="home-threshold-kicker">Casas del archivo</p>
             <p className="home-threshold-title">Instituciones</p>
@@ -98,7 +102,7 @@ export function InstitutionSelector({
             ? { duration: 0 }
             : { duration: 0.55, delay: awakened ? 1.05 : 0, ease: EASE }
         }
-        className="mt-4 shrink-0"
+        className="mt-3 shrink-0 lg:mt-[0.65rem]"
       >
         <button type="button" className="home-explore-link" onClick={onExploreAll}>
           <Compass className="h-3.5 w-3.5" aria-hidden />

@@ -45,7 +45,7 @@ export function LegacyBrand({
         start ? 'items-center text-center lg:items-start lg:text-left' : 'items-center text-center',
       )}
     >
-      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-6 lg:mb-9">
+      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-4 lg:mb-[clamp(0.65rem,2vh,1.35rem)]">
         <span aria-hidden className="archive-mark-glow absolute inset-[-42%] rounded-full" />
         <LegacyMark size="lg" />
       </motion.div>
@@ -64,7 +64,7 @@ export function LegacyBrand({
       <motion.div
         {...fadeUp(titleDelay + 0.1)}
         aria-hidden
-        className={cn('archive-rule mt-5 lg:mt-7', start && 'is-start')}
+        className={cn('archive-rule mt-4 lg:mt-[clamp(0.55rem,1.6vh,1.15rem)]', start && 'is-start')}
       >
         <span className="archive-rule-line" />
         <span className="archive-rule-diamond" />
