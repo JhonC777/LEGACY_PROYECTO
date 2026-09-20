@@ -8,9 +8,15 @@ export function isBlobUrl(value?: string) {
   return Boolean(value && value.startsWith('blob:'))
 }
 
-/** URL que se puede abrir o descargar (http, https o archivo de esta sesión). */
+export function isPublicFilePath(value?: string) {
+  if (!value) return false
+  const path = value.split('#')[0]
+  return path.startsWith('/') && /\.[a-z0-9]{2,8}$/i.test(path)
+}
+
+/** URL que se puede abrir o descargar (http, blob de sesión o archivo público). */
 export function isFileResource(value?: string) {
-  return isHttpUrl(value) || isBlobUrl(value)
+  return isHttpUrl(value) || isBlobUrl(value) || isPublicFilePath(value)
 }
 
 export function isValidResourceUrl(value?: string) {

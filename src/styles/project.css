@@ -1313,6 +1313,11 @@
   transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.knowledge-fragment.is-real .knowledge-fragment-image,
+.project-hero-cover.is-real-cover img {
+  object-position: center 70%;
+}
+
 .knowledge-fragment:hover .knowledge-fragment-image {
   transform: scale(1.03);
 }

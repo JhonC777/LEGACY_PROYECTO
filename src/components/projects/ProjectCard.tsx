@@ -47,39 +47,39 @@ export function ProjectCard({
   }
 
   const resources = [
-    {
-      key: 'doc',
-      label: 'Doc',
-      href: project.docUrl?.startsWith('#')
-        ? `${href}${project.docUrl}`
-        : project.docUrl || href,
-      Icon: FileText,
-      file: isFileResource(project.docUrl),
-      download: project.docUrl
-        ? resourceFileName(project.docUrl, 'documento-del-proyecto')
-        : undefined,
-    },
-    {
-      key: 'video',
-      label: 'Video',
-      href: project.videoUrl || `${href}#video`,
-      Icon: Play,
-      file: isFileResource(project.videoUrl),
-      download: project.videoUrl
-        ? resourceFileName(project.videoUrl, 'video-del-proyecto')
-        : undefined,
-    },
-    {
-      key: 'pdf',
-      label: 'PDF',
-      href: project.pdfUrl || `${href}#pdf`,
-      Icon: FileType2,
-      file: isFileResource(project.pdfUrl),
-      download: project.pdfUrl
-        ? resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf')
-        : undefined,
-    },
-  ]
+    project.docUrl
+      ? {
+          key: 'doc',
+          label: 'Doc',
+          href: project.docUrl.startsWith('#')
+            ? `${href}${project.docUrl}`
+            : project.docUrl,
+          Icon: FileText,
+          file: isFileResource(project.docUrl),
+          download: resourceFileName(project.docUrl, 'documento-del-proyecto'),
+        }
+      : null,
+    project.videoUrl
+      ? {
+          key: 'video',
+          label: 'Video',
+          href: project.videoUrl,
+          Icon: Play,
+          file: isFileResource(project.videoUrl),
+          download: resourceFileName(project.videoUrl, 'video-del-proyecto'),
+        }
+      : null,
+    project.pdfUrl
+      ? {
+          key: 'pdf',
+          label: 'PDF',
+          href: project.pdfUrl,
+          Icon: FileType2,
+          file: isFileResource(project.pdfUrl),
+          download: resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf'),
+        }
+      : null,
+  ].filter((item): item is NonNullable<typeof item> => item !== null)
 
   const real = isRealShowcase(project)
 

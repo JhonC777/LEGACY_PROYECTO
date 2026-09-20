@@ -206,14 +206,17 @@ export function ProjectDetail() {
                 className="project-hero-plate"
               >
                 <motion.div
-                  className="project-hero-cover aspect-[4/3] w-full"
+                  className={cn(
+                    'project-hero-cover aspect-[4/3] w-full',
+                    isRealShowcase(project) && 'is-real-cover',
+                  )}
                   style={reduceMotion ? undefined : { y: coverY, scale: coverScale }}
                 >
                   <span aria-hidden className="project-hero-cover-shine" />
                   <span aria-hidden className="project-hero-cover-scrim" />
                   <SmartImage
                     src={project.coverImage}
-                    alt={`Portada demostrativa de ${project.title}`}
+                    alt={`Portada de ${project.title}`}
                     priority
                   />
                   <div className="project-hero-cover-caption">
