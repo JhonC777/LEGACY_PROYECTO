@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { ArchiveSelect } from '@/components/ui/ArchiveSelect'
 import { getProjectHref, type ProjectStatus } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '../components/AdminStates'
@@ -290,72 +291,64 @@ export function AdminProjects() {
               </button>
             ) : null}
           </label>
-          <label className="flex items-center gap-2 text-xs text-legacy-muted">
+          <div className="flex items-center gap-2 text-xs text-legacy-muted">
             <ArrowUpDown className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-            <select
-              value={sort}
-              onChange={(event) => updateParam('sort', event.target.value)}
-              className="glass-select w-auto min-w-[9.5rem]"
+            <ArchiveSelect
+              className="w-auto min-w-[9.5rem]"
               aria-label="Ordenar proyectos"
-            >
-              <option value="updated">Última edición</option>
-              <option value="title">Título A–Z</option>
-              <option value="year">Año</option>
-            </select>
-          </label>
+              value={sort}
+              onChange={(value) => updateParam('sort', value)}
+              options={[
+                { value: 'updated', label: 'Última edición' },
+                { value: 'title', label: 'Título A–Z' },
+                { value: 'year', label: 'Año' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
       <div className="admin-filters mt-3">
-        <label className="flex items-center gap-2 text-xs text-legacy-muted">
-          <span className="sr-only">Área</span>
-          <select
-            value={areaFilter}
-            onChange={(event) => updateParam('area', event.target.value)}
-            className="glass-select w-auto min-w-[8.5rem]"
-            aria-label="Filtrar por área"
-          >
-            <option value="">Todas las áreas</option>
-            {filterOptions.areas.map((area) => (
-              <option key={area} value={area}>
-                {area}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-2 text-xs text-legacy-muted">
-          <span className="sr-only">Año</span>
-          <select
-            value={yearFilter}
-            onChange={(event) => updateParam('year', event.target.value)}
-            className="glass-select w-auto min-w-[7rem]"
-            aria-label="Filtrar por año"
-          >
-            <option value="">Todos los años</option>
-            {filterOptions.years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ArchiveSelect
+          className="w-auto min-w-[8.5rem]"
+          aria-label="Filtrar por área"
+          value={areaFilter}
+          onChange={(value) => updateParam('area', value)}
+          placeholder="Todas las áreas"
+          options={[
+            { value: '', label: 'Todas las áreas' },
+            ...filterOptions.areas.map((area) => ({ value: area, label: area })),
+          ]}
+        />
+        <ArchiveSelect
+          className="w-auto min-w-[7rem]"
+          aria-label="Filtrar por año"
+          value={yearFilter}
+          onChange={(value) => updateParam('year', value)}
+          placeholder="Todos los años"
+          options={[
+            { value: '', label: 'Todos los años' },
+            ...filterOptions.years.map((year) => ({
+              value: String(year),
+              label: String(year),
+            })),
+          ]}
+        />
         {filterOptions.collections.length > 0 ? (
-          <label className="flex items-center gap-2 text-xs text-legacy-muted">
-            <span className="sr-only">Colección</span>
-            <select
-              value={collectionFilter}
-              onChange={(event) => updateParam('collection', event.target.value)}
-              className="glass-select w-auto min-w-[9rem]"
-              aria-label="Filtrar por colección"
-            >
-              <option value="">Todas las colecciones</option>
-              {filterOptions.collections.map((collection) => (
-                <option key={collection} value={collection}>
-                  {collection}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ArchiveSelect
+            className="w-auto min-w-[9rem]"
+            aria-label="Filtrar por colección"
+            value={collectionFilter}
+            onChange={(value) => updateParam('collection', value)}
+            placeholder="Todas las colecciones"
+            options={[
+              { value: '', label: 'Todas las colecciones' },
+              ...filterOptions.collections.map((collection) => ({
+                value: collection,
+                label: collection,
+              })),
+            ]}
+          />
         ) : null}
       </div>
 

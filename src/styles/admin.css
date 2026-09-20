@@ -1106,6 +1106,10 @@ body:has(.admin-shell) {
   gap: 0.5rem;
 }
 
+.admin-filters .archive-select-menu {
+  min-width: 14rem;
+}
+
 .admin-complete {
   font-size: 0.72rem;
   font-weight: 600;

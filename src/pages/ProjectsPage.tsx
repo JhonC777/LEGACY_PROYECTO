@@ -33,6 +33,7 @@ import {
   getInstitutionBySlug,
   type DemoProject,
 } from '@/data/demoData'
+import { ArchiveSelect } from '@/components/ui/ArchiveSelect'
 import { cn } from '@/lib/cn'
 import { LEGACY_SLOGAN } from '@/lib/brand'
 import { useDeferredAction } from '@/lib/useDeferredAction'
@@ -488,22 +489,23 @@ export function ProjectsPage() {
                   <span className="text-legacy-muted/80"> de {source.length}</span>
                 ) : null}
               </p>
-              <label className="flex items-center gap-2 text-sm text-legacy-muted">
+              <div className="flex items-center gap-2 text-sm text-legacy-muted">
                 <ArrowUpDown className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
                 <span className="hidden sm:inline">Clasificar por</span>
                 <span className="sm:hidden">Orden</span>
-                <select
-                  value={sort}
-                  onChange={(event) => updateParam('sort', event.target.value)}
-                  className="glass-select w-auto min-w-[10.5rem]"
+                <ArchiveSelect
+                  className="w-auto min-w-[10.5rem]"
                   aria-label="Clasificar proyectos"
-                >
-                  <option value="recent">Más recientes</option>
-                  <option value="oldest">Más antiguos</option>
-                  <option value="title">Título A–Z</option>
-                  <option value="featured">Destacados primero</option>
-                </select>
-              </label>
+                  value={sort}
+                  onChange={(value) => updateParam('sort', value)}
+                  options={[
+                    { value: 'recent', label: 'Más recientes' },
+                    { value: 'oldest', label: 'Más antiguos' },
+                    { value: 'title', label: 'Título A–Z' },
+                    { value: 'featured', label: 'Destacados primero' },
+                  ]}
+                />
+              </div>
             </div>
 
             <div className="mt-6 pb-12">
@@ -551,26 +553,26 @@ function FilterSelect({
   options: Array<{ value: string; label: string; count: number }>
 }) {
   return (
-    <label className="mb-4 block">
+    <div className="mb-4">
       <span className="mb-2 block text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
         {label}
       </span>
-      <select
+      <ArchiveSelect
+        className="w-full"
+        aria-label={label}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="glass-select"
-      >
-        <option value="">Todos</option>
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            disabled={option.count === 0 && option.value !== value}
-          >
-            {option.label} · {option.count}
-          </option>
-        ))}
-      </select>
-    </label>
+        onChange={onChange}
+        placeholder="Todos"
+        options={[
+          { value: '', label: 'Todos' },
+          ...options.map((option) => ({
+            value: option.value,
+            label: option.label,
+            hint: String(option.count),
+            disabled: option.count === 0 && option.value !== value,
+          })),
+        ]}
+      />
+    </div>
   )
 }
