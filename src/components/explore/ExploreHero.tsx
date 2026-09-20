@@ -2,6 +2,7 @@ import { Landmark, Play, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GlassSurface } from '@/components/ui/GlassSurface'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { PILOT_CATALOG_PATH } from '@/data/demoData'
 import { HERO_IMAGE } from '@/data/mockExplore'
 
@@ -14,9 +15,9 @@ export function ExploreHero() {
       <div className="relative mx-auto grid max-w-[1200px] items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
         <div>
           <p className="mb-3 text-xs font-semibold tracking-[0.18em] text-legacy-gold uppercase">
-            Bienvenido a LEGACY
+            {withLegacyName('Bienvenido a LEGACY')}
           </p>
-          <h1 className="font-display text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.12] font-semibold text-legacy-white">
+          <h1 className="font-brand text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.12] font-semibold text-legacy-white">
             Ideas que hoy,{' '}
             <span className="text-legacy-gold-soft italic">legado</span> para siempre.
           </h1>

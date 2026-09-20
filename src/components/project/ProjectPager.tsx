@@ -75,7 +75,7 @@ function PagerCard({
             {isNext ? 'Siguiente proyecto' : 'Proyecto anterior'}
             {isNext ? <ArrowRight className="h-3 w-3" aria-hidden /> : null}
           </span>
-          <span className="mt-1.5 block font-display text-[1.15rem] leading-snug font-semibold text-legacy-white transition-colors group-hover:text-legacy-gold-soft">
+          <span className="mt-1.5 block font-brand text-[1.15rem] leading-snug font-semibold text-legacy-white transition-colors group-hover:text-legacy-gold-soft">
             {project.title}
           </span>
           <span className="mt-1 block truncate text-xs text-legacy-muted">

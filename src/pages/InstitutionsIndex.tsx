@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Building2 } from 'lucide-react'
 import { CosmicBackground } from '@/components/entry/CosmicBackground'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { MOCK_INSTITUTIONS } from '@/data/mockInstitutions'
 
 /** Placeholder — listado completo de instituciones */
@@ -18,9 +19,9 @@ export function InstitutionsIndex() {
           Volver
         </Link>
 
-        <h1 className="font-display text-3xl text-legacy-white">Instituciones</h1>
+        <h1 className="font-brand text-3xl text-legacy-white">Instituciones</h1>
         <p className="mt-2 text-sm text-legacy-muted">
-          Explora los espacios afiliados a LEGACY
+          {withLegacyName('Explora los espacios afiliados a LEGACY')}
         </p>
 
         <div className="mt-6 max-w-lg space-y-2.5 pb-4">

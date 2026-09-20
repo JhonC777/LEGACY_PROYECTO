@@ -257,7 +257,7 @@
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.14),
     0 10px 24px -14px rgb(214 184 120 / 0.55);
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -554,7 +554,7 @@
 }
 
 .header-folio {
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 0.9rem;
   letter-spacing: 0.08em;
   color: rgb(214 184 120 / 0.82);

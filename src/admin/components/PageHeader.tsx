@@ -27,7 +27,7 @@ export function PageHeader({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="mt-1 font-display text-[clamp(1.75rem,3vw,2.35rem)] leading-tight font-semibold text-legacy-white">
+        <h1 className="mt-1 font-brand text-[clamp(1.75rem,3vw,2.35rem)] leading-tight font-semibold text-legacy-white">
           {title}
         </h1>
         {description ? (

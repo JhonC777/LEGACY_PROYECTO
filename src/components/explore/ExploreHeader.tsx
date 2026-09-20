@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlassInput } from '@/components/ui/GlassInput'
 import { LegacyMark } from '@/components/brand/LegacyMark'
 import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { PILOT_CATALOG_PATH } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
@@ -52,7 +53,7 @@ export function ExploreHeader() {
                 )}
                 aria-current={active ? 'page' : undefined}
               >
-                {item.label}
+                {withLegacyName(item.label)}
                 {item.label === 'Explorar' ? (
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden />
                 ) : null}

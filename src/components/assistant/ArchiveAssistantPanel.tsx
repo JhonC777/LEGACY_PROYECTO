@@ -296,7 +296,7 @@ export function ArchiveAssistantPanel({
                 </p>
                 <h2
                   id="archive-assistant-title"
-                  className="font-display text-2xl leading-tight font-semibold text-legacy-white"
+                  className="font-brand text-2xl leading-tight font-semibold text-legacy-white"
                 >
                   El archivo te escucha
                 </h2>
@@ -426,7 +426,7 @@ function WelcomePanel({
       <p className="text-[11px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
         Archivo de {institution.shortName}
       </p>
-      <p className="mt-2 font-display text-[1.65rem] leading-tight font-semibold text-legacy-white">
+      <p className="mt-2 font-brand text-[1.65rem] leading-tight font-semibold text-legacy-white">
         Pregunta. Yo ya me leí las fichas.
       </p>
       <p className="mt-2 text-sm leading-relaxed text-legacy-muted">
@@ -621,7 +621,7 @@ function EmptyPanel({
       <span className="archive-assistant-state-icon" aria-hidden>
         <Icon className="h-5 w-5" />
       </span>
-      <h3 className="font-display text-xl font-semibold text-legacy-white">{title}</h3>
+      <h3 className="font-brand text-xl font-semibold text-legacy-white">{title}</h3>
       <p>{description}</p>
       {onAction ? (
         <Button variant="primary" className="mt-4" onClick={onAction}>

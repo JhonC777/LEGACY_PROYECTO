@@ -25,7 +25,7 @@ export function StatsBar() {
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <p className="font-display text-2xl font-semibold text-explore-ink lg:text-[1.65rem]">
+                <p className="font-brand text-2xl font-semibold text-explore-ink lg:text-[1.65rem]">
                   {stat.value}
                 </p>
                 <p className="text-sm font-medium text-explore-ink/80">{stat.label}</p>

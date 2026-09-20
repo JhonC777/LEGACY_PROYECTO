@@ -56,7 +56,7 @@ export function ProjectSheet({
         <p className="home-threshold-kicker">
           Ficha académica
         </p>
-        <h2 className="mt-1 font-display text-[1.35rem] leading-tight font-semibold text-legacy-white">
+        <h2 className="mt-1 font-brand text-[1.35rem] leading-tight font-semibold text-legacy-white">
           Datos del proyecto
         </h2>
       </div>

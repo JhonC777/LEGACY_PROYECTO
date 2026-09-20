@@ -44,7 +44,7 @@ export function LegacyTimeline() {
           <CalendarDays className="h-4 w-4" aria-hidden />
         </span>
         <div>
-          <h2 className="font-display text-xl font-semibold text-explore-ink">
+          <h2 className="font-brand text-xl font-semibold text-explore-ink">
             Recorre el legado
           </h2>
           <p className="text-xs text-explore-muted">

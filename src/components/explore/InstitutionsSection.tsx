@@ -2,6 +2,7 @@ import { Lock, MapPin } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { MOCK_INSTITUTION_CARDS } from '@/data/mockExplore'
 
 export function InstitutionsSection() {
@@ -10,7 +11,7 @@ export function InstitutionsSection() {
   return (
     <section id="instituciones" className="mt-10">
       <div className="mb-5 flex items-end justify-between gap-3">
-        <h2 className="font-display text-2xl font-semibold text-legacy-white lg:text-[1.75rem]">
+        <h2 className="font-brand text-2xl font-semibold text-legacy-white lg:text-[1.75rem]">
           Un legado. Muchas instituciones.
         </h2>
         <a
@@ -67,7 +68,9 @@ export function InstitutionsSection() {
                 </div>
 
                 <p className="mb-4 text-sm text-legacy-muted">
-                  Acceso de demostración. Te lleva de vuelta al inicio cósmico de LEGACY.
+                  {withLegacyName(
+                    'Acceso de demostración. Te lleva de vuelta al inicio cósmico de LEGACY.',
+                  )}
                 </p>
 
                 <div className="mt-auto grid grid-cols-2 gap-2">

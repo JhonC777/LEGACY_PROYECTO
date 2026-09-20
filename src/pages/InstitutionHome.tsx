@@ -123,7 +123,7 @@ export function InstitutionHome() {
                 <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
                   Selección institucional
                 </p>
-                <h2 className="mt-1 font-display text-3xl font-semibold text-legacy-white lg:text-4xl">
+                <h2 className="mt-1 font-brand text-3xl font-semibold text-legacy-white lg:text-4xl">
                   Proyectos destacados
                 </h2>
               </div>
@@ -244,7 +244,7 @@ function InstitutionPanel({
             }
       }
     >
-      <h2 className="font-display text-2xl font-semibold text-legacy-white">
+      <h2 className="font-brand text-2xl font-semibold text-legacy-white">
         {title}
       </h2>
       <div className="mt-4 space-y-2">

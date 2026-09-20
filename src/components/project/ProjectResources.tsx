@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, Download, FileText, Play } from 'lucide-react'
 import { SmartImage } from '@/components/ui/SmartImage'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import type { DemoProject } from '@/data/demoData'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -79,7 +80,7 @@ function VideoFacade({
           Video del proyecto
         </span>
         <span className="mt-1 block text-sm font-medium text-legacy-white">
-          Reproducir sin salir de LEGACY
+          {withLegacyName('Reproducir sin salir de LEGACY')}
         </span>
       </span>
     </button>
@@ -110,7 +111,7 @@ export function ProjectResources({ project }: { project: DemoProject }) {
         <p className="home-threshold-kicker">Material consultable</p>
         <h2
           id="recursos-title"
-          className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
+          className="mt-1 font-brand text-[1.85rem] font-semibold text-legacy-white"
         >
           Recursos del proyecto
         </h2>

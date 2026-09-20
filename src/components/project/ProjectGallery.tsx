@@ -79,7 +79,7 @@ export function ProjectGallery({ title, images }: ProjectGalleryProps) {
             <p className="home-threshold-kicker">Evidencias</p>
             <h2
               id="galeria-title"
-              className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
+              className="mt-1 font-brand text-[1.85rem] font-semibold text-legacy-white"
             >
               Galería del proyecto
             </h2>

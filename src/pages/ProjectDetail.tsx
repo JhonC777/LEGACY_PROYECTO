@@ -142,7 +142,7 @@ export function ProjectDetail() {
 
                 <motion.h1
                   {...reveal(0.16, 22)}
-                  className="project-hero-title mt-4 font-display text-[clamp(2.2rem,4.6vw,3.85rem)] leading-[1.04] font-semibold"
+                  className="project-hero-title mt-4 font-brand text-[clamp(2.2rem,4.6vw,3.85rem)] leading-[1.04] font-semibold"
                 >
                   {project.title}
                 </motion.h1>
@@ -294,7 +294,7 @@ export function ProjectDetail() {
               <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="home-threshold-kicker">En el mismo archivo</p>
-                  <h2 className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white">
+                  <h2 className="mt-1 font-brand text-[1.85rem] font-semibold text-legacy-white">
                     Otros fragmentos
                   </h2>
                 </div>
@@ -347,7 +347,7 @@ function AcademicSection({
   return (
     <motion.section id={id} className="project-block" {...viewReveal(reduceMotion)}>
       <p className="home-threshold-kicker">{eyebrow}</p>
-      <h2 className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white">
+      <h2 className="mt-1 font-brand text-[1.85rem] font-semibold text-legacy-white">
         {title}
       </h2>
       <div className="project-section-rule mt-3" aria-hidden />

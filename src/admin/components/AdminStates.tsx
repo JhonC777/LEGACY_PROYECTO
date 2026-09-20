@@ -29,7 +29,7 @@ export function AdminEmptyState({
       <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-legacy-gold/25 bg-legacy-gold/10 text-legacy-gold">
         <Icon className="h-5 w-5" aria-hidden />
       </span>
-      <h3 className="font-display text-2xl font-semibold text-legacy-white">{title}</h3>
+      <h3 className="font-brand text-2xl font-semibold text-legacy-white">{title}</h3>
       {description ? (
         <p className="mt-2 max-w-md text-sm leading-relaxed text-legacy-muted">{description}</p>
       ) : null}

@@ -27,7 +27,7 @@ export function AdminNoAccess({ requested }: { requested: DemoInstitution }) {
           <p className="text-xs font-bold tracking-[0.2em] text-legacy-gold uppercase">
             Sin permisos
           </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-legacy-white">
+          <h1 className="mt-2 font-brand text-3xl font-semibold text-legacy-white">
             Este panel no pertenece a tu institución
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-legacy-muted">

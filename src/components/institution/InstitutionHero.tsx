@@ -187,7 +187,7 @@ export function InstitutionHero({
                   imageClassName="rounded-xl bg-white/95 p-2"
                 />
               </motion.div>
-              <h1 className="font-display text-[clamp(2.6rem,6vw,4.25rem)] leading-[0.94] font-semibold tracking-tight">
+              <h1 className="font-brand text-[clamp(2.6rem,6vw,4.25rem)] leading-[0.94] font-semibold tracking-tight">
                 {institution.name}
               </h1>
             </motion.div>
@@ -252,7 +252,7 @@ export function InstitutionHero({
                   <span className="block text-[10px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
                     Del archivo
                   </span>
-                  <span className="mt-1 line-clamp-2 block font-display text-lg leading-snug font-semibold text-legacy-white">
+                  <span className="mt-1 line-clamp-2 block font-brand text-lg leading-snug font-semibold text-legacy-white">
                     {lead.title}
                   </span>
                 </span>
@@ -329,7 +329,7 @@ export function InstitutionHero({
               <p className="text-[10px] font-bold tracking-[0.2em] text-legacy-gold uppercase">
                 Panorama del archivo
               </p>
-              <h2 className="mt-1 font-display text-2xl font-semibold text-legacy-white sm:text-3xl">
+              <h2 className="mt-1 font-brand text-2xl font-semibold text-legacy-white sm:text-3xl">
                 El legado, en contexto
               </h2>
             </div>
@@ -383,7 +383,7 @@ export function InstitutionHero({
                       {String(index + 1).padStart(2, '0')}
                     </span>
                   </span>
-                  <span className="relative mt-5 font-display text-4xl leading-none font-semibold text-legacy-white lg:text-5xl">
+                  <span className="relative mt-5 font-brand text-4xl leading-none font-semibold text-legacy-white lg:text-5xl">
                     {stats[key]}
                   </span>
                   <span className="relative mt-2 text-xs font-semibold tracking-wide text-white/85">

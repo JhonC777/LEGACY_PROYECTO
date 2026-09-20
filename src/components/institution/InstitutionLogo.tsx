@@ -36,7 +36,7 @@ export function InstitutionLogo({
           className={cn('h-full w-full object-contain', imageClassName)}
         />
       ) : (
-        <span aria-hidden className="font-display font-semibold tracking-wide">
+        <span aria-hidden className="font-brand font-semibold tracking-wide">
           {fallback}
         </span>
       )}

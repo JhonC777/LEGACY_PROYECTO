@@ -225,7 +225,7 @@ export function AdminDashboard() {
                     aria-hidden
                   />
                 </span>
-                <span className="mt-4 block font-display text-4xl leading-none font-semibold text-legacy-white">
+                <span className="mt-4 block font-brand text-4xl leading-none font-semibold text-legacy-white">
                   {value}
                 </span>
                 <span className="mt-1.5 block text-sm font-semibold text-white/85">{label}</span>
@@ -237,7 +237,7 @@ export function AdminDashboard() {
           <section className="admin-card mt-6 p-5" aria-labelledby="public-title">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 id="public-title" className="font-display text-xl font-semibold text-legacy-white">
+                <h2 id="public-title" className="font-brand text-xl font-semibold text-legacy-white">
                   Qué ve el invitado ahora
                 </h2>
                 <p className="mt-0.5 text-xs text-legacy-muted">
@@ -312,7 +312,7 @@ export function AdminDashboard() {
 
           <section className="admin-card mt-5 p-5" aria-labelledby="authors-title">
             <div className="flex items-center justify-between gap-3">
-              <h2 id="authors-title" className="inline-flex items-center gap-2 font-display text-xl font-semibold text-legacy-white">
+              <h2 id="authors-title" className="inline-flex items-center gap-2 font-brand text-xl font-semibold text-legacy-white">
                 <Users className="h-4 w-4 text-legacy-gold" aria-hidden />
                 Autores del archivo
               </h2>
@@ -340,7 +340,7 @@ export function AdminDashboard() {
             <section className="admin-card p-5" aria-labelledby="ops-title">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 id="ops-title" className="font-display text-xl font-semibold text-legacy-white">
+                  <h2 id="ops-title" className="font-brand text-xl font-semibold text-legacy-white">
                     Operación del archivo
                   </h2>
                   <p className="mt-0.5 text-xs text-legacy-muted">
@@ -406,7 +406,7 @@ export function AdminDashboard() {
             <div className="flex flex-col gap-5">
               <section className="admin-card p-5" aria-labelledby="activity-title">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 id="activity-title" className="font-display text-xl font-semibold text-legacy-white">
+                  <h2 id="activity-title" className="font-brand text-xl font-semibold text-legacy-white">
                     Actividad reciente
                   </h2>
                   <Link to={`${base}/historial`} className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
@@ -442,7 +442,7 @@ export function AdminDashboard() {
               </section>
 
               <section className="admin-card p-5" aria-labelledby="shortcuts-title">
-                <h2 id="shortcuts-title" className="font-display text-xl font-semibold text-legacy-white">
+                <h2 id="shortcuts-title" className="font-brand text-xl font-semibold text-legacy-white">
                   Accesos rápidos
                 </h2>
                 <div className="mt-3 grid gap-2">
@@ -486,7 +486,7 @@ function InventoryCard({
   return (
     <section className="admin-card p-5" aria-labelledby={id}>
       <div className="flex items-center justify-between gap-3">
-        <h2 id={id} className="inline-flex items-center gap-2 font-display text-lg font-semibold text-legacy-white">
+        <h2 id={id} className="inline-flex items-center gap-2 font-brand text-lg font-semibold text-legacy-white">
           <Icon className="h-4 w-4 text-legacy-gold" aria-hidden />
           {title}
         </h2>

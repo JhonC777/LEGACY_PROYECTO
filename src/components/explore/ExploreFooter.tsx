@@ -1,12 +1,13 @@
 import { Instagram, Linkedin, Youtube } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { withLegacyName } from '@/components/brand/LegacyName'
 
 export function ExploreFooter() {
   return (
     <footer className="mt-12 border-t border-white/10 bg-legacy-black/40">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row lg:px-8">
         <p className="text-sm text-legacy-muted">
-          © 2026 LEGACY. Todos los derechos reservados.
+          © 2026 {withLegacyName('LEGACY')}. Todos los derechos reservados.
         </p>
         <div className="flex items-center gap-4 text-legacy-muted">
           <Link to="/" className="text-sm hover:text-legacy-gold">

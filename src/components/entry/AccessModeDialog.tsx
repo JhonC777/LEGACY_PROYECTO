@@ -81,7 +81,7 @@ export function AccessModeDialog({
                 />
                 <h2
                   id="access-dialog-title"
-                  className="font-display text-[1.75rem] leading-tight font-semibold tracking-[0.02em] text-legacy-white sm:text-[2rem]"
+                  className="font-brand text-[1.75rem] leading-tight font-semibold tracking-[0.02em] text-legacy-white sm:text-[2rem]"
                 >
                   {institution.name}
                 </h2>

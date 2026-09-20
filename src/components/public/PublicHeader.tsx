@@ -19,6 +19,7 @@ import {
 import { Link, NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { LegacyMark } from '@/components/brand/LegacyMark'
 import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { cn } from '@/lib/cn'
 import { getLegacyScrollRoot } from '@/lib/legacyScroll'
 import { ArchiveAssistantPanel } from '@/components/assistant/ArchiveAssistantPanel'
@@ -332,7 +333,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                 )}
                 <span className="header-chip-copy">
                   <span className="header-chip-kicker">
-                    {institution ? institution.shortName : 'Red LEGACY'}
+                    {institution ? institution.shortName : withLegacyName('Red LEGACY')}
                   </span>
                   <span className="header-chip-name">
                     {institution ? institution.name : 'Todas las instituciones'}

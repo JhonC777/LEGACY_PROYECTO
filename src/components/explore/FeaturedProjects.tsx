@@ -68,7 +68,7 @@ export function FeaturedProjects() {
   return (
     <section id="proyectos">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <h2 className="font-display text-2xl font-semibold text-explore-ink lg:text-[1.75rem]">
+        <h2 className="font-brand text-2xl font-semibold text-explore-ink lg:text-[1.75rem]">
           Proyectos destacados
         </h2>
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { cn } from '@/lib/cn'
 
 type EntryMessageProps = {
@@ -41,7 +42,7 @@ export function EntryMessage({
   return (
     <div
         className={cn(
-          'mt-7 space-y-5 lg:mt-10 lg:space-y-7',
+          'mt-5 space-y-4 lg:mt-[clamp(0.7rem,2.2vh,1.55rem)] lg:space-y-5',
           start
             ? 'mx-auto max-w-lg text-center lg:mx-0 lg:max-w-[38rem] lg:text-left'
             : 'mx-auto max-w-lg text-center',
@@ -62,9 +63,9 @@ export function EntryMessage({
           start ? 'mx-auto max-w-md lg:mx-0 lg:max-w-lg' : 'mx-auto max-w-md',
         )}
       >
-        El conocimiento de cada generación merece permanecer. LEGACY es la
-        plataforma donde cada institución educativa preserva, organiza y exhibe
-        los proyectos de grado de sus estudiantes.
+        {withLegacyName(
+          'El conocimiento de cada generación merece permanecer. LEGACY es la plataforma donde cada institución educativa preserva, organiza y exhibe los proyectos de grado de sus estudiantes.',
+        )}
       </motion.p>
 
       {actions ? (

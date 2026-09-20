@@ -331,7 +331,7 @@ export function AdminProjectEditor() {
             Proyectos
           </button>
           <div className="mt-2 flex flex-wrap items-center gap-2.5">
-            <h1 className="font-display text-[clamp(1.6rem,2.8vw,2.2rem)] leading-tight font-semibold text-legacy-white">
+            <h1 className="font-brand text-[clamp(1.6rem,2.8vw,2.2rem)] leading-tight font-semibold text-legacy-white">
               {isNew ? 'Nuevo proyecto' : form.title || 'Sin título'}
             </h1>
             <StatusBadge status={currentStatus} />
@@ -390,7 +390,7 @@ export function AdminProjectEditor() {
         <section className="admin-card mt-6 p-5" aria-label="Vista previa de la tarjeta">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <h2 className="font-display text-lg font-semibold text-legacy-white">Así se verá en el catálogo</h2>
+              <h2 className="font-brand text-lg font-semibold text-legacy-white">Así se verá en el catálogo</h2>
               <p className="text-xs text-legacy-muted">
                 Tarjeta generada con los datos actuales del formulario (no interactiva).
               </p>
@@ -667,7 +667,7 @@ export function AdminProjectEditor() {
 
           {existing ? (
             <section className="admin-card border-red-400/20 p-5">
-              <h2 className="font-display text-lg font-semibold text-legacy-white">Zona de riesgo</h2>
+              <h2 className="font-brand text-lg font-semibold text-legacy-white">Zona de riesgo</h2>
               <p className="mt-1 text-sm text-legacy-muted">
                 Eliminar el proyecto lo quita del archivo y del sitio público. No se puede deshacer.
               </p>
@@ -696,7 +696,7 @@ export function AdminProjectEditor() {
               ) : (
                 <AlertTriangle className="h-5 w-5 text-amber-300" aria-hidden />
               )}
-              <h2 id="checklist-title" className="font-display text-lg font-semibold text-legacy-white">
+              <h2 id="checklist-title" className="font-brand text-lg font-semibold text-legacy-white">
                 {issues.complete ? 'Listo para publicar' : 'Requisitos para publicar'}
               </h2>
             </div>
@@ -792,7 +792,7 @@ function Section({
             <Icon className="h-4 w-4" aria-hidden />
           </span>
           <div>
-            <h2 id={`${id}-title`} className="font-display text-xl font-semibold text-legacy-white">
+            <h2 id={`${id}-title`} className="font-brand text-xl font-semibold text-legacy-white">
               {title}
             </h2>
             {description ? <p className="mt-0.5 text-xs text-legacy-muted">{description}</p> : null}

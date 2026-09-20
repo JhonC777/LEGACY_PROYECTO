@@ -24,7 +24,7 @@ export function CategorySidebar() {
   return (
     <section id="categorias" className="explore-card rounded-2xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between gap-2">
-        <h2 className="font-display text-xl font-semibold text-explore-ink">
+        <h2 className="font-brand text-xl font-semibold text-explore-ink">
           Explora por categoría
         </h2>
         <Link

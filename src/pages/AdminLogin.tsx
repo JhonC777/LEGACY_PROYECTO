@@ -73,7 +73,7 @@ export function AdminLogin() {
           <p className="text-center text-xs font-bold tracking-[0.2em] text-legacy-gold uppercase">
             Acceso administrador
           </p>
-          <h1 className="mt-3 text-center font-display text-3xl font-semibold text-legacy-white">
+          <h1 className="mt-3 text-center font-brand text-3xl font-semibold text-legacy-white">
             Panel institucional
           </h1>
 

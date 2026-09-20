@@ -30,15 +30,23 @@
 }
 
 .legacy-mark.is-lg {
-  width: 5.6rem;
-  height: 5.6rem;
+  width: clamp(4.7rem, 8.4vh, 6.6rem);
+  height: clamp(4.7rem, 8.4vh, 6.6rem);
 }
 
 @media (min-width: 1024px) {
   .legacy-mark.is-lg {
-    width: 7.35rem;
-    height: 7.35rem;
+    width: clamp(5.1rem, 9.2vh, 7.1rem);
+    height: clamp(5.1rem, 9.2vh, 7.1rem);
   }
+}
+
+.legacy-name {
+  font-family: var(--font-brand);
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .legacy-wordmark {
@@ -56,7 +64,7 @@
 }
 
 .legacy-wordmark.is-display {
-  font-size: clamp(2.7rem, 9vw, 5.6rem);
+  font-size: clamp(2.35rem, min(8.4vw, 9.2vh), 5.15rem);
   letter-spacing: 0.22em;
   color: #efe8dc;
   filter: drop-shadow(0 0 46px rgb(214 184 120 / 0.16));

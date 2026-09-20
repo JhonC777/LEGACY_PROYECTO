@@ -62,7 +62,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
         <p className="home-threshold-kicker">Recorrido del proyecto</p>
         <h2
           id="proceso-title"
-          className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
+          className="mt-1 font-brand text-[1.85rem] font-semibold text-legacy-white"
         >
           Del problema al resultado
         </h2>
@@ -92,7 +92,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
                     <p className="mt-2 text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold/80 uppercase">
                       {step.eyebrow}
                     </p>
-                    <h3 className="mt-1 font-display text-[1.35rem] leading-tight font-semibold text-legacy-white">
+                    <h3 className="mt-1 font-brand text-[1.35rem] leading-tight font-semibold text-legacy-white">
                       {step.title}
                     </h3>
                   </div>

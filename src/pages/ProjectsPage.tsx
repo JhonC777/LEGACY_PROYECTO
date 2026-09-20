@@ -375,7 +375,7 @@ export function ProjectsPage() {
                 <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
                   Archivo académico
                 </p>
-                <h1 className="mt-1 font-display text-[clamp(1.85rem,4vw,2.5rem)] font-semibold text-legacy-white">
+                <h1 className="mt-1 font-brand text-[clamp(1.85rem,4vw,2.5rem)] font-semibold text-legacy-white">
                   {institution
                     ? `Proyectos de ${institution.name}`
                     : 'Catálogo de proyectos'}

@@ -185,7 +185,7 @@ export function AdminSettings() {
                 <Building2 className="h-4 w-4" aria-hidden />
               </span>
               <div>
-                <h2 id="identity-title" className="font-display text-xl font-semibold text-legacy-white">
+                <h2 id="identity-title" className="font-brand text-xl font-semibold text-legacy-white">
                   Identidad institucional
                 </h2>
                 <p className="mt-0.5 text-xs text-legacy-muted">
@@ -298,7 +298,7 @@ export function AdminSettings() {
                   <Star className="h-4 w-4" aria-hidden />
                 </span>
                 <div>
-                  <h2 id="featured-title" className="font-display text-xl font-semibold text-legacy-white">
+                  <h2 id="featured-title" className="font-brand text-xl font-semibold text-legacy-white">
                     Destacados en portada
                   </h2>
                   <p className="mt-0.5 text-xs text-legacy-muted">
@@ -371,7 +371,7 @@ export function AdminSettings() {
                   imageClassName="rounded-lg bg-white/95 p-1.5"
                 />
                 <div className="min-w-0">
-                  <p className="truncate font-display text-lg font-semibold text-legacy-white">
+                  <p className="truncate font-brand text-lg font-semibold text-legacy-white">
                     {form.name || 'Nombre de la institución'}
                   </p>
                   <p className="text-[11px] text-legacy-muted">Espacio institucional · Demo</p>
