@@ -1,4 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { LegacyMark } from '@/components/brand/LegacyMark'
+import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { cn } from '@/lib/cn'
 
 type LegacyBrandProps = {
@@ -43,24 +45,9 @@ export function LegacyBrand({
         start ? 'items-center text-center lg:items-start lg:text-left' : 'items-center text-center',
       )}
     >
-      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-5 lg:mb-8">
-        <span aria-hidden className="archive-mark-glow absolute inset-[-56%] rounded-full" />
-        <span aria-hidden className="archive-mark-orbit is-outer" />
-        <span aria-hidden className="archive-mark-orbit is-elliptic" />
-        <span aria-hidden className="archive-mark-tick" />
-        <span className="archive-mark-frame relative flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full lg:h-[5.15rem] lg:w-[5.15rem]">
-          <span
-            aria-hidden
-            className="absolute inset-[7px] rounded-full border border-legacy-gold/25"
-          />
-          <span
-            aria-hidden
-            className="absolute inset-[13px] rounded-full border border-legacy-gold/12"
-          />
-          <span className="relative font-display text-[1.7rem] font-semibold tracking-[0.12em] text-legacy-gold-soft lg:text-[2.25rem]">
-            L
-          </span>
-        </span>
+      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-6 lg:mb-9">
+        <span aria-hidden className="archive-mark-glow absolute inset-[-42%] rounded-full" />
+        <LegacyMark size="lg" />
       </motion.div>
 
       <motion.p
@@ -71,7 +58,7 @@ export function LegacyBrand({
       </motion.p>
 
       <motion.h1 {...fadeUp(titleDelay)} className="home-brand-title">
-        LEGACY
+        <LegacyWordmark as="span" size="display" />
       </motion.h1>
 
       <motion.div
