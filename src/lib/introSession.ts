@@ -1,4 +1,11 @@
 /** Vive solo en memoria de la SPA. Un F5 / nueva pestaña la borra. */
+
+/**
+ * Cinematic intro on `/`. Keep `LegacyIntro.tsx` + `intro.css` in the repo.
+ * Flip to `true` when asked to plug the film back in.
+ */
+export const INTRO_ENABLED = false
+
 let introSeenThisVisit = false
 
 export function isActMode() {
@@ -15,6 +22,7 @@ export function hasSeenIntro() {
 }
 
 export function shouldPlayIntro() {
+  if (!INTRO_ENABLED) return false
   if (isActMode()) return true
   return !introSeenThisVisit
 }
