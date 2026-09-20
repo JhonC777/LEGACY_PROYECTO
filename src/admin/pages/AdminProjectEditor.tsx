@@ -31,18 +31,26 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ProjectCard } from '@/components/projects/ProjectCard'
-import { getProjectHref } from '@/data/demoData'
+import { DEMO_PROJECTS, getProjectHref } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 import { useDeferredAction } from '@/lib/useDeferredAction'
 import { AdminEmptyState, AdminErrorState, Skeleton } from '../components/AdminStates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatBytes, formatRelative } from '../format'
-import { createId, emptyDraft, getProjectIssues, useAdminStore } from '../store'
+import { isValidResourceUrl, resourceFileName, withResourceName } from '@/lib/resources'
+import { createId, emptyDraft, getProjectIssues, inferMediaKind, useAdminStore } from '../store'
 import { useToast } from '../toast'
-import type { AdminProject, ProjectDraftInput } from '../types'
+import type { AdminProject, MediaKind, ProjectDraftInput } from '../types'
 
-type UploadTarget = { id: string; target: 'cover' | 'gallery' }
+type UploadTarget = { id: string; target: 'cover' | 'gallery' | 'doc' | 'pdf' | 'video' }
+
+const RESOURCE_ACCEPT: Record<'doc' | 'pdf' | 'video', string> = {
+  doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text',
+  pdf: '.pdf,application/pdf',
+  video: 'video/*,.mp4,.webm,.mov',
+}
+
 
 const SECTIONS = [
   { id: 'basicos', label: 'Datos básicos', icon: FolderKanban },
@@ -74,7 +82,7 @@ export function AdminProjectEditor() {
   } = useAdminStore()
 
   const base = `/admin/${institution.slug}`
-  const isNew = !projectId
+  const isNew = !projectId || projectId === 'nuevo'
   const existing = useMemo(
     () => (projectId ? projects.find((project) => project.id === projectId) : undefined),
     [projectId, projects],
@@ -128,6 +136,7 @@ export function AdminProjectEditor() {
           videoUrl: existing.videoUrl,
           pdfUrl: existing.pdfUrl,
           isFeatured: existing.isFeatured,
+          isReal: existing.isReal,
         }
       : emptyDraft()
     setForm(source)
@@ -148,11 +157,14 @@ export function AdminProjectEditor() {
         return
       }
       if (asset.status === 'ready') {
-        setForm((current) =>
-          pending.target === 'cover'
-            ? { ...current, coverImage: asset.url }
-            : { ...current, gallery: [...current.gallery, asset.url] },
-        )
+        const named = withResourceName(asset.url, asset.name)
+        setForm((current) => {
+          if (pending.target === 'cover') return { ...current, coverImage: asset.url }
+          if (pending.target === 'gallery') return { ...current, gallery: [...current.gallery, asset.url] }
+          if (pending.target === 'doc') return { ...current, docUrl: named }
+          if (pending.target === 'pdf') return { ...current, pdfUrl: named }
+          return { ...current, videoUrl: named }
+        })
         done.push(pending)
       }
       if (asset.status === 'error') done.push(pending)
@@ -240,7 +252,7 @@ export function AdminProjectEditor() {
           title: 'Proyecto publicado',
           description: `«${saved.title}» ya aparece en el catálogo público.`,
         })
-        if (isNew) navigate(`${base}/proyectos/${saved.id}`, { replace: true })
+        navigate(getProjectHref(saved), { replace: true })
       } else {
         notify({
           tone: 'error',
@@ -276,6 +288,27 @@ export function AdminProjectEditor() {
     if (images.length === 0) return
     const ids = uploadFiles(target === 'cover' ? images.slice(0, 1) : images, existing?.id)
     pendingUploads.current.push(...ids.map((id) => ({ id, target })))
+  }
+
+  const onPickResource = (target: 'doc' | 'pdf' | 'video') => (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (files.length === 0) return
+    const file = files[0]
+    const kind = inferMediaKind(file.name, file.type)
+    const allowed: Record<'doc' | 'pdf' | 'video', MediaKind[]> = {
+      doc: ['doc'],
+      pdf: ['pdf'],
+      video: ['video'],
+    }
+    if (!allowed[target].includes(kind)) {
+      const expected =
+        target === 'pdf' ? 'un PDF' : target === 'video' ? 'un video' : 'un documento (Word, ODT o TXT)'
+      notify({ tone: 'error', title: 'Tipo no válido', description: `Este campo acepta ${expected}.` })
+      return
+    }
+    const ids = uploadFiles([file], existing?.id)
+    pendingUploads.current.push({ id: ids[0], target })
   }
 
   const updateAuthor = (id: string, patch: Partial<{ name: string; role: string }>) =>
@@ -588,12 +621,27 @@ export function AdminProjectEditor() {
                     {form.coverImage ? 'Reemplazar' : 'Elegir imagen'}
                   </span>
                 </label>
-                {form.coverImage ? (
-                  <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={() => set('coverImage', '')}>
-                    <Trash2 className="h-4 w-4" aria-hidden />
-                    Quitar portada
-                  </button>
-                ) : null}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {form.coverImage ? (
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => set('coverImage', '')}>
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                      Quitar portada
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        const fallback =
+                          projects.find((project) => project.coverImage)?.coverImage ??
+                          DEMO_PROJECTS.find((project) => project.coverImage)?.coverImage
+                        if (fallback) set('coverImage', fallback)
+                      }}
+                    >
+                      Usar portada demo
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -659,10 +707,46 @@ export function AdminProjectEditor() {
             ) : null}
           </Section>
 
-          <Section id="recursos" icon={Paperclip} title="Recursos" description="Enlaces al documento, PDF o video del proyecto. Puedes pegar URLs externas o usar archivos de Cargas.">
-            <UrlField label="Documento" icon={FileText} value={form.docUrl ?? ''} onChange={(v) => set('docUrl', v || undefined)} placeholder="https://..." />
-            <UrlField label="PDF" icon={Paperclip} value={form.pdfUrl ?? ''} onChange={(v) => set('pdfUrl', v || undefined)} placeholder="https://..." />
-            <UrlField label="Video" icon={Link2} value={form.videoUrl ?? ''} onChange={(v) => set('videoUrl', v || undefined)} placeholder="https://..." />
+          <Section id="recursos" icon={Paperclip} title="Recursos" description="Pega una URL o sube el archivo desde el computador, igual que las imágenes. El invitado podrá abrirlo y descargarlo.">
+            <ResourceField
+              label="Documento"
+              icon={FileText}
+              value={form.docUrl ?? ''}
+              onChange={(v) => set('docUrl', v || undefined)}
+              placeholder="https://..."
+              accept={RESOURCE_ACCEPT.doc}
+              uploadHint="Word, ODT o TXT"
+              uploading={uploadingAssets.find((asset) =>
+                pendingUploads.current.some((item) => item.id === asset.id && item.target === 'doc'),
+              )}
+              onPick={onPickResource('doc')}
+            />
+            <ResourceField
+              label="PDF"
+              icon={Paperclip}
+              value={form.pdfUrl ?? ''}
+              onChange={(v) => set('pdfUrl', v || undefined)}
+              placeholder="https://..."
+              accept={RESOURCE_ACCEPT.pdf}
+              uploadHint="PDF"
+              uploading={uploadingAssets.find((asset) =>
+                pendingUploads.current.some((item) => item.id === asset.id && item.target === 'pdf'),
+              )}
+              onPick={onPickResource('pdf')}
+            />
+            <ResourceField
+              label="Video"
+              icon={Link2}
+              value={form.videoUrl ?? ''}
+              onChange={(v) => set('videoUrl', v || undefined)}
+              placeholder="https://..."
+              accept={RESOURCE_ACCEPT.video}
+              uploadHint="MP4, WebM o MOV"
+              uploading={uploadingAssets.find((asset) =>
+                pendingUploads.current.some((item) => item.id === asset.id && item.target === 'video'),
+              )}
+              onPick={onPickResource('video')}
+            />
           </Section>
 
           {existing ? (
@@ -856,36 +940,90 @@ function TextArea({
   )
 }
 
-function UrlField({
+function ResourceField({
   label,
   icon: Icon,
   value,
   onChange,
   placeholder,
+  accept,
+  uploadHint,
+  uploading,
+  onPick,
 }: {
   label: string
   icon: typeof FileText
   value: string
   onChange: (value: string) => void
   placeholder: string
+  accept: string
+  uploadHint: string
+  uploading?: { name: string; progress: number; size: number }
+  onPick: (event: ChangeEvent<HTMLInputElement>) => void
 }) {
-  const valid = !value || /^https?:\/\/\S+$/i.test(value) || value.startsWith('#')
+  const valid = isValidResourceUrl(value)
+  const local = Boolean(value && value.startsWith('blob:'))
+  const fileName = local ? resourceFileName(value, 'archivo') : ''
+  const urlValue = local ? '' : value
+
   return (
-    <Field label={label} hint={valid ? undefined : 'Debe ser una URL válida (https://...)'}>
-      <span className="relative block">
-        <Icon className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-legacy-muted" aria-hidden />
-        <input
-          type="url"
-          className={cn(
-            'glass-input liquid-field w-full rounded-xl py-3 pr-4 pl-10 text-sm',
-            !valid && 'border-red-400/50',
-          )}
-          value={value}
-          onChange={(event) => onChange(event.target.value.trim())}
-          placeholder={placeholder}
-          aria-invalid={!valid}
-        />
-      </span>
+    <Field
+      label={label}
+      hint={
+        uploading
+          ? `Subiendo ${uploading.progress}%`
+          : valid
+            ? undefined
+            : 'Debe ser una URL válida (https://...) o un archivo de esta sesión'
+      }
+    >
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <span className="relative block">
+          <Icon className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-legacy-muted" aria-hidden />
+          <input
+            type={local ? 'text' : 'url'}
+            className={cn(
+              'glass-input liquid-field w-full rounded-xl py-3 pr-4 pl-10 text-sm',
+              !valid && 'border-red-400/50',
+            )}
+            value={local ? fileName : urlValue}
+            onChange={(event) => onChange(event.target.value.trim())}
+            placeholder={placeholder}
+            aria-invalid={!valid}
+            readOnly={local}
+          />
+        </span>
+        <label className="btn btn-secondary btn-sm cursor-pointer justify-center">
+          <input type="file" accept={accept} className="sr-only" onChange={onPick} />
+          <Paperclip className="h-4 w-4" aria-hidden />
+          Subir {uploadHint}
+        </label>
+      </div>
+      {uploading ? (
+        <p className="mt-2 flex items-center gap-2 text-xs text-legacy-muted">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-legacy-gold" aria-hidden />
+          {uploading.name} · {formatBytes(uploading.size)}
+          <span className="admin-progress w-24">
+            <span style={{ width: `${uploading.progress}%` }} />
+          </span>
+        </p>
+      ) : null}
+      {local ? (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-legacy-muted">
+          <a
+            href={value.split('#')[0]}
+            download={fileName}
+            className="inline-flex items-center gap-1.5 text-legacy-gold hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            Descargar {fileName}
+          </a>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onChange('')}>
+            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+            Quitar archivo
+          </button>
+        </div>
+      ) : null}
     </Field>
   )
 }

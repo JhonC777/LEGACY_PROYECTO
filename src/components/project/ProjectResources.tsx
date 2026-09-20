@@ -4,6 +4,7 @@ import { ArrowUpRight, Download, FileText, Play } from 'lucide-react'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { withLegacyName } from '@/components/brand/LegacyName'
 import type { DemoProject } from '@/data/demoData'
+import { isDirectVideoFile, isFileResource, resourceFileName } from '@/lib/resources'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -29,6 +30,25 @@ function VideoFacade({
   const id = youtubeId(url)
 
   if (!id) {
+    if (isDirectVideoFile(url)) {
+      const fileName = resourceFileName(url, 'video-del-proyecto.mp4')
+      return (
+        <div className="space-y-3">
+          <video
+            src={url.split('#')[0]}
+            controls
+            className="aspect-video w-full overflow-hidden rounded-[1.4rem] bg-legacy-black"
+            poster={poster}
+          >
+            Tu navegador no puede reproducir este video.
+          </video>
+          <a href={url.split('#')[0]} download={fileName} className="btn btn-secondary btn-sm">
+            <Download className="h-4 w-4" aria-hidden />
+            Descargar video
+          </a>
+        </div>
+      )
+    }
     return (
       <a
         href={url}
@@ -103,7 +123,13 @@ export function ProjectResources({ project }: { project: DemoProject }) {
   const docHref = project.docUrl?.startsWith('#')
     ? '#recursos'
     : project.docUrl || '#recursos'
-  const docIsInternal = docHref.startsWith('#')
+  const docIsFile = isFileResource(project.docUrl)
+  const docName = project.docUrl
+    ? resourceFileName(project.docUrl, 'documento-del-proyecto')
+    : ''
+  const pdfName = project.pdfUrl
+    ? resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf')
+    : ''
 
   return (
     <section id="recursos" className="project-block" aria-labelledby="recursos-title">
@@ -131,9 +157,13 @@ export function ProjectResources({ project }: { project: DemoProject }) {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <motion.a
           {...reveal(0.14)}
-          href={docHref}
+          href={docIsFile ? project.docUrl!.split('#')[0] : docHref}
           className="resource-card group"
-          {...(docIsInternal ? {} : { target: '_blank', rel: 'noreferrer' })}
+          {...(docIsFile
+            ? { download: docName }
+            : docHref.startsWith('#')
+              ? {}
+              : { target: '_blank', rel: 'noreferrer' })}
         >
           <span className="resource-card-icon">
             <FileText className="h-5 w-5" aria-hidden />
@@ -143,16 +173,45 @@ export function ProjectResources({ project }: { project: DemoProject }) {
               Documentación
             </span>
             <span className="mt-0.5 block text-xs leading-relaxed text-legacy-muted">
-              Ficha técnica, bitácora y anexos del proceso.
+              {docIsFile
+                ? docName
+                : 'Ficha técnica, bitácora y anexos del proceso.'}
             </span>
           </span>
           <span className="resource-card-action">
-            {docIsInternal ? 'Demo' : 'Abrir'}
-            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            {docIsFile ? 'Descargar' : docHref.startsWith('#') ? 'Demo' : 'Abrir'}
+            {docIsFile ? (
+              <Download className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            )}
           </span>
         </motion.a>
 
-        {project.pdfUrl ? (
+        {project.pdfUrl && isFileResource(project.pdfUrl) ? (
+          <motion.a
+            {...reveal(0.2)}
+            href={project.pdfUrl.split('#')[0]}
+            download={pdfName}
+            className="resource-card group"
+          >
+            <span className="resource-card-icon">
+              <Download className="h-5 w-5" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-legacy-white">
+                Informe en PDF
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-legacy-muted">
+                {pdfName}
+              </span>
+            </span>
+            <span className="resource-card-action">
+              Descargar
+              <Download className="h-3.5 w-3.5" aria-hidden />
+            </span>
+          </motion.a>
+        ) : project.pdfUrl ? (
           <motion.a
             {...reveal(0.2)}
             href={project.pdfUrl}
@@ -172,7 +231,7 @@ export function ProjectResources({ project }: { project: DemoProject }) {
               </span>
             </span>
             <span className="resource-card-action">
-              Descargar
+              Abrir
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
             </span>
           </motion.a>
