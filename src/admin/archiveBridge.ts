@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   DEMO_PROJECTS,
   getRelatedProjects as relatedFromPool,
+  isRealShowcase,
   type DemoInstitution,
   type DemoProject,
 } from '@/data/demoData'
@@ -82,7 +83,15 @@ export function resolveInstitutionProjects(
         .map(asDemoProject)
     : DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
 
-  return publishedOnly ? pool.filter((project) => project.status === 'published') : pool
+  const showcase = DEMO_PROJECTS.filter(
+    (project) => project.isReal && project.institutionId === institution.id,
+  )
+  const missing = showcase.filter(
+    (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
+  )
+  const merged = missing.length > 0 ? [...missing, ...pool] : pool
+
+  return publishedOnly ? merged.filter((project) => project.status === 'published') : merged
 }
 
 export function resolveProjectBySlug(institution: DemoInstitution, slug?: string) {

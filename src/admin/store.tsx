@@ -466,6 +466,20 @@ export function AdminStoreProvider({
   projectsRef.current = state.projects
   const settingsRef = useRef(state.settings)
   settingsRef.current = state.settings
+  const mediaRef = useRef(state.media)
+  mediaRef.current = state.media
+  const activityRef = useRef(state.activity)
+  activityRef.current = state.activity
+
+  const flushArchive = useCallback(() => {
+    writeArchiveSnapshot({
+      slug: institution.slug,
+      projects: projectsRef.current,
+      media: mediaRef.current,
+      activity: activityRef.current,
+      settings: settingsRef.current,
+    })
+  }, [institution.slug])
 
   const createProject = useCallback<StoreContextValue['createProject']>(
     (input) => {
@@ -483,11 +497,13 @@ export function AdminStoreProvider({
         status: 'draft',
         updatedAt: new Date().toISOString(),
       }
+      projectsRef.current = [project, ...projectsRef.current]
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('create', `Creó el borrador «${project.title || 'Sin título'}»`, project)
+      flushArchive()
       return project
     },
-    [institution.id, log],
+    [flushArchive, institution.id, log],
   )
 
   const updateProject = useCallback<StoreContextValue['updateProject']>(
@@ -499,11 +515,15 @@ export function AdminStoreProvider({
         ...patch,
         updatedAt: new Date().toISOString(),
       }
+      projectsRef.current = projectsRef.current.map((item) =>
+        item.id === id ? project : item,
+      )
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('update', `Actualizó «${project.title || 'Sin título'}»`, project)
+      flushArchive()
       return project
     },
-    [log],
+    [flushArchive, log],
   )
 
   const setProjectStatus = useCallback<StoreContextValue['setProjectStatus']>(
@@ -523,6 +543,9 @@ export function AdminStoreProvider({
         publishedAt:
           status === 'published' ? current.publishedAt ?? new Date().toISOString() : current.publishedAt,
       }
+      projectsRef.current = projectsRef.current.map((item) =>
+        item.id === id ? project : item,
+      )
       dispatch({ type: 'UPSERT_PROJECT', project })
 
       if (status !== 'published' && settingsRef.current.featuredProjectIds.includes(id)) {
@@ -544,18 +567,21 @@ export function AdminStoreProvider({
       }
       const [type, label] = verb[status]
       log(type, `${label} «${project.title}»`, project)
+      flushArchive()
       return { ok: true, errors: [] }
     },
-    [log],
+    [flushArchive, log],
   )
 
   const deleteProject = useCallback<StoreContextValue['deleteProject']>(
     (id) => {
       const current = projectsRef.current.find((project) => project.id === id)
+      projectsRef.current = projectsRef.current.filter((project) => project.id !== id)
       dispatch({ type: 'REMOVE_PROJECT', id })
       if (current) log('delete', `Eliminó «${current.title}»`, current)
+      flushArchive()
     },
-    [log],
+    [flushArchive, log],
   )
 
   const runUpload = useCallback(
@@ -605,19 +631,8 @@ export function AdminStoreProvider({
     [runUpload],
   )
 
-  const mediaRef = useRef(state.media)
-  mediaRef.current = state.media
-
-  // Los blob: de las subidas demo sobreviven al desmontaje (cerrar sesión, cambiar
-  // de institución) y retienen el archivo completo en memoria hasta recargar.
-  useEffect(
-    () => () => {
-      mediaRef.current.forEach((asset) => {
-        if (asset.url.startsWith('blob:')) URL.revokeObjectURL(asset.url)
-      })
-    },
-    [],
-  )
+  // Los blob: de la sesión se conservan al salir del panel para que el invitado
+  // pueda abrir y descargar el archivo recién publicado en esta misma pestaña.
 
   const retryUpload = useCallback<StoreContextValue['retryUpload']>(
     (id) => {

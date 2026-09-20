@@ -8,9 +8,10 @@ import { HomePurpose } from '@/components/entry/HomePurpose'
 import { InstitutionSelector } from '@/components/entry/InstitutionSelector'
 import { LegacyBrand } from '@/components/entry/LegacyBrand'
 import {
-  getPublishedFeaturedProjects,
-  getPublishedProjectCountBySlug,
-} from '@/data/demoData'
+  resolveInstitutionProjects,
+  useArchiveRevision,
+} from '@/admin/archiveBridge'
+import { getInstitutionBySlug } from '@/data/demoData'
 import { useAuraPlayback } from '@/lib/useAuraPlayback'
 import { useCosmicParallax } from '@/lib/useCosmicParallax'
 import {
@@ -27,15 +28,27 @@ export function HomeEntry() {
   const shellRef = useRef<HTMLElement>(null)
   useCosmicParallax(shellRef, live)
 
-  const featured = useMemo(() => getPublishedFeaturedProjects(3), [])
+  const archiveRevision = useArchiveRevision()
+  const featured = useMemo(() => {
+    return MOCK_INSTITUTIONS.filter((item) => item.isActive)
+      .flatMap((item) => {
+        const demo = getInstitutionBySlug(item.slug)
+        return demo
+          ? resolveInstitutionProjects(demo, true).filter((project) => project.isFeatured)
+          : []
+      })
+      .sort((a, b) => b.year - a.year || a.title.localeCompare(b.title, 'es'))
+      .slice(0, 3)
+  }, [archiveRevision])
   const projectCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const institution of MOCK_INSTITUTIONS) {
-      const count = getPublishedProjectCountBySlug(institution.slug)
+      const demo = getInstitutionBySlug(institution.slug)
+      const count = demo ? resolveInstitutionProjects(demo, true).length : 0
       if (count > 0) counts[institution.slug] = count
     }
     return counts
-  }, [])
+  }, [archiveRevision])
 
   const handleSelect = (institution: Institution) => {
     if (!institution.isActive) return
