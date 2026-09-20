@@ -5,9 +5,11 @@ import { SmartImage } from '@/components/ui/SmartImage'
 import {
   DEMO_INSTITUTIONS,
   getProjectHref,
+  isRealShowcase,
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { isFileResource, resourceFileName } from '@/lib/resources'
 
 type ProjectCardProps = {
   project: DemoProject
@@ -47,28 +49,39 @@ export function ProjectCard({
   const resources = [
     {
       key: 'doc',
-      label: 'Documento',
+      label: 'Doc',
       href: project.docUrl?.startsWith('#')
         ? `${href}${project.docUrl}`
         : project.docUrl || href,
       Icon: FileText,
-      external: Boolean(project.docUrl && /^https?:/i.test(project.docUrl)),
+      file: isFileResource(project.docUrl),
+      download: project.docUrl
+        ? resourceFileName(project.docUrl, 'documento-del-proyecto')
+        : undefined,
     },
     {
       key: 'video',
       label: 'Video',
       href: project.videoUrl || `${href}#video`,
       Icon: Play,
-      external: Boolean(project.videoUrl && /^https?:/i.test(project.videoUrl)),
+      file: isFileResource(project.videoUrl),
+      download: project.videoUrl
+        ? resourceFileName(project.videoUrl, 'video-del-proyecto')
+        : undefined,
     },
     {
       key: 'pdf',
       label: 'PDF',
       href: project.pdfUrl || `${href}#pdf`,
       Icon: FileType2,
-      external: Boolean(project.pdfUrl && /^https?:/i.test(project.pdfUrl)),
+      file: isFileResource(project.pdfUrl),
+      download: project.pdfUrl
+        ? resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf')
+        : undefined,
     },
   ]
+
+  const real = isRealShowcase(project)
 
   const kicker = (
     <p className="knowledge-fragment-kicker">
@@ -85,9 +98,18 @@ export function ProjectCard({
     </p>
   )
 
+  const badges = (
+    <span className="knowledge-fragment-badges">
+      {real ? <span className="knowledge-fragment-real">Real</span> : null}
+      {project.isFeatured && !real ? (
+        <span className="knowledge-fragment-featured">Destacado</span>
+      ) : null}
+    </span>
+  )
+
   const stamps = (
     <div className="knowledge-fragment-stamps" aria-label="Recursos disponibles">
-      {resources.map(({ key, label, href: resourceHref, Icon, external }) => {
+      {resources.map(({ key, label, href: resourceHref, Icon, file, download }) => {
         const className = 'knowledge-fragment-stamp'
         const inner = (
           <>
@@ -95,16 +117,15 @@ export function ProjectCard({
             <span>{label}</span>
           </>
         )
-        if (external) {
+        if (file) {
           return (
             <a
               key={key}
-              href={resourceHref}
-              target="_blank"
-              rel="noreferrer"
+              href={resourceHref.split('#')[0]}
+              download={download}
               className={className}
-              title={label}
-              aria-label={label}
+              title={`Descargar ${download ?? label}`}
+              aria-label={`Descargar ${label}`}
               onClick={(event) => event.stopPropagation()}
             >
               {inner}
@@ -133,6 +154,7 @@ export function ProjectCard({
       className={cn(
         'knowledge-fragment group flex h-full flex-col',
         hero && 'is-hero',
+        real && 'is-real',
       )}
     >
       <span className="knowledge-fragment-corners" aria-hidden>
@@ -156,13 +178,6 @@ export function ProjectCard({
         />
         <span aria-hidden className="knowledge-fragment-grain" />
         <span aria-hidden className="knowledge-fragment-scrim" />
-
-        {project.isFeatured ? (
-          <span className="knowledge-fragment-seal">
-            <span className="knowledge-fragment-seal-core" aria-hidden />
-            Destacado
-          </span>
-        ) : null}
 
         {folioLabel ? (
           <span className="knowledge-fragment-folio">{folioLabel}</span>
@@ -199,31 +214,38 @@ export function ProjectCard({
         ) : null}
 
         {hero ? (
-          kicker
+          <div className="knowledge-fragment-head">
+            {kicker}
+            {badges}
+          </div>
         ) : (
           <>
-            {kicker}
-            <Link to={href} state={{ from }} className="mt-2 block">
+            <div className="knowledge-fragment-head">
+              {kicker}
+              {badges}
+            </div>
+            <Link to={href} state={{ from }} className="knowledge-fragment-copy">
               <h3 className="knowledge-fragment-title">{project.title}</h3>
               <p className="knowledge-fragment-dek">{project.subtitle}</p>
             </Link>
           </>
         )}
 
-        <p className="knowledge-fragment-sign" title={`${authors} · ${project.year}`}>
-          <span className="knowledge-fragment-authors">{authors}</span>
-        </p>
-
-        {project.collection ? (
-          <Link
-            to={filterHref('collection', project.collection)}
-            className="knowledge-fragment-register"
-            title={`Filtrar por colección: ${project.collection}`}
-          >
-            <Library className="h-3 w-3" aria-hidden />
-            {project.collection}
-          </Link>
-        ) : null}
+        <div className="knowledge-fragment-sign">
+          <p className="knowledge-fragment-authors" title={authors}>
+            {authors}
+          </p>
+          {project.collection ? (
+            <Link
+              to={filterHref('collection', project.collection)}
+              className="knowledge-fragment-register"
+              title={`Filtrar por colección: ${project.collection}`}
+            >
+              <Library className="h-3 w-3" aria-hidden />
+              {project.collection}
+            </Link>
+          ) : null}
+        </div>
 
         <div className="knowledge-fragment-foot">
           {stamps}
