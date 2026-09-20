@@ -167,11 +167,17 @@ export const DEMO_PROJECTS: DemoProject[] = [
     slug: REAL_SHOWCASE_SLUG,
     institutionId: 'inst-demo-fya',
     title: REAL_SHOWCASE_TITLE,
-    subtitle: 'Arte en relieve y archivo digital de especies amenazadas',
+    subtitle:
+      'Cuadros Decorativos en Alto Relieve de las Especies Animales en Vía de Extinción',
     area: 'Arte y Cultura',
     category: 'Medio Ambiente',
-    year: 2026,
-    authors: [{ id: 'a-real', name: 'Equipo del proyecto', role: 'Registro institucional' }],
+    year: 2024,
+    authors: [
+      { id: 'a-real-1', name: 'Daniela Juliao', role: '' },
+      { id: 'a-real-2', name: 'Jose Diaz', role: '' },
+      { id: 'a-real-3', name: 'Michel Lopez', role: '' },
+      { id: 'a-real-4', name: 'Rocio Jimenez', role: '' },
+    ],
     description:
       'Serie de cuadros en relieve dedicados a especies en extinción, acompañada de una difusión digital para que el trabajo del aula quede consultable en el archivo institucional.',
     problem:
@@ -185,8 +191,12 @@ export const DEMO_PROJECTS: DemoProject[] = [
     technologies: ['Relieve', 'Registro fotográfico', 'Archivo digital'],
     tags: ['arte', 'especies', 'relieve', 'archivo', 'biodiversidad'],
     collection: 'Memorias que permanecen',
-    coverImage: gallery.art[0],
-    gallery: gallery.art,
+    coverImage: '/covers/cuadros-relieve-tortuga.jpg',
+    gallery: [
+      '/covers/cuadros-relieve-tortuga.jpg',
+      gallery.art[1],
+      gallery.art[2],
+    ],
     docUrl: DEMO_DOC,
     videoUrl: DEMO_VIDEO,
     pdfUrl: DEMO_PDF,

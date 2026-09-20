@@ -207,9 +207,13 @@ function seed(institution: DemoInstitution): Omit<State, 'status'> {
 
   // Un archivado para ejercitar el flujo (el más antiguo del catálogo demo).
   if (published.length > 3) {
-    const oldest = [...published].sort((a, b) => a.year - b.year)[0]
-    oldest.status = 'archived'
-    oldest.updatedAt = daysAgo(45)
+    const oldest = [...published]
+      .filter((project) => !project.isReal)
+      .sort((a, b) => a.year - b.year)[0]
+    if (oldest) {
+      oldest.status = 'archived'
+      oldest.updatedAt = daysAgo(45)
+    }
   }
 
   const refArea = published[0]?.area ?? ''
