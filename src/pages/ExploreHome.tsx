@@ -9,7 +9,7 @@ import { LegacyTimeline } from '@/components/explore/LegacyTimeline'
 import { MissionCard } from '@/components/explore/MissionCard'
 import { StatsBar } from '@/components/explore/StatsBar'
 
-/** Vista pública post-Home — réplica del mockup claro de LEGACY (datos MOCK). */
+/** Vista pública post-Home — archivo de LEGACY. */
 export function ExploreHome() {
   return (
     <ExploreShell>

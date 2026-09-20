@@ -28,7 +28,7 @@ import {
   resolveRelatedProjects,
   useArchiveRevision,
 } from '@/admin/archiveBridge'
-import { getInstitutionBySlug } from '@/data/demoData'
+import { getInstitutionBySlug, isRealShowcase } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
 const SECTIONS = [
@@ -135,6 +135,9 @@ export function ProjectDetail() {
                 className="project-hero-voice"
               >
                 <motion.p {...reveal(0.08)} className="project-hero-kicker">
+                  {isRealShowcase(project) ? (
+                    <span className="knowledge-fragment-real">Real</span>
+                  ) : null}
                   Fragmento de conocimiento
                   <span aria-hidden>·</span>
                   Publicado {project.year}

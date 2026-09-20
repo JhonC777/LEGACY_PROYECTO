@@ -107,7 +107,7 @@ export function FeaturedProjects() {
         className="featured-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
         role="group"
         aria-roledescription="carrusel"
-        aria-label="Proyectos destacados de demostración"
+        aria-label="Proyectos destacados del archivo"
       >
         {MOCK_FEATURED_PROJECTS.map((project, index) => (
           <article

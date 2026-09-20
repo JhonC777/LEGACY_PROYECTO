@@ -160,7 +160,7 @@ export function InstitutionHero({
             <motion.div {...reveal(0.05, 12)}>
               <GlassBadge className="border-white/20 bg-white/10 text-white">
                 {institution.isDemo
-                  ? 'Contenido institucional demo'
+                  ? 'Archivo institucional'
                   : 'Espacio institucional'}
               </GlassBadge>
             </motion.div>

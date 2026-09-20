@@ -55,7 +55,25 @@ export type DemoProject = {
   videoUrl?: string
   pdfUrl?: string
   isFeatured: boolean
+  /** Una sola ficha de vitrina con sello REAL. El resto del catálogo sigue siendo demo. */
+  isReal?: boolean
   status: ProjectStatus
+}
+
+export const REAL_SHOWCASE_TITLE =
+  'Cuadros en Relieve de Especies en Extinción con Difusión Digital'
+
+export const REAL_SHOWCASE_SLUG = 'cuadros-relieve-especies-extincion'
+
+export function isRealShowcase(
+  project: Pick<DemoProject, 'title' | 'slug'> & { isReal?: boolean },
+) {
+  if (project.isReal) return true
+  const title = project.title.trim().toLocaleLowerCase('es')
+  return (
+    title === REAL_SHOWCASE_TITLE.toLocaleLowerCase('es') ||
+    project.slug === REAL_SHOWCASE_SLUG
+  )
 }
 
 export const DEMO_INSTITUTIONS: DemoInstitution[] = [
@@ -144,6 +162,38 @@ const DEMO_PDF =
   'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
 
 export const DEMO_PROJECTS: DemoProject[] = [
+  {
+    id: 'demo-p-real',
+    slug: REAL_SHOWCASE_SLUG,
+    institutionId: 'inst-demo-fya',
+    title: REAL_SHOWCASE_TITLE,
+    subtitle: 'Arte en relieve y archivo digital de especies amenazadas',
+    area: 'Arte y Cultura',
+    category: 'Medio Ambiente',
+    year: 2026,
+    authors: [{ id: 'a-real', name: 'Equipo del proyecto', role: 'Registro institucional' }],
+    description:
+      'Serie de cuadros en relieve dedicados a especies en extinción, acompañada de una difusión digital para que el trabajo del aula quede consultable en el archivo institucional.',
+    problem:
+      'El trabajo plástico sobre especies amenazadas quedaba en el taller. Sin un registro digital, la pieza se veía una vez y no volvía a consultarse.',
+    solution:
+      'Cada cuadro se documenta con ficha, imagen y nota de proceso, y se publica en el archivo para que otras personas de la institución puedan verlo y descargarlo.',
+    methodology:
+      'Selección de especies, elaboración de los relieves, registro fotográfico, redacción de fichas y montaje digital de la serie.',
+    results:
+      'Quedó una serie consultable en el archivo, con portada, galería y recursos descargables. No se presentan cifras oficiales de conservación.',
+    technologies: ['Relieve', 'Registro fotográfico', 'Archivo digital'],
+    tags: ['arte', 'especies', 'relieve', 'archivo', 'biodiversidad'],
+    collection: 'Memorias que permanecen',
+    coverImage: gallery.art[0],
+    gallery: gallery.art,
+    docUrl: DEMO_DOC,
+    videoUrl: DEMO_VIDEO,
+    pdfUrl: DEMO_PDF,
+    isFeatured: true,
+    isReal: true,
+    status: 'published',
+  },
   {
     id: 'demo-p01',
     slug: 'sistema-riego-inteligente',

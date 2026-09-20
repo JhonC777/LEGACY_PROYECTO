@@ -304,7 +304,7 @@ export function ArchiveAssistantPanel({
                   {institution.name} · solo fichas publicadas
                 </p>
               </div>
-              <span className="header-demo-pill">Demo</span>
+              <span className="header-demo-pill">Archivo real</span>
               <button
                 ref={closeRef}
                 type="button"
@@ -394,10 +394,10 @@ export function ArchiveAssistantPanel({
               </div>
               <p className="archive-assistant-footnote">
                 {claudeReady === true
-                  ? 'Hablo solo con el archivo publicado de esta institución. Contenido demo.'
+                  ? 'Hablo solo con el archivo publicado de esta institución.'
                   : claudeReady === false
                     ? 'Sin clave de Gemini el archivo se consulta en local. Añade GEMINI_API_KEY en .env.local y reinicia Vite.'
-                    : 'Solo fichas publicadas de esta institución. Contenido de demostración.'}
+                    : 'Solo fichas publicadas de esta institución.'}
               </p>
             </form>
           </motion.aside>
@@ -434,7 +434,7 @@ function WelcomePanel({
           ? `Estoy despierto con ${count} fichas publicadas. Pregúntame cómo a alguien que ya se las leyó: un resumen, una duda, el video.`
           : claudeReady === false
             ? `Consulto ${count} fichas publicadas de esta institución. Para la IA gratis, añade GEMINI_API_KEY de Google AI Studio.`
-            : `Consulto ${count} fichas publicadas de esta institución. El contenido es de demostración.`}
+            : `Consulto ${count} fichas publicadas de esta institución.`}
       </p>
       {suggestions.length > 0 ? (
         <div className="mt-4 flex flex-wrap gap-2" aria-label="Consultas sugeridas">

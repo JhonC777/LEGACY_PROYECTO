@@ -427,7 +427,7 @@ function overview(
       institution,
       corpus,
     ),
-    text: `El archivo publicado de ${institution.name} reúne ${corpus.length} fichas de demostración (${yearRange}, ${areas.length} áreas). Te dejo tres entradas para empezar. No son comunicados oficiales: son contenidos demo de esta institución.`,
+    text: `El archivo publicado de ${institution.name} reúne ${corpus.length} fichas (${yearRange}, ${areas.length} áreas). Te dejo tres entradas para empezar.`,
   }
 }
 
