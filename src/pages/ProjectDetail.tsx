@@ -1,21 +1,14 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import {
-  ArrowLeft,
   ArrowRight,
-  Calendar,
-  FileText,
   Images,
-  Layers3,
   Play,
-  Tags,
   Users,
 } from 'lucide-react'
 import {
   Link,
   Navigate,
-  useLocation,
-  useNavigate,
   useParams,
 } from 'react-router-dom'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'
@@ -49,21 +42,11 @@ type SectionId = (typeof SECTIONS)[number]['id']
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
-function initialsOf(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
-
 export function ProjectDetail() {
   const { institutionSlug, projectSlug } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
   const reduceMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
+  const scrollRootRef = useRef<HTMLElement | null>(null)
   const [activeSection, setActiveSection] = useState<SectionId>('resumen')
   const revision = useArchiveRevision()
 
@@ -72,7 +55,12 @@ export function ProjectDetail() {
   const project = institution ? resolveProjectBySlug(institution, projectSlug) : undefined
   void revision
 
+  useLayoutEffect(() => {
+    scrollRootRef.current = document.querySelector('.explore-scroll')
+  }, [])
+
   const { scrollYProgress } = useScroll({
+    container: scrollRootRef,
     target: heroRef,
     offset: ['start start', 'end start'],
   })
@@ -96,14 +84,18 @@ export function ProjectDetail() {
         const first = visible[0]
         if (first) setActiveSection(first.target.id as SectionId)
       },
-      { rootMargin: '-35% 0px -55% 0px', threshold: 0 },
+      {
+        root: scrollRootRef.current,
+        rootMargin: '-35% 0px -55% 0px',
+        threshold: 0,
+      },
     )
 
     targets.forEach((node) => observer.observe(node))
     return () => observer.disconnect()
   }, [project])
 
-  if (!institution || !project) {
+  if (!institution || !institution.isActive || !project) {
     return <Navigate to="/" replace />
   }
 
@@ -115,16 +107,14 @@ export function ProjectDetail() {
   const previousProject =
     allProjects[(index - 1 + allProjects.length) % allProjects.length] ?? project
   const nextHref = `/instituciones/${institution.slug}/proyectos/${nextProject.slug}`
-  const position = String(index + 1).padStart(2, '0')
-  const total = String(allProjects.length).padStart(2, '0')
 
-  const reveal = (delay = 0, distance = 22) =>
+  const reveal = (delay = 0, distance = 16) =>
     reduceMotion
       ? {}
       : {
-          initial: { opacity: 0, y: distance, filter: 'blur(8px)' },
-          animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-          transition: { duration: 0.75, delay, ease: EASE },
+          initial: { opacity: 0, y: distance },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.7, delay, ease: EASE },
         }
 
   const heroStyle = { '--project-accent': institution.accent } as CSSProperties
@@ -133,160 +123,84 @@ export function ProjectDetail() {
     <ExploreShell style={heroStyle}>
       <PublicHeader institution={institution} />
 
-      <main id="contenido">
+      <main id="contenido" className="project-stage">
         <section
           ref={heroRef}
-          className="project-hero px-6 pt-6 pb-12 lg:px-8 lg:pt-8 lg:pb-16"
+          className="project-hero px-6 pt-7 pb-10 lg:px-8 lg:pt-9 lg:pb-12"
         >
-          <div aria-hidden className="institution-hero-grid" />
-          <div aria-hidden className="institution-hero-grain" />
-          <div aria-hidden className="project-orb project-orb-a" />
-          <div aria-hidden className="project-orb project-orb-b" />
-          <div aria-hidden className="institution-blur-streak institution-blur-streak-a" />
-          <div aria-hidden className="institution-blur-streak institution-blur-streak-b" />
-
-          <div className="relative mx-auto max-w-[1200px]">
-            <motion.nav
-              {...reveal(0, 10)}
-              className="flex flex-wrap items-center gap-2 text-sm text-legacy-muted"
-              aria-label="Ruta"
-            >
-              <Link to="/" className="transition-colors hover:text-legacy-gold">
-                Inicio
-              </Link>
-              <span aria-hidden>/</span>
-              <Link
-                to={`/instituciones/${institution.slug}`}
-                className="transition-colors hover:text-legacy-gold"
-              >
-                {institution.name}
-              </Link>
-              <span aria-hidden>/</span>
-              <Link to={catalogHref} className="transition-colors hover:text-legacy-gold">
-                Proyectos
-              </Link>
-              <span aria-hidden>/</span>
-              <span className="max-w-[280px] truncate font-medium text-legacy-white">
-                {project.title}
-              </span>
-            </motion.nav>
-
-            <motion.div {...reveal(0.05, 10)} className="mt-5">
-              <button
-                type="button"
-                onClick={() => {
-                  const state = location.state as { from?: string } | null
-                  if (state?.from) navigate(-1)
-                  else navigate(catalogHref)
-                }}
-                className="btn btn-ghost btn-sm pickup"
-              >
-                <ArrowLeft className="h-4 w-4" aria-hidden />
-                Volver a la vista anterior
-              </button>
-            </motion.div>
-
-            <div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14">
+          <div className="relative mx-auto max-w-[1180px]">
+            <div className="project-hero-grid">
               <motion.div
                 style={reduceMotion ? undefined : { y: textY, opacity: textOpacity }}
+                className="project-hero-voice"
               >
-                <motion.span {...reveal(0.1)} className="project-hero-eyebrow">
-                  <span aria-hidden className="project-hero-eyebrow-dot" />
-                  Proyecto de demostración
-                  <span aria-hidden className="text-legacy-gold/40">·</span>
+                <motion.p {...reveal(0.08)} className="project-hero-kicker">
+                  Fragmento de conocimiento
+                  <span aria-hidden>·</span>
                   Publicado {project.year}
-                </motion.span>
-
-                <motion.div
-                  {...reveal(0.18)}
-                  className="mt-5 flex flex-wrap gap-2"
-                  aria-label="Clasificación"
-                >
-                  <Link
-                    to={`${catalogHref}?area=${encodeURIComponent(project.area)}`}
-                    className="project-meta-link"
-                  >
-                    <Layers3 className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-                    {project.area}
-                  </Link>
-                  <Link
-                    to={`${catalogHref}?category=${encodeURIComponent(project.category)}`}
-                    className="project-meta-link"
-                  >
-                    <Tags className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-                    {project.category}
-                  </Link>
-                  <Link
-                    to={`${catalogHref}?year=${project.year}`}
-                    className="project-meta-link"
-                  >
-                    <Calendar className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-                    {project.year}
-                  </Link>
-                </motion.div>
+                </motion.p>
 
                 <motion.h1
-                  {...reveal(0.26, 28)}
-                  className="project-hero-title mt-5 font-display text-[clamp(2.4rem,5.2vw,4.3rem)] leading-[1.02] font-semibold"
+                  {...reveal(0.16, 22)}
+                  className="project-hero-title mt-4 font-display text-[clamp(2.2rem,4.6vw,3.85rem)] leading-[1.04] font-semibold"
                 >
                   {project.title}
                 </motion.h1>
 
                 <motion.p
-                  {...reveal(0.36)}
-                  className="mt-5 max-w-xl text-lg leading-relaxed text-legacy-muted"
+                  {...reveal(0.26)}
+                  className="project-hero-dek mt-5"
                 >
                   {project.subtitle}
                 </motion.p>
 
-                <motion.ul
-                  {...reveal(0.44)}
-                  className="mt-6 flex flex-wrap gap-2"
-                  aria-label="Participantes"
+                <motion.p
+                  {...reveal(0.34)}
+                  className="project-hero-meta mt-6"
+                  aria-label="Clasificación"
                 >
-                  {project.authors.map((author) => (
-                    <li key={author.id} className="project-author-chip">
-                      <span aria-hidden className="project-author-initial">
-                        {initialsOf(author.name)}
-                      </span>
-                      <span className="leading-tight">
-                        <span className="block font-medium">{author.name}</span>
-                        <span className="block text-[0.62rem] text-legacy-muted">
-                          {author.role}
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </motion.ul>
+                  <Link to={`${catalogHref}?area=${encodeURIComponent(project.area)}`}>
+                    {project.area}
+                  </Link>
+                  <span aria-hidden>·</span>
+                  <Link
+                    to={`${catalogHref}?category=${encodeURIComponent(project.category)}`}
+                  >
+                    {project.category}
+                  </Link>
+                  <span aria-hidden>·</span>
+                  <Link to={`${catalogHref}?year=${project.year}`}>{project.year}</Link>
+                </motion.p>
 
-                <motion.div {...reveal(0.54)} className="mt-8 flex flex-wrap gap-3">
-                  <a href="#recursos" className="btn btn-primary btn-sm pickup">
-                    <FileText className="h-4 w-4" aria-hidden />
-                    Ver documentación
+                <motion.p {...reveal(0.42)} className="project-hero-byline mt-5">
+                  <Users className="h-3.5 w-3.5 text-legacy-gold/80" aria-hidden />
+                  <span>
+                    {project.authors.map((author) => author.name).join(', ')}
+                  </span>
+                </motion.p>
+
+                <motion.div {...reveal(0.5)} className="mt-8 flex flex-wrap gap-3">
+                  <a href="#resumen" className="home-cta is-primary">
+                    Leer el archivo
+                  </a>
+                  <a href="#galeria" className="home-cta is-ghost">
+                    <Images className="h-3.5 w-3.5" aria-hidden />
+                    Galería
                   </a>
                   {project.videoUrl ? (
-                    <a href="#recursos" className="btn btn-secondary btn-sm pickup">
-                      <Play className="h-4 w-4" aria-hidden />
-                      Ver video
+                    <a href="#recursos" className="home-cta is-ghost">
+                      <Play className="h-3.5 w-3.5" aria-hidden />
+                      Video
                     </a>
                   ) : null}
-                  <a href="#galeria" className="btn btn-ghost btn-sm pickup">
-                    <Images className="h-4 w-4" aria-hidden />
-                    Galería
-                    <span className="header-nav-count">{project.gallery.length}</span>
-                  </a>
                 </motion.div>
               </motion.div>
 
               <motion.div
-                initial={
-                  reduceMotion
-                    ? false
-                    : { opacity: 0, y: 36, rotateX: 7, filter: 'blur(14px)' }
-                }
-                animate={{ opacity: 1, y: 0, rotateX: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 1.05, delay: 0.2, ease: EASE }}
-                className="perspective-[1400px]"
+                initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.18, ease: EASE }}
+                className="project-hero-plate"
               >
                 <motion.div
                   className="project-hero-cover aspect-[4/3] w-full"
@@ -301,13 +215,11 @@ export function ProjectDetail() {
                   />
                   <div className="project-hero-cover-caption">
                     <span className="project-hero-cover-tag">
-                      <Users className="h-3 w-3 text-legacy-gold" aria-hidden />
-                      {institution.shortName} · {project.authors.length}{' '}
-                      {project.authors.length === 1 ? 'participante' : 'participantes'}
+                      {institution.shortName}
                     </span>
                     <span className="project-hero-cover-index">
-                      {position}
-                      <small>/ {total}</small>
+                      {project.authors.length}{' '}
+                      {project.authors.length === 1 ? 'autor' : 'autores'}
                     </span>
                   </div>
                 </motion.div>
@@ -317,7 +229,7 @@ export function ProjectDetail() {
         </section>
 
         <nav className="project-subnav px-6 lg:px-8" aria-label="Secciones de la ficha">
-          <div className="mx-auto flex max-w-[1200px] items-center">
+          <div className="mx-auto flex max-w-[1180px] items-center">
             <div className="project-subnav-track">
               {SECTIONS.map((section, sectionIndex) => (
                 <a
@@ -347,8 +259,8 @@ export function ProjectDetail() {
           </div>
         </nav>
 
-        <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start lg:gap-12 lg:px-8 lg:py-14">
-          <div className="min-w-0 space-y-16">
+        <div className="project-body mx-auto grid max-w-[1180px] gap-8 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-10 lg:px-8 lg:py-12">
+          <div className="project-reading min-w-0 space-y-12 lg:space-y-14">
             <AcademicSection id="resumen" eyebrow="Resumen" title="Descripción general">
               <p>{project.description}</p>
             </AcademicSection>
@@ -377,24 +289,26 @@ export function ProjectDetail() {
         </div>
 
         {related.length > 0 ? (
-          <section className="bg-legacy-black/30 px-6 py-12 lg:px-8">
-            <div className="mx-auto max-w-[1200px]">
-              <div className="mb-6 flex items-end justify-between">
+          <section className="project-related px-6 py-12 lg:px-8">
+            <div className="mx-auto max-w-[1180px]">
+              <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold tracking-[0.14em] text-legacy-gold uppercase">
-                    Sigue explorando
-                  </p>
-                  <h2 className="mt-1 font-display text-3xl font-semibold text-legacy-white">
-                    Proyectos relacionados
+                  <p className="home-threshold-kicker">En el mismo archivo</p>
+                  <h2 className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white">
+                    Otros fragmentos
                   </h2>
                 </div>
-                <Link to={catalogHref} className="btn btn-ghost btn-sm pickup">
-                  Volver al catálogo →
+                <Link to={catalogHref} className="home-explore-link w-auto">
+                  Volver al catálogo
                 </Link>
               </div>
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                {related.map((relatedProject) => (
-                  <ProjectCard key={relatedProject.id} project={relatedProject} />
+              <div className="knowledge-catalog">
+                {related.map((relatedProject, index) => (
+                  <ProjectCard
+                    key={relatedProject.id}
+                    project={relatedProject}
+                    folio={index + 1}
+                  />
                 ))}
               </div>
             </div>
@@ -411,10 +325,10 @@ function viewReveal(reduceMotion: boolean | null, delay = 0) {
   return reduceMotion
     ? {}
     : {
-        initial: { opacity: 0, y: 26, filter: 'blur(8px)' },
-        whileInView: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        initial: { opacity: 0, y: 18 },
+        whileInView: { opacity: 1, y: 0 },
         viewport: { once: true, amount: 0.2 },
-        transition: { duration: 0.7, delay, ease: EASE },
+        transition: { duration: 0.65, delay, ease: EASE },
       }
 }
 
@@ -431,15 +345,13 @@ function AcademicSection({
 }) {
   const reduceMotion = useReducedMotion()
   return (
-    <motion.section id={id} {...viewReveal(reduceMotion)}>
-      <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
-        {eyebrow}
-      </p>
-      <h2 className="mt-1 font-display text-3xl font-semibold text-legacy-white">{title}</h2>
+    <motion.section id={id} className="project-block" {...viewReveal(reduceMotion)}>
+      <p className="home-threshold-kicker">{eyebrow}</p>
+      <h2 className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white">
+        {title}
+      </h2>
       <div className="project-section-rule mt-3" aria-hidden />
-      <div className="project-lead mt-5 text-[1.02rem] leading-8 text-legacy-muted">
-        {children}
-      </div>
+      <div className="project-lead mt-5">{children}</div>
     </motion.section>
   )
 }

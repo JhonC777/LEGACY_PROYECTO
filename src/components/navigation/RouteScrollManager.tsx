@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
+import { scrollLegacyTo } from '@/lib/legacyScroll'
 
 export function RouteScrollManager() {
   const location = useLocation()
@@ -21,7 +22,7 @@ export function RouteScrollManager() {
     }
 
     if (pathChanged && navigationType !== 'POP') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      scrollLegacyTo({ top: 0, left: 0, behavior: 'auto' })
     }
   }, [location.hash, location.pathname, location.search, navigationType])
 

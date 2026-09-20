@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { DemoInstitution } from '@/data/demoData'
+import { LEGACY_SLOGAN } from '@/lib/brand'
 
 type InstitutionCoverProps = {
   institution: DemoInstitution
@@ -77,7 +78,7 @@ export function InstitutionCover({
         </motion.div>
 
         <motion.p {...fade(0.7, 8)} className="institution-cover-phrase">
-          Los archivos no se guardan, <em>trascienden</em>.
+          {LEGACY_SLOGAN}
         </motion.p>
       </div>
     </main>

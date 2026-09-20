@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   Archive,
+  ArrowLeft,
   ArrowRight,
   CalendarDays,
   Check,
@@ -15,8 +16,11 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { LegacyMark } from '@/components/brand/LegacyMark'
+import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { cn } from '@/lib/cn'
+import { getLegacyScrollRoot } from '@/lib/legacyScroll'
 import { ArchiveAssistantPanel } from '@/components/assistant/ArchiveAssistantPanel'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
@@ -28,6 +32,7 @@ import {
 import {
   resolveInstitution,
   resolveInstitutionProjects,
+  resolveProjectBySlug,
   useArchiveRevision,
 } from '@/admin/archiveBridge'
 
@@ -49,6 +54,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
   const institution = incoming ? resolveInstitution(incoming) : undefined
   const location = useLocation()
   const navigate = useNavigate()
+  const { projectSlug } = useParams()
   const headerRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -141,6 +147,22 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
         ? String(years[0])
         : '—'
 
+  const currentProject =
+    institution && onProjectDetail && projectSlug
+      ? resolveProjectBySlug(institution, projectSlug)
+      : undefined
+  const projectIndex = currentProject
+    ? scoped.findIndex((item) => item.id === currentProject.id)
+    : -1
+  const showContextRail = !showToolbar && !onCoverView
+
+  const goBackToArchive = () => {
+    const state = location.state as { from?: string } | null
+    if (state?.from) navigate(-1)
+    else navigate(projectsHref)
+    setSheetOpen(false)
+  }
+
   useEffect(() => {
     setOpenMenu(null)
     setSheetOpen(false)
@@ -176,12 +198,16 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
 
   useEffect(() => {
     let frame = 0
+    const root = getLegacyScrollRoot(headerRef.current)
 
     const update = () => {
       frame = 0
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      setCondensed(window.scrollY > 10)
-      setProgress(max > 8 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0)
+      const top = root ? root.scrollTop : window.scrollY
+      const max = root
+        ? root.scrollHeight - root.clientHeight
+        : document.documentElement.scrollHeight - window.innerHeight
+      setCondensed(top > 10)
+      setProgress(max > 8 ? Math.min(1, Math.max(0, top / max)) : 0)
     }
 
     const onScroll = () => {
@@ -189,11 +215,12 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
     }
 
     update()
-    window.addEventListener('scroll', onScroll, { passive: true })
+    const target: EventTarget = root ?? window
+    target.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     return () => {
       if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', onScroll)
+      target.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
   }, [location.pathname])
@@ -263,117 +290,118 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
         ref={headerRef}
         className={cn('glass-header legacy-header sticky top-0 z-40', condensed && 'is-condensed')}
       >
-        <div className="mx-auto flex max-w-[1240px] items-center gap-2.5 px-4 py-3 sm:gap-3 sm:px-6 lg:px-8">
-          <Link
-            to="/"
-            className="legacy-brand flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl"
-            aria-label="Volver al inicio de LEGACY"
-          >
-            <span className="legacy-brand-mark" aria-hidden>
-              <span>L</span>
-            </span>
-            <span className="min-w-0 leading-tight">
-              <span className="block font-display text-xl font-semibold tracking-wide text-legacy-white">
-                LEGACY
-              </span>
-              <span className="hidden truncate text-[10px] text-legacy-muted sm:block">
-                Museo Digital del Legado Estudiantil
-              </span>
-            </span>
-          </Link>
-
-          <span className="header-divider hidden lg:block" aria-hidden />
-
-          <div className="relative hidden lg:block">
-            <button
-              type="button"
-              className={cn('header-chip', openMenu === 'institution' && 'is-open')}
-              aria-expanded={openMenu === 'institution'}
-              aria-controls="header-institution-menu"
-              onClick={() => toggleMenu('institution')}
+        <div className="header-main">
+          <div className="header-identity">
+            <Link
+              to="/"
+              className="legacy-brand flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl"
+              aria-label="Volver al inicio de LEGACY"
             >
-              {institution ? (
-                <InstitutionLogo
-                  name={institution.name}
-                  logoUrl={institution.logoUrl}
-                  fallback={institution.shortName}
-                  accent={institution.accent}
-                  decorative
-                  className="header-avatar"
-                  imageClassName="bg-white/95 p-0.5"
-                />
-              ) : (
-                <Compass className="h-4 w-4 text-legacy-gold" aria-hidden />
-              )}
-              <span className="max-w-[9rem] truncate">
-                {institution ? institution.name : 'Todas las instituciones'}
+              <LegacyMark size="sm" />
+              <span className="min-w-0 leading-tight">
+                <LegacyWordmark className="block" />
+                <span className="hidden truncate text-[10px] text-legacy-muted sm:block">
+                  Museo Digital del Legado Estudiantil
+                </span>
               </span>
-              <ChevronDown className="header-chip-caret h-3.5 w-3.5" aria-hidden />
-            </button>
+            </Link>
 
-            {openMenu === 'institution' ? (
-              <div
-                id="header-institution-menu"
-                className="header-menu w-[19rem]"
-                aria-label="Cambiar de institución"
+            <span className="header-divider hidden lg:block" aria-hidden />
+
+            <div className="header-switcher relative hidden lg:block">
+              <button
+                type="button"
+                className={cn('header-chip', openMenu === 'institution' && 'is-open')}
+                aria-expanded={openMenu === 'institution'}
+                aria-controls="header-institution-menu"
+                title={institution ? institution.name : 'Todas las instituciones'}
+                onClick={() => toggleMenu('institution')}
               >
-                <p className="header-menu-title">Instituciones demo</p>
-                <ul>
-                  {institutionOptions.map(({ item, count }) => {
-                    const isCurrent = item.id === institution?.id
-                    return (
-                      <li key={item.id}>
-                        <Link
-                          to={`/instituciones/${item.slug}`}
-                          className={cn('header-menu-item', isCurrent && 'is-current')}
-                          aria-current={isCurrent ? 'true' : undefined}
-                        >
-                          <InstitutionLogo
-                            name={item.name}
-                            logoUrl={item.logoUrl}
-                            fallback={item.shortName}
-                            accent={item.accent}
-                            decorative
-                            className="header-avatar"
-                            imageClassName="bg-white/95 p-0.5"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-legacy-white">
-                              {item.name}
-                            </span>
-                            <span className="block text-[11px] text-legacy-muted">
-                              {count} proyectos demo
-                            </span>
-                          </span>
-                          {isCurrent ? (
-                            <Check className="h-4 w-4 shrink-0 text-legacy-gold" aria-hidden />
-                          ) : (
-                            <ArrowRight
-                              className="h-4 w-4 shrink-0 text-legacy-muted"
-                              aria-hidden
+                {institution ? (
+                  <InstitutionLogo
+                    name={institution.name}
+                    logoUrl={institution.logoUrl}
+                    fallback={institution.shortName}
+                    accent={institution.accent}
+                    decorative
+                    className="header-avatar"
+                    imageClassName="bg-white/95 p-0.5"
+                  />
+                ) : (
+                  <Compass className="h-4 w-4 text-legacy-gold" aria-hidden />
+                )}
+                <span className="header-chip-copy">
+                  <span className="header-chip-kicker">
+                    {institution ? institution.shortName : 'Red LEGACY'}
+                  </span>
+                  <span className="header-chip-name">
+                    {institution ? institution.name : 'Todas las instituciones'}
+                  </span>
+                </span>
+                <ChevronDown className="header-chip-caret h-3.5 w-3.5" aria-hidden />
+              </button>
+
+              {openMenu === 'institution' ? (
+                <div
+                  id="header-institution-menu"
+                  className="header-menu w-[22rem]"
+                  aria-label="Cambiar de institución"
+                >
+                  <p className="header-menu-title">Instituciones demo</p>
+                  <ul>
+                    {institutionOptions.map(({ item, count }) => {
+                      const isCurrent = item.id === institution?.id
+                      return (
+                        <li key={item.id}>
+                          <Link
+                            to={`/instituciones/${item.slug}`}
+                            className={cn('header-menu-item', isCurrent && 'is-current')}
+                            aria-current={isCurrent ? 'true' : undefined}
+                          >
+                            <InstitutionLogo
+                              name={item.name}
+                              logoUrl={item.logoUrl}
+                              fallback={item.shortName}
+                              accent={item.accent}
+                              decorative
+                              className="header-avatar"
+                              imageClassName="bg-white/95 p-0.5"
                             />
-                          )}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-                <div className="header-menu-footer">
-                  <Link to="/" className="header-menu-action">
-                    Ver todas las instituciones
-                  </Link>
-                  <Link to={projectsHref} className="header-menu-action">
-                    Catálogo de la institución
-                  </Link>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-medium text-legacy-white">
+                                {item.name}
+                              </span>
+                              <span className="block text-[11px] text-legacy-muted">
+                                {count} proyectos demo
+                              </span>
+                            </span>
+                            {isCurrent ? (
+                              <Check className="h-4 w-4 shrink-0 text-legacy-gold" aria-hidden />
+                            ) : (
+                              <ArrowRight
+                                className="h-4 w-4 shrink-0 text-legacy-muted"
+                                aria-hidden
+                              />
+                            )}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  <div className="header-menu-footer">
+                    <Link to="/" className="header-menu-action">
+                      Ver todas las instituciones
+                    </Link>
+                    <Link to={projectsHref} className="header-menu-action">
+                      Catálogo de la institución
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
 
-          <nav
-            className="ml-auto hidden items-center gap-5 lg:flex"
-            aria-label="Secciones"
-          >
+          <nav className="header-nav hidden lg:flex" aria-label="Secciones">
             {institution ? (
               <Link
                 to={archiveHref}
@@ -400,39 +428,32 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
             </NavLink>
           </nav>
 
-          {showToolbar ? (
-            <form
-              role="search"
-              onSubmit={submitSearch}
-              className="header-search ml-auto hidden xl:flex"
-            >
-              <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
-              <input
-                ref={searchRef}
-                type="search"
-                value={term}
-                onChange={(event) => setTerm(event.target.value)}
-                placeholder={
-                  institution ? `Buscar en ${institution.shortName}...` : 'Buscar proyectos...'
-                }
-                aria-label="Buscar en el catálogo"
-              />
-              <kbd className="header-kbd" aria-hidden>
-                {shortcutLabel}
-              </kbd>
-            </form>
-          ) : null}
+          <div className="header-tools">
+            {showToolbar ? (
+              <div className="header-search-slot hidden min-w-0">
+                <form role="search" onSubmit={submitSearch} className="header-search">
+                  <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    value={term}
+                    onChange={(event) => setTerm(event.target.value)}
+                    placeholder={
+                      institution ? `Buscar en ${institution.shortName}...` : 'Buscar proyectos...'
+                    }
+                    aria-label="Buscar en el catálogo"
+                  />
+                  <kbd className="header-kbd" aria-hidden>
+                    {shortcutLabel}
+                  </kbd>
+                </form>
+              </div>
+            ) : null}
 
-          <div
-            className={cn(
-              'flex shrink-0 items-center gap-2',
-              !showToolbar && 'ml-auto lg:ml-0',
-            )}
-          >
             {institution ? (
               <button
                 type="button"
-                className="btn btn-primary btn-sm whitespace-nowrap"
+                className="header-action header-action-gold"
                 aria-expanded={assistantOpen}
                 aria-controls="archive-assistant-panel"
                 aria-haspopup="dialog"
@@ -441,40 +462,40 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                 onClick={openAssistant}
               >
                 <MessageSquareText className="h-4 w-4" aria-hidden />
-                <span className="hidden sm:inline xl:hidden">Consultar</span>
-                <span className="hidden xl:inline">Consultar el archivo</span>
+                <span className="hidden sm:inline 2xl:hidden">Consultar</span>
+                <span className="hidden 2xl:inline">Consultar el archivo</span>
               </button>
             ) : null}
 
             <Link
               to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
-              className="btn btn-secondary btn-sm shrink-0"
+              className="header-action header-action-quiet"
               title="Panel de administración institucional"
             >
               <UserRound className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">Administrador</span>
             </Link>
-          </div>
 
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm shrink-0 lg:hidden"
-            aria-expanded={sheetOpen}
-            aria-controls="public-mobile-nav"
-            onClick={() => setSheetOpen((open) => !open)}
-          >
-            {sheetOpen ? (
-              <X className="h-4 w-4" aria-hidden />
-            ) : (
-              <Menu className="h-4 w-4" aria-hidden />
-            )}
-            <span className="sr-only">Menú</span>
-          </button>
+            <button
+              type="button"
+              className="header-action header-action-quiet header-menu-toggle"
+              aria-expanded={sheetOpen}
+              aria-controls="public-mobile-nav"
+              onClick={() => setSheetOpen((open) => !open)}
+            >
+              {sheetOpen ? (
+                <X className="h-4 w-4" aria-hidden />
+              ) : (
+                <Menu className="h-4 w-4" aria-hidden />
+              )}
+              <span className="sr-only">Menú</span>
+            </button>
+          </div>
         </div>
 
         {showToolbar ? (
-          <div className="header-subbar hidden lg:block">
-            <div className="mx-auto flex max-w-[1240px] items-center gap-2 px-4 sm:px-6 lg:px-8">
+          <div className="header-rail is-filters hidden lg:block">
+            <div className="header-chamber">
               <span className="header-subbar-label">Acceso rápido</span>
 
               <FilterMenu
@@ -532,15 +553,24 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
               </p>
             </div>
           </div>
-        ) : (
-          <div className="header-contextbar hidden lg:block">
-            <div className="mx-auto flex max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
-              <div className="header-context-path min-w-0">
+        ) : showContextRail ? (
+          <div className="header-rail hidden lg:block">
+            <div className="header-chamber">
+              {onProjectDetail ? (
+                <button type="button" className="header-back" onClick={goBackToArchive}>
+                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                  Volver
+                </button>
+              ) : (
                 <span className="header-context-kicker">
                   <Archive className="h-3.5 w-3.5" aria-hidden />
                   Archivo académico
                 </span>
-                <span className="header-context-divider" aria-hidden />
+              )}
+
+              <span className="header-context-divider" aria-hidden />
+
+              <nav className="header-context-path" aria-label="Ruta del archivo">
                 <Link
                   to={institution ? institutionBase : '/explorar'}
                   className="header-context-link"
@@ -554,28 +584,39 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                       Proyectos
                     </Link>
                     <ChevronRight className="h-3 w-3 shrink-0 text-white/25" aria-hidden />
-                    <span className="header-context-current">Ficha académica</span>
+                    <span className="header-context-current">
+                      {currentProject?.title ?? 'Ficha académica'}
+                    </span>
                   </>
                 ) : (
                   <span className="header-context-current">Catálogo de proyectos</span>
                 )}
-              </div>
+              </nav>
 
-              <p className="header-context-summary ml-auto">
-                <span>
-                  <strong>{scoped.length}</strong> publicados
-                </span>
-                <span className="header-context-separator" aria-hidden />
-                <span>{yearRange}</span>
-                <span className="header-context-separator" aria-hidden />
-                <span>
-                  <strong>{areas.length}</strong> áreas
-                </span>
+              <p className="header-context-summary">
+                {onProjectDetail && projectIndex >= 0 ? (
+                  <span className="header-folio" aria-label="Posición en el archivo">
+                    {String(projectIndex + 1).padStart(2, '0')}
+                    <span> / {String(scoped.length).padStart(2, '0')}</span>
+                  </span>
+                ) : (
+                  <>
+                    <span>
+                      <strong>{scoped.length}</strong> publicados
+                    </span>
+                    <span className="header-context-separator" aria-hidden />
+                    <span>{yearRange}</span>
+                    <span className="header-context-separator" aria-hidden />
+                    <span>
+                      <strong>{areas.length}</strong> áreas
+                    </span>
+                  </>
+                )}
                 <span className="header-demo-pill">Contenido demo</span>
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
         <span
           className="header-progress"
@@ -586,6 +627,13 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
 
       {sheetOpen ? (
         <div id="public-mobile-nav" className="header-sheet lg:hidden">
+          {onProjectDetail ? (
+            <button type="button" className="header-back mb-3" onClick={goBackToArchive}>
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+              Volver
+            </button>
+          ) : null}
+
           {showToolbar ? (
             <form role="search" onSubmit={submitSearch} className="header-search w-full">
               <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
@@ -599,13 +647,15 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
             </form>
           ) : null}
 
-          <div className={cn('header-sheet-context', !showToolbar && 'mt-0')}>
+          <div className={cn('header-sheet-context', !showToolbar && !onProjectDetail && 'mt-0')}>
             <span className="header-context-kicker">
               <Archive className="h-3.5 w-3.5" aria-hidden />
               {onProjectDetail ? 'Ficha académica' : 'Archivo académico'}
             </span>
             <p>
-              {scoped.length} proyectos publicados · {yearRange} · {areas.length} áreas
+              {onProjectDetail && currentProject
+                ? currentProject.title
+                : `${scoped.length} proyectos publicados · ${yearRange} · ${areas.length} áreas`}
             </p>
           </div>
 

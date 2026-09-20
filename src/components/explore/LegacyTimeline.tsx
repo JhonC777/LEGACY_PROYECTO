@@ -1,33 +1,38 @@
 import { CalendarDays, Layers3, Library } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DEMO_PROJECTS, PILOT_CATALOG_PATH } from '@/data/demoData'
+import { DEMO_INSTITUTIONS, getPublishedProjects, PILOT_CATALOG_PATH } from '@/data/demoData'
 
-const YEARS = [...new Set(DEMO_PROJECTS.map((project) => project.year))].sort(
+const publicProjects = getPublishedProjects().filter((project) => {
+  const institution = DEMO_INSTITUTIONS.find((item) => item.id === project.institutionId)
+  return institution?.isActive === true
+})
+
+const YEARS = [...new Set(publicProjects.map((project) => project.year))].sort(
   (a, b) => b - a,
 )
 
-const AREAS = [...new Set(DEMO_PROJECTS.map((project) => project.area))]
+const AREAS = [...new Set(publicProjects.map((project) => project.area))]
   .map((name) => ({
     name,
-    count: DEMO_PROJECTS.filter((project) => project.area === name).length,
+    count: publicProjects.filter((project) => project.area === name).length,
   }))
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'))
 
 const COLLECTIONS = [
   ...new Set(
-    DEMO_PROJECTS.map((project) => project.collection).filter(
+    publicProjects.map((project) => project.collection).filter(
       (collection): collection is string => Boolean(collection),
     ),
   ),
 ]
   .map((name) => ({
     name,
-    count: DEMO_PROJECTS.filter((project) => project.collection === name).length,
+    count: publicProjects.filter((project) => project.collection === name).length,
   }))
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'))
 
 function countByYear(year: number) {
-  return DEMO_PROJECTS.filter((project) => project.year === year).length
+  return publicProjects.filter((project) => project.year === year).length
 }
 
 /** Accesos rápidos del catálogo demo: años, áreas y colecciones. */
@@ -78,7 +83,7 @@ export function LegacyTimeline() {
                 key={area.name}
                 to={`${PILOT_CATALOG_PATH}?area=${encodeURIComponent(area.name)}`}
                 className="chip-liquid"
-                aria-label={`${area.name}, ${area.count} proyectos demo`}
+                aria-label={`${area.name}, ${area.count} ${area.count === 1 ? 'proyecto demo' : 'proyectos demo'}`}
               >
                 <span>{area.name}</span>
                 <span className="text-explore-muted">{area.count}</span>
@@ -99,7 +104,7 @@ export function LegacyTimeline() {
                   key={collection.name}
                   to={`${PILOT_CATALOG_PATH}?collection=${encodeURIComponent(collection.name)}`}
                   className="chip-liquid"
-                  aria-label={`${collection.name}, ${collection.count} proyectos demo`}
+                  aria-label={`${collection.name}, ${collection.count} ${collection.count === 1 ? 'proyecto demo' : 'proyectos demo'}`}
                 >
                   <span>{collection.name}</span>
                   <span className="text-explore-muted">{collection.count}</span>

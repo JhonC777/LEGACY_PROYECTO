@@ -70,6 +70,156 @@
   opacity: 1;
 }
 
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.68rem clamp(1.15rem, 3.2vw, 2.75rem);
+}
+
+.header-identity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.header-switcher {
+  min-width: 0;
+  flex: 1 1 16rem;
+  max-width: 32rem;
+}
+
+.header-nav {
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: clamp(1.35rem, 2.2vw, 2.4rem);
+}
+
+.header-tools {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.header-search-slot {
+  display: none;
+  min-width: 0;
+  flex: 0 1 16rem;
+}
+
+@media (min-width: 1440px) {
+  .header-search-slot {
+    display: flex;
+  }
+}
+
+.header-menu-toggle {
+  padding-inline: 0.7rem;
+}
+
+.header-chamber {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.15rem;
+  padding: 0.28rem clamp(1.15rem, 3.2vw, 2.75rem);
+}
+
+@media (min-width: 1024px) {
+  .header-main {
+    display: grid;
+    grid-template-columns: minmax(16rem, max-content) minmax(12rem, 1fr) max-content;
+    align-items: center;
+    column-gap: clamp(1rem, 2vw, 2.25rem);
+    padding-block: 0.72rem;
+  }
+
+  .header-identity {
+    flex: none;
+    max-width: 26.5rem;
+  }
+
+  .header-tools {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 1440px) {
+  .header-identity {
+    max-width: 32rem;
+  }
+
+  .header-switcher {
+    max-width: 36rem;
+  }
+}
+
+.header-action {
+  display: inline-flex;
+  height: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.3s ease,
+    background 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.35s ease;
+}
+
+.header-action:focus-visible {
+  outline: 2px solid var(--color-legacy-gold);
+  outline-offset: 3px;
+}
+
+.header-action-gold {
+  border: 0.5px solid rgb(214 184 120 / 0.42);
+  background: rgb(214 184 120 / 0.1);
+  color: var(--color-legacy-gold-soft);
+  box-shadow: 0 0.5px 0 rgb(255 255 255 / 0.22) inset;
+}
+
+.header-action-gold:hover {
+  border-color: rgb(214 184 120 / 0.62);
+  background: rgb(214 184 120 / 0.16);
+  color: #fff8e8;
+}
+
+.header-action-quiet {
+  border: 0.5px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.03);
+  color: var(--color-legacy-muted);
+}
+
+.header-action-quiet:hover {
+  border-color: rgb(255 255 255 / 0.24);
+  background: rgb(255 255 255 / 0.06);
+  color: var(--color-legacy-white);
+}
+
+@media (min-width: 1024px) {
+  .header-action.header-menu-toggle {
+    display: none;
+  }
+}
+
 .header-progress {
   position: absolute;
   left: 0;
@@ -127,10 +277,9 @@
   pointer-events: none;
 }
 
-.legacy-brand:hover .legacy-brand-mark {
-  border-color: rgb(214 184 120 / 0.55);
+.legacy-brand:hover .legacy-mark {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 0 0 1px rgb(214 184 120 / 0.5),
     0 14px 30px -14px rgb(214 184 120 / 0.8);
   transform: translateY(-1px);
 }
@@ -152,18 +301,19 @@
 .header-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  max-width: 15rem;
-  border: 0.5px solid rgb(255 255 255 / 0.16);
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.04);
-  padding: 0.4rem 0.7rem 0.4rem 0.45rem;
+  gap: 0.7rem;
+  width: 100%;
+  max-width: 100%;
+  border: 0.5px solid rgb(255 255 255 / 0.14);
+  border-radius: 1.05rem;
+  background: rgb(255 255 255 / 0.035);
+  padding: 0.42rem 0.75rem 0.42rem 0.42rem;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-legacy-white);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 0.5px 0 rgb(255 255 255 / 0.3) inset;
+  box-shadow: 0 0.5px 0 rgb(255 255 255 / 0.22) inset;
   cursor: pointer;
   transition:
     border-color 0.3s ease,
@@ -197,14 +347,44 @@
   color: var(--color-legacy-gold);
 }
 
+.header-chip-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.08rem;
+  text-align: left;
+}
+
+.header-chip-kicker {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-legacy-gold);
+}
+
+.header-chip-name {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.28;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .header-avatar {
   display: flex;
-  height: 1.55rem;
-  width: 1.55rem;
+  height: 1.85rem;
+  width: 1.85rem;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: 0.55rem;
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -239,7 +419,9 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  width: 15.5rem;
+  width: min(16.5rem, 100%);
+  flex: 1 1 12rem;
+  max-width: 18rem;
   border: 0.5px solid rgb(255 255 255 / 0.16);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.04);
@@ -251,7 +433,7 @@
     border-color 0.3s ease,
     background 0.3s ease,
     box-shadow 0.35s ease,
-    width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .header-search:hover {
@@ -259,7 +441,7 @@
 }
 
 .header-search:focus-within {
-  width: 19rem;
+  max-width: 22rem;
   border-color: rgb(214 184 120 / 0.5);
   background: rgb(8 9 12 / 0.55);
   box-shadow:
@@ -305,15 +487,17 @@
   opacity: 0;
 }
 
-/* Sub-barra de acceso rápido */
+/* Riel de archivo: filtros o contexto local, misma placa que el header */
 
-.header-subbar {
+.header-rail {
   border-top: 1px solid rgb(255 255 255 / 0.06);
-  background: rgb(8 9 12 / 0.35);
+  background:
+    linear-gradient(90deg, rgb(214 184 120 / 0.045), transparent 32%),
+    rgb(8 9 12 / 0.32);
 }
 
-.header-subbar > div {
-  min-height: 2.6rem;
+.header-rail.is-filters {
+  background: rgb(8 9 12 / 0.34);
 }
 
 .header-subbar-label {
@@ -347,19 +531,44 @@
   color: var(--color-legacy-gold);
 }
 
+.header-back {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgb(214 184 120 / 0.88);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.header-back:hover,
+.header-back:focus-visible {
+  color: var(--color-legacy-gold-soft);
+}
+
+.header-folio {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: rgb(214 184 120 / 0.82);
+  font-variant-numeric: tabular-nums;
+}
+
+.header-folio span {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: rgb(166 168 178 / 0.7);
+}
+
 /* Contexto del catálogo y de las fichas académicas */
-
-.header-contextbar {
-  position: relative;
-  border-top: 1px solid rgb(255 255 255 / 0.06);
-  background:
-    linear-gradient(90deg, rgb(214 184 120 / 0.045), transparent 35%),
-    rgb(8 9 12 / 0.42);
-}
-
-.header-contextbar > div {
-  min-height: 2.7rem;
-}
 
 .header-context-path,
 .header-context-summary,
@@ -371,7 +580,8 @@
 .header-context-path {
   gap: 0.45rem;
   min-width: 0;
-  font-size: 0.72rem;
+  flex: 1 1 auto;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
 
@@ -394,7 +604,8 @@
 
 .header-context-link {
   overflow: hidden;
-  max-width: 11rem;
+  flex-shrink: 0;
+  max-width: 14rem;
   color: var(--color-legacy-muted);
   text-decoration: none;
   text-overflow: ellipsis;
@@ -407,6 +618,8 @@
 
 .header-context-current {
   overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
   color: rgb(247 245 239 / 0.9);
   font-weight: 600;
   text-overflow: ellipsis;
@@ -415,6 +628,7 @@
 .header-context-summary {
   flex-shrink: 0;
   gap: 0.6rem;
+  margin-left: auto;
   color: var(--color-legacy-muted);
   font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
@@ -703,15 +917,15 @@
   .header-chip:hover,
   .header-menu-item,
   .header-menu-item:hover,
-  .legacy-brand-mark,
-  .legacy-brand:hover .legacy-brand-mark {
+  .legacy-mark,
+  .legacy-brand:hover .legacy-mark {
     transform: none;
     transition: none;
   }
 
   .header-search,
   .header-search:focus-within {
-    width: 15.5rem;
+    max-width: 22rem;
     transition: none;
   }
 

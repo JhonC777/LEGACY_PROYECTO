@@ -93,8 +93,8 @@ export function ProjectResources({ project }: { project: DemoProject }) {
     reduceMotion
       ? {}
       : {
-          initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
-          whileInView: { opacity: 1, y: 0, filter: 'blur(0px)' },
+          initial: { opacity: 0, y: 16 },
+          whileInView: { opacity: 1, y: 0 },
           viewport: { once: true, amount: 0.2 },
           transition: { duration: 0.7, delay, ease: EASE },
         }
@@ -105,14 +105,12 @@ export function ProjectResources({ project }: { project: DemoProject }) {
   const docIsInternal = docHref.startsWith('#')
 
   return (
-    <section id="recursos" aria-labelledby="recursos-title">
+    <section id="recursos" className="project-block" aria-labelledby="recursos-title">
       <motion.div {...reveal()}>
-        <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
-          Material consultable
-        </p>
+        <p className="home-threshold-kicker">Material consultable</p>
         <h2
           id="recursos-title"
-          className="mt-1 font-display text-3xl font-semibold text-legacy-white"
+          className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
         >
           Recursos del proyecto
         </h2>

@@ -65,23 +65,21 @@ export function ProjectGallery({ title, images }: ProjectGalleryProps) {
   const reveal = reduceMotion
     ? {}
     : {
-        initial: { opacity: 0, y: 26, filter: 'blur(8px)' },
-        whileInView: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        initial: { opacity: 0, y: 18 },
+        whileInView: { opacity: 1, y: 0 },
         viewport: { once: true, amount: 0.2 },
         transition: { duration: 0.7, ease: EASE },
       }
 
   return (
     <>
-      <motion.section id="galeria" aria-labelledby="galeria-title" {...reveal}>
+      <motion.section id="galeria" className="project-block" aria-labelledby="galeria-title" {...reveal}>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
-              Evidencias
-            </p>
+            <p className="home-threshold-kicker">Evidencias</p>
             <h2
               id="galeria-title"
-              className="mt-1 font-display text-3xl font-semibold text-legacy-white"
+              className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
             >
               Galería del proyecto
             </h2>

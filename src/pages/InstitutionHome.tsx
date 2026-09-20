@@ -28,7 +28,7 @@ export function InstitutionHome() {
   const reduceMotion = useReducedMotion()
   const showArchive = searchParams.get('vista') === 'archivo'
 
-  if (!institution) {
+  if (!institution || !institution.isActive) {
     return <Navigate to="/" replace />
   }
 
@@ -135,19 +135,20 @@ export function InstitutionHome() {
               </Link>
             </div>
             <div className="institution-section-rule mb-7 mt-4" aria-hidden />
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {featured.map((project, index) => (
+            <div className="knowledge-vitrine">
+              {featured.slice(0, 3).map((project, index) => (
                 <motion.div
                   key={project.id}
+                  className={
+                    index === 0
+                      ? 'knowledge-vitrine-hero h-full'
+                      : 'h-full'
+                  }
                   {...(reduceMotion
                     ? {}
                     : {
-                        initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
-                        whileInView: {
-                          opacity: 1,
-                          y: 0,
-                          filter: 'blur(0px)',
-                        },
+                        initial: { opacity: 0, y: 18 },
+                        whileInView: { opacity: 1, y: 0 },
                         viewport: { once: true, amount: 0.15 },
                         transition: {
                           duration: 0.65,
@@ -156,7 +157,11 @@ export function InstitutionHome() {
                         },
                       })}
                 >
-                  <ProjectCard project={project} />
+                  <ProjectCard
+                    project={project}
+                    layout={index === 0 ? 'hero' : 'plate'}
+                    folio={index + 1}
+                  />
                 </motion.div>
               ))}
             </div>

@@ -2,7 +2,7 @@
  * Adaptadores de presentación para el Home claro.
  * La fuente única de contenido está en demoData.ts y será reemplazada por Supabase.
  */
-import { DEMO_INSTITUTIONS, DEMO_PROJECTS } from './demoData'
+import { DEMO_INSTITUTIONS, getPublishedProjects } from './demoData'
 
 export type MockProject = {
   id: string
@@ -34,13 +34,19 @@ export type MockInstitutionCard = {
   logoUrl?: string
 }
 
-const uniqueCategories = new Set(DEMO_PROJECTS.map((project) => project.category))
-const uniqueYears = [...new Set(DEMO_PROJECTS.map((project) => project.year))].sort()
+const publicProjects = getPublishedProjects().filter((project) => {
+  const institution = DEMO_INSTITUTIONS.find((item) => item.id === project.institutionId)
+  return institution?.isActive === true
+})
+const publicInstitutions = DEMO_INSTITUTIONS.filter((institution) => institution.isActive)
+
+const uniqueCategories = new Set(publicProjects.map((project) => project.category))
+const uniqueYears = [...new Set(publicProjects.map((project) => project.year))].sort()
 
 export const MOCK_STATS = [
   {
     id: 'projects',
-    value: String(DEMO_PROJECTS.length),
+    value: String(publicProjects.length),
     label: 'Proyectos publicados',
     hint: 'Contenido de demostración',
     icon: 'folder' as const,
@@ -48,11 +54,11 @@ export const MOCK_STATS = [
   {
     id: 'students',
     value: String(
-      new Set(DEMO_PROJECTS.flatMap((project) => project.authors.map((author) => author.id)))
+      new Set(publicProjects.flatMap((project) => project.authors.map((author) => author.id)))
         .size,
     ),
     label: 'Participantes demo',
-    hint: `En ${DEMO_INSTITUTIONS.length} instituciones demo`,
+    hint: `En ${publicInstitutions.length} institución${publicInstitutions.length === 1 ? '' : 'es'} demo`,
     icon: 'users' as const,
   },
   {
@@ -74,9 +80,8 @@ export const MOCK_STATS = [
   },
 ]
 
-export const MOCK_FEATURED_PROJECTS: MockProject[] = DEMO_PROJECTS.filter(
-  (project) => project.isFeatured,
-)
+export const MOCK_FEATURED_PROJECTS: MockProject[] = publicProjects
+  .filter((project) => project.isFeatured)
   .slice(0, 6)
   .map((project) => ({
     id: project.id,
@@ -97,28 +102,33 @@ const CATEGORY_ICONS: MockCategory['icon'][] = [
   'book',
 ]
 
-export const MOCK_CATEGORIES: MockCategory[] = [...uniqueCategories].map(
-  (name, index) => ({
+export const MOCK_CATEGORIES: MockCategory[] = [...uniqueCategories]
+  .map((name, index) => ({
     id: `demo-category-${index + 1}`,
     name,
-    count: DEMO_PROJECTS.filter((project) => project.category === name).length,
+    count: publicProjects.filter((project) => project.category === name).length,
     icon: CATEGORY_ICONS[index % CATEGORY_ICONS.length]!,
-  }),
-)
+  }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'))
 
 export const MOCK_INSTITUTION_CARDS: MockInstitutionCard[] = [
-  ...DEMO_INSTITUTIONS.map((institution, index) => ({
-    id: institution.id,
-    name: institution.name,
-    slug: institution.slug,
-    location: 'Contenido de demostración',
-    projectsLabel: `${DEMO_PROJECTS.filter((project) => project.institutionId === institution.id).length} proyectos demo`,
-    yearsLabel: 'Datos no oficiales',
-    variant: (index === 1 ? 'demo' : 'active') as 'active' | 'demo',
-    logoLabel: institution.shortName,
-    logoColor: institution.accent,
-    logoUrl: institution.logoUrl,
-  })),
+  ...DEMO_INSTITUTIONS.map((institution) => {
+    const count = publicProjects.filter((project) => project.institutionId === institution.id).length
+    return {
+      id: institution.id,
+      name: institution.name,
+      slug: institution.slug,
+      location: institution.isActive ? 'Contenido de demostración' : 'Próximamente',
+      projectsLabel: institution.isActive
+        ? `${count} proyecto${count === 1 ? '' : 's'} demo`
+        : '—',
+      yearsLabel: institution.isActive ? 'Datos no oficiales' : '—',
+      variant: (institution.isActive ? 'active' : 'locked') as 'active' | 'locked',
+      logoLabel: institution.shortName,
+      logoColor: institution.accent,
+      logoUrl: institution.logoUrl,
+    }
+  }),
   {
     id: 'i3',
     name: 'Institución 3',

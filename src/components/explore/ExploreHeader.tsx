@@ -2,6 +2,8 @@ import { ChevronDown, Search, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlassInput } from '@/components/ui/GlassInput'
+import { LegacyMark } from '@/components/brand/LegacyMark'
+import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { PILOT_CATALOG_PATH } from '@/data/demoData'
 import { cn } from '@/lib/cn'
 
@@ -26,18 +28,9 @@ export function ExploreHeader() {
     <header className="glass-header sticky top-0 z-40">
       <div className="mx-auto flex max-w-[1200px] items-center gap-4 px-6 py-3.5 lg:gap-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-legacy-gold/25 bg-legacy-gold/10">
-            <svg viewBox="0 0 24 24" className="h-5 w-5 text-legacy-gold" aria-hidden>
-              <path
-                fill="currentColor"
-                d="M4 20h16v-1.5H4V20Zm1.5-3h13l-.75-9H6.25L5.5 17ZM12 4l6.5 3.25-.4 1.35L12 6.2 5.9 8.6l-.4-1.35L12 4Z"
-              />
-            </svg>
-          </span>
+          <LegacyMark size="sm" />
           <span className="leading-tight">
-            <span className="block font-display text-xl font-semibold tracking-wide text-legacy-white">
-              LEGACY
-            </span>
+            <LegacyWordmark className="block" />
             <span className="hidden text-[10px] text-legacy-muted sm:block">
               Museo Digital del Legado Estudiantil
             </span>
@@ -94,7 +87,7 @@ export function ExploreHeader() {
 
           <Link to="/admin/login" className="btn btn-secondary btn-sm pickup shrink-0">
             <UserRound className="h-4 w-4" aria-hidden />
-            Iniciar sesión
+            Administrador
           </Link>
         </div>
       </div>

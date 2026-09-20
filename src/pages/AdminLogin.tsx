@@ -68,7 +68,7 @@ export function AdminLogin() {
   return (
     <main className="app-shell relative">
       <CosmicBackground />
-      <div className="relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto px-6 py-8">
+      <div className="legacy-hidden-scroll relative z-10 flex h-full flex-col items-center justify-center overflow-y-auto px-6 py-8">
         <GlassSurface variant="strong" className="w-full max-w-md rounded-[1.75rem] p-7">
           <p className="text-center text-xs font-bold tracking-[0.2em] text-legacy-gold uppercase">
             Acceso administrador

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/brand.css";
 @import "./styles/cosmic.css";
 @import "./styles/intro.css";
 @import "./styles/explore.css";
@@ -30,6 +31,7 @@
   --color-explore-gold: #c4a35a;
 
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-brand: "Cinzel", "Cormorant Garamond", "Times New Roman", serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -40,20 +42,32 @@
 }
 
 /*
-  Un solo scrollport de documento (rueda / trackpad / teclado).
-  No poner overflow-y en html Y body a la vez: genera doble barra.
+  LEGACY es una app de pantalla fija. El documento nunca desplaza:
+  si html/body crecen, Windows pinta la barra gris clásica en el borde.
+  El scroll vive en .explore-scroll, .home-entry-stage y paneles admin.
 */
 html {
-  min-height: 100%;
-  overflow-x: clip;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
+  max-height: 100dvh;
   margin: 0;
-  overflow-x: clip;
-  overflow-y: visible;
+  overflow: hidden;
 }
 
 body {
@@ -68,11 +82,24 @@ body.legacy-modal-open {
   overflow: hidden;
 }
 
-/* Solo vistas de pantalla fija (login); no usar en catálogo público */
+/* Vistas de pantalla fija (home, login). El catálogo público usa .explore-shell. */
 .app-shell {
   height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* Paneles internos: rueda/trackpad sí, barra nativa de Windows no. */
+.legacy-hidden-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.legacy-hidden-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 :focus-visible {

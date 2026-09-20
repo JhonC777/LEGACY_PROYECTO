@@ -48,70 +48,51 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
   ]
 
   return (
-    <section id="proceso" aria-labelledby="proceso-title">
+    <section id="proceso" className="project-block" aria-labelledby="proceso-title">
       <motion.div
         {...(reduceMotion
           ? {}
           : {
-              initial: { opacity: 0, y: 20, filter: 'blur(8px)' },
-              whileInView: { opacity: 1, y: 0, filter: 'blur(0px)' },
+              initial: { opacity: 0, y: 16 },
+              whileInView: { opacity: 1, y: 0 },
               viewport: { once: true, amount: 0.3 },
-              transition: { duration: 0.7, ease: EASE },
+              transition: { duration: 0.65, ease: EASE },
             })}
       >
-        <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
-          Recorrido del proyecto
-        </p>
+        <p className="home-threshold-kicker">Recorrido del proyecto</p>
         <h2
           id="proceso-title"
-          className="mt-1 font-display text-3xl font-semibold text-legacy-white"
+          className="mt-1 font-display text-[1.85rem] font-semibold text-legacy-white"
         >
           Del problema al resultado
         </h2>
         <div className="project-section-rule mt-3" aria-hidden />
       </motion.div>
 
-      <ol className="process-rail mt-8">
-        <motion.span
-          aria-hidden
-          className="process-line"
-          {...(reduceMotion
-            ? {}
-            : {
-                initial: { scaleY: 0 },
-                whileInView: { scaleY: 1 },
-                viewport: { once: true, amount: 0.15 },
-                transition: { duration: 1.4, ease: EASE },
-              })}
-        />
-
+      <ol className="process-grid mt-7">
         {steps.map((step, index) => {
           const Icon = step.icon
           return (
             <motion.li
               key={step.key}
-              className="process-step"
+              className="process-cell"
               {...(reduceMotion
                 ? {}
                 : {
-                    initial: { opacity: 0, x: -18, filter: 'blur(6px)' },
-                    whileInView: { opacity: 1, x: 0, filter: 'blur(0px)' },
-                    viewport: { once: true, amount: 0.35 },
-                    transition: { duration: 0.65, delay: 0.08 * index, ease: EASE },
+                    initial: { opacity: 0, y: 14 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true, amount: 0.3 },
+                    transition: { duration: 0.55, delay: 0.06 * index, ease: EASE },
                   })}
             >
-              <span className="process-node" aria-hidden>
-                <span className="process-node-index">{index + 1}</span>
-                <span className="process-node-ring" />
-              </span>
-
               <article className="process-card">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold/80 uppercase">
+                    <p className="process-cell-index">{String(index + 1).padStart(2, '0')}</p>
+                    <p className="mt-2 text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold/80 uppercase">
                       {step.eyebrow}
                     </p>
-                    <h3 className="mt-1 font-display text-[1.45rem] leading-tight font-semibold text-legacy-white">
+                    <h3 className="mt-1 font-display text-[1.35rem] leading-tight font-semibold text-legacy-white">
                       {step.title}
                     </h3>
                   </div>
@@ -119,7 +100,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
                     <Icon className="h-4 w-4" aria-hidden />
                   </span>
                 </div>
-                <p className="mt-3.5 text-[0.95rem] leading-7 text-legacy-muted">
+                <p className="mt-3.5 text-[0.92rem] leading-7 text-legacy-muted">
                   {step.text}
                 </p>
               </article>

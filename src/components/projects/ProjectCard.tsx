@@ -1,11 +1,4 @@
-import {
-  ArrowRight,
-  FileText,
-  FileType2,
-  Library,
-  Play,
-  Star,
-} from 'lucide-react'
+import { ArrowRight, FileText, FileType2, Library, Play } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { SmartImage } from '@/components/ui/SmartImage'
@@ -14,12 +7,19 @@ import {
   getProjectHref,
   type DemoProject,
 } from '@/data/demoData'
+import { cn } from '@/lib/cn'
 
 type ProjectCardProps = {
   project: DemoProject
+  layout?: 'hero' | 'plate'
+  folio?: number
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  layout = 'plate',
+  folio,
+}: ProjectCardProps) {
   const location = useLocation()
   const from = `${location.pathname}${location.search}`
   const href = getProjectHref(project)
@@ -32,6 +32,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const isInstitutionCatalog = location.pathname === institutionCatalogPath
   const catalogPath =
     isGlobalCatalog || isInstitutionCatalog ? location.pathname : institutionCatalogPath
+  const hero = layout === 'hero'
+  const folioLabel =
+    typeof folio === 'number' ? String(folio).padStart(2, '0') : null
 
   const filterHref = (key: 'area' | 'category' | 'collection', value: string) => {
     const next = new URLSearchParams(
@@ -67,32 +70,115 @@ export function ProjectCard({ project }: ProjectCardProps) {
     },
   ]
 
+  const kicker = (
+    <p className="knowledge-fragment-kicker">
+      <Link to={filterHref('area', project.area)} title={`Filtrar por área: ${project.area}`}>
+        {project.area}
+      </Link>
+      <span aria-hidden>·</span>
+      <Link
+        to={filterHref('category', project.category)}
+        title={`Filtrar por categoría: ${project.category}`}
+      >
+        {project.category}
+      </Link>
+    </p>
+  )
+
+  const stamps = (
+    <div className="knowledge-fragment-stamps" aria-label="Recursos disponibles">
+      {resources.map(({ key, label, href: resourceHref, Icon, external }) => {
+        const className = 'knowledge-fragment-stamp'
+        const inner = (
+          <>
+            <Icon className="h-3.5 w-3.5" aria-hidden />
+            <span>{label}</span>
+          </>
+        )
+        if (external) {
+          return (
+            <a
+              key={key}
+              href={resourceHref}
+              target="_blank"
+              rel="noreferrer"
+              className={className}
+              title={label}
+              aria-label={label}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {inner}
+            </a>
+          )
+        }
+        return (
+          <Link
+            key={key}
+            to={resourceHref}
+            state={{ from }}
+            className={className}
+            title={label}
+            aria-label={label}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {inner}
+          </Link>
+        )
+      })}
+    </div>
+  )
+
   return (
-    <article className="liquid-card knowledge-fragment group flex h-full flex-col overflow-hidden rounded-2xl">
+    <article
+      className={cn(
+        'knowledge-fragment group flex h-full flex-col',
+        hero && 'is-hero',
+      )}
+    >
+      <span className="knowledge-fragment-corners" aria-hidden>
+        <span className="is-tl" />
+        <span className="is-tr" />
+        <span className="is-bl" />
+        <span className="is-br" />
+      </span>
+      <span className="knowledge-fragment-fillet" aria-hidden />
+      <span className="knowledge-fragment-sweep" aria-hidden />
+
       <Link
         to={href}
         state={{ from }}
-        className="relative block aspect-[16/10] overflow-hidden bg-legacy-surface"
+        className="knowledge-fragment-cover relative block overflow-hidden"
       >
         <SmartImage
           src={project.coverImage}
           alt={`Portada demostrativa de ${project.title}`}
-          className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045]"
+          className="knowledge-fragment-image"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-legacy-black/55 via-transparent to-transparent opacity-80" />
+        <span aria-hidden className="knowledge-fragment-grain" />
+        <span aria-hidden className="knowledge-fragment-scrim" />
+
         {project.isFeatured ? (
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full border border-legacy-gold/40 bg-legacy-gold/15 px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] text-legacy-gold uppercase backdrop-blur-md">
-            <Star className="h-3 w-3 fill-current" aria-hidden />
+          <span className="knowledge-fragment-seal">
+            <span className="knowledge-fragment-seal-core" aria-hidden />
             Destacado
           </span>
-        ) : (
-          <span className="absolute top-3 left-3 rounded-full border border-white/20 bg-legacy-black/45 px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] text-legacy-white/85 uppercase backdrop-blur-md">
-            Demo
+        ) : null}
+
+        {folioLabel ? (
+          <span className="knowledge-fragment-folio">{folioLabel}</span>
+        ) : null}
+
+        <span className="knowledge-fragment-year-mark">{project.year}</span>
+
+        {hero ? (
+          <span className="knowledge-fragment-voice">
+            <h3 className="knowledge-fragment-title is-on-plate">{project.title}</h3>
+            <span className="knowledge-fragment-dek is-on-plate">{project.subtitle}</span>
           </span>
-        )}
+        ) : null}
       </Link>
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="knowledge-fragment-body">
         {isGlobalCatalog && institution ? (
           <Link
             to={`/instituciones/${institution.slug}`}
@@ -112,41 +198,26 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </Link>
         ) : null}
 
-        <div className="mb-3 flex flex-wrap gap-2">
-          <Link
-            to={filterHref('area', project.area)}
-            className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase transition-colors hover:border-legacy-gold/35 hover:text-legacy-gold"
-            title={`Filtrar por área: ${project.area}`}
-          >
-            {project.area}
-          </Link>
-          <Link
-            to={filterHref('category', project.category)}
-            className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase transition-colors hover:border-legacy-gold/35 hover:text-legacy-gold"
-            title={`Filtrar por categoría: ${project.category}`}
-          >
-            {project.category}
-          </Link>
-        </div>
+        {hero ? (
+          kicker
+        ) : (
+          <>
+            {kicker}
+            <Link to={href} state={{ from }} className="mt-2 block">
+              <h3 className="knowledge-fragment-title">{project.title}</h3>
+              <p className="knowledge-fragment-dek">{project.subtitle}</p>
+            </Link>
+          </>
+        )}
 
-        <Link to={href} state={{ from }} className="block">
-          <h3 className="font-display line-clamp-2 text-[1.2rem] leading-snug font-semibold text-legacy-white transition-colors group-hover:text-legacy-gold-soft sm:text-[1.28rem]">
-            {project.title}
-          </h3>
-          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-legacy-muted">
-            {project.subtitle}
-          </p>
-        </Link>
-
-        <p className="knowledge-fragment-meta mt-4 line-clamp-1 text-xs text-legacy-muted" title={`${authors} · ${project.year}`}>
-          <span className="text-legacy-white/80">{authors}</span>
-          <span aria-hidden> · </span>
-          <span className="knowledge-fragment-year">{project.year}</span>
+        <p className="knowledge-fragment-sign" title={`${authors} · ${project.year}`}>
+          <span className="knowledge-fragment-authors">{authors}</span>
         </p>
+
         {project.collection ? (
           <Link
             to={filterHref('collection', project.collection)}
-            className="mt-2 inline-flex w-fit items-center gap-1.5 text-[11px] font-medium text-legacy-muted transition-colors hover:text-legacy-gold"
+            className="knowledge-fragment-register"
             title={`Filtrar por colección: ${project.collection}`}
           >
             <Library className="h-3 w-3" aria-hidden />
@@ -154,51 +225,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </Link>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <div className="resource-dock" aria-label="Recursos disponibles">
-            {resources.map(({ key, label, href: resourceHref, Icon, external }) => {
-              const className =
-                'liquid-icon liquid-touch inline-flex h-8 w-8 items-center justify-center rounded-lg text-legacy-muted'
-              if (external) {
-                return (
-                  <a
-                    key={key}
-                    href={resourceHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={className}
-                    title={label}
-                    aria-label={label}
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <Icon className="h-3.5 w-3.5" aria-hidden />
-                  </a>
-                )
-              }
-              return (
-                <Link
-                  key={key}
-                  to={resourceHref}
-                  state={{ from }}
-                  className={className}
-                  title={label}
-                  aria-label={label}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <Icon className="h-3.5 w-3.5" aria-hidden />
-                </Link>
-              )
-            })}
-          </div>
-
+        <div className="knowledge-fragment-foot">
+          {stamps}
           <Link
             to={href}
             state={{ from }}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-legacy-gold transition-all duration-300 hover:gap-2.5 hover:text-legacy-gold-soft"
+            className="knowledge-fragment-cta"
             aria-label={`Abrir ficha de ${project.title}`}
           >
-            Abrir ficha
-            <ArrowRight className="h-4 w-4" aria-hidden />
+            Abrir el archivo
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
       </div>

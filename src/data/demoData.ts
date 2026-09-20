@@ -78,7 +78,7 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
     shortName: 'I2',
     description: 'Entorno de demostración preparado para futuras instituciones afiliadas.',
     accent: '#7662c9',
-    isActive: true,
+    isActive: false,
     isDemo: true,
   },
 ]
@@ -255,7 +255,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
     subtitle: 'Relatos visuales para reconocer el territorio',
     area: 'Arte y Cultura',
     category: 'Humanidades',
-    year: 2023,
+    year: 2024,
     authors: [
       { id: 'a08', name: 'Camila Zapata Duque', role: 'Investigación visual' },
       { id: 'a09', name: 'Andrés Felipe Lozano', role: 'Ilustración' },
@@ -392,7 +392,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
     subtitle: 'Logística sencilla para separar en la fuente',
     area: 'Ciencias Naturales',
     category: 'Sostenibilidad',
-    year: 2023,
+    year: 2025,
     authors: [
       { id: 'a17', name: 'Nicolás Beltrán Cano', role: 'Logística y acopio' },
       { id: 'a18', name: 'Antonia Márquez Ruiz', role: 'Campaña de comunicación' },
@@ -494,7 +494,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
     subtitle: 'Un comité editorial estudiantil con ciclo de publicación real',
     area: 'Lenguaje y Humanidades',
     category: 'Humanidades',
-    year: 2022,
+    year: 2024,
     authors: [
       { id: 'a23', name: 'Valentina Cifuentes Ariza', role: 'Dirección editorial' },
       { id: 'a24', name: 'Sebastián Uribe Naranjo', role: 'Redacción' },
@@ -666,7 +666,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
     subtitle: 'Entrevistas a vecinos para reconstruir cómo se formó el sector',
     area: 'Arte y Cultura',
     category: 'Humanidades',
-    year: 2023,
+    year: 2024,
     authors: [
       { id: 'a35', name: 'Luisa Fernanda Peláez', role: 'Entrevistas' },
       { id: 'a36', name: 'Óscar Iván Rendón', role: 'Transcripción y archivo' },
@@ -778,10 +778,14 @@ export const getPublishedProjectCountBySlug = (slug?: string) => {
   return getPublishedProjects(getInstitutionProjects(institution.id)).length
 }
 
-/** Destacados publicados, del más reciente al más antiguo. No inventa fichas. */
+/** Destacados publicados de instituciones activas, del más reciente al más antiguo. */
 export const getPublishedFeaturedProjects = (limit = 3) =>
   getPublishedProjects()
     .filter((project) => project.isFeatured)
+    .filter((project) => {
+      const institution = DEMO_INSTITUTIONS.find((item) => item.id === project.institutionId)
+      return institution?.isActive === true
+    })
     .sort((a, b) => b.year - a.year || a.title.localeCompare(b.title, 'es'))
     .slice(0, limit)
 

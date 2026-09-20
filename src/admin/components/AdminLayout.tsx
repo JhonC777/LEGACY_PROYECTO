@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
+import { LegacyMark } from '@/components/brand/LegacyMark'
+import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { cn } from '@/lib/cn'
 import { useAdminSession } from '../session'
 import { useAdminStore } from '../store'
@@ -72,13 +74,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const sidebar = (
     <>
       <Link to="/" className="admin-brand flex items-center gap-2.5" aria-label="Ir al inicio de LEGACY">
-        <span className="legacy-brand-mark" aria-hidden>
-          <span>L</span>
-        </span>
+        <LegacyMark size="sm" />
         <span className="min-w-0 leading-tight">
-          <span className="block font-display text-lg font-semibold tracking-wide text-legacy-white">
-            LEGACY
-          </span>
+          <LegacyWordmark className="block text-lg" />
           <span className="block text-[10px] text-legacy-muted">Panel institucional</span>
         </span>
       </Link>

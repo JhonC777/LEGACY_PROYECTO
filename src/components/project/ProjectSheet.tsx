@@ -47,16 +47,16 @@ export function ProjectSheet({
       {...(reduceMotion
         ? {}
         : {
-            initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
-            animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+            initial: { opacity: 0, y: 18 },
+            animate: { opacity: 1, y: 0 },
             transition: { duration: 0.8, delay: 0.5, ease: EASE },
           })}
     >
       <div className="project-sheet-head">
-        <p className="text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold uppercase">
+        <p className="home-threshold-kicker">
           Ficha académica
         </p>
-        <h2 className="mt-1 font-display text-[1.45rem] leading-tight font-semibold text-legacy-white">
+        <h2 className="mt-1 font-display text-[1.35rem] leading-tight font-semibold text-legacy-white">
           Datos del proyecto
         </h2>
       </div>

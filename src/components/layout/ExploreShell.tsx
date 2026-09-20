@@ -12,7 +12,7 @@ export function ExploreShell({ children, className, style }: ExploreShellProps) 
   return (
     <div className={cn('explore-shell', className)} style={style}>
       <LivingField variant="page" />
-      {children}
+      <div className="explore-scroll legacy-hidden-scroll">{children}</div>
     </div>
   )
 }

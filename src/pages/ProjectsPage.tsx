@@ -34,6 +34,7 @@ import {
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { LEGACY_SLOGAN } from '@/lib/brand'
 import { useDeferredAction } from '@/lib/useDeferredAction'
 
 type LoadState = 'loading' | 'ready' | 'error'
@@ -284,7 +285,7 @@ export function ProjectsPage() {
         ? 'empty'
         : loadState
 
-  if (institutionSlug && !institution) {
+  if (institutionSlug && (!institution || !institution.isActive)) {
     return <Navigate to="/" replace />
   }
 
@@ -354,7 +355,7 @@ export function ProjectsPage() {
           <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-relaxed text-legacy-muted">
             Contenidos de demostración. No representan información institucional oficial.
             <span className="mt-2 block font-medium text-legacy-gold/90">
-              Los archivos no se guardan, trascienden.
+              {LEGACY_SLOGAN}
             </span>
           </div>
         </aside>
@@ -520,9 +521,13 @@ export function ProjectsPage() {
                 />
               ) : null}
               {visibleState === 'ready' && projects.length > 0 ? (
-                <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {projects.map((project: DemoProject) => (
-                    <ProjectCard key={project.id} project={project} />
+                <div className="knowledge-catalog">
+                  {projects.map((project: DemoProject, index: number) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      folio={index + 1}
+                    />
                   ))}
                 </div>
               ) : null}
