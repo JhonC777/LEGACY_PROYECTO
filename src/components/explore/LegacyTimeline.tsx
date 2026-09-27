@@ -48,7 +48,7 @@ export function LegacyTimeline() {
             Recorre el legado
           </h2>
           <p className="text-xs text-explore-muted">
-            Atajos al catálogo de demostración
+            Atajos del archivo
           </p>
         </div>
       </div>
@@ -83,7 +83,7 @@ export function LegacyTimeline() {
                 key={area.name}
                 to={`${PILOT_CATALOG_PATH}?area=${encodeURIComponent(area.name)}`}
                 className="chip-liquid"
-                aria-label={`${area.name}, ${area.count} ${area.count === 1 ? 'proyecto demo' : 'proyectos demo'}`}
+                aria-label={`${area.name}, ${area.count} ${area.count === 1 ? 'proyecto' : 'proyectos'}`}
               >
                 <span>{area.name}</span>
                 <span className="text-explore-muted">{area.count}</span>
@@ -104,7 +104,7 @@ export function LegacyTimeline() {
                   key={collection.name}
                   to={`${PILOT_CATALOG_PATH}?collection=${encodeURIComponent(collection.name)}`}
                   className="chip-liquid"
-                  aria-label={`${collection.name}, ${collection.count} ${collection.count === 1 ? 'proyecto demo' : 'proyectos demo'}`}
+                  aria-label={`${collection.name}, ${collection.count} ${collection.count === 1 ? 'proyecto' : 'proyectos'}`}
                 >
                   <span>{collection.name}</span>
                   <span className="text-explore-muted">{collection.count}</span>

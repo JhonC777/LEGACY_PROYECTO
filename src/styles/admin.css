@@ -238,8 +238,8 @@ body:has(.admin-shell) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 3.75rem;
-  padding: 0.6rem 1rem;
+  min-height: 4rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid rgb(255 255 255 / 0.08);
   background: rgb(8 9 12 / 0.55);
   backdrop-filter: blur(16px);
@@ -247,7 +247,7 @@ body:has(.admin-shell) {
 
 @media (min-width: 1024px) {
   .admin-topbar {
-    padding: 0.6rem 1.75rem;
+    padding: 0.75rem 1.75rem;
   }
 }
 
@@ -282,7 +282,8 @@ body:has(.admin-shell) {
   align-items: center;
   gap: 0.6rem;
   max-width: 14rem;
-  padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  height: 2.5rem;
+  padding: 0 0.85rem 0 0.3rem;
   border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.03);
@@ -1133,5 +1134,261 @@ body:has(.admin-shell) {
   .admin-shortcut:hover {
     transform: none;
     transition: none;
+  }
+
+  .admin-auth-switch-track,
+  .admin-auth-switch-knob {
+    transition: none;
+  }
+}
+
+/* Ingreso administrador — tarjeta editorial sobre el fondo cósmico */
+
+.admin-auth-stage {
+  display: grid;
+  width: min(100%, 58rem);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(165deg, rgb(255 255 255 / 0.06), rgb(17 19 26 / 0.72) 42%, rgb(8 9 12 / 0.82));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 28px 80px rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.admin-auth-aside {
+  position: relative;
+  display: none;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2.5rem;
+  overflow: hidden;
+  border-right: 1px solid rgb(255 255 255 / 0.08);
+  padding: 2.25rem 2rem 2rem;
+  background:
+    radial-gradient(ellipse 80% 50% at 0% 0%, rgb(214 184 120 / 0.16), transparent 58%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgb(118 98 201 / 0.2), transparent 62%);
+}
+
+.admin-auth-aside-copy {
+  position: relative;
+}
+
+.admin-auth-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-legacy-gold);
+}
+
+.admin-auth-title {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-brand, inherit);
+  font-size: 2.35rem;
+  font-weight: 600;
+  line-height: 0.95;
+  color: var(--color-legacy-white);
+}
+
+.admin-auth-slogan {
+  max-width: 16rem;
+  margin: 1rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--color-legacy-muted);
+}
+
+.admin-auth-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 7.5rem;
+  margin-top: 1.15rem;
+}
+
+.admin-auth-rule span:first-child,
+.admin-auth-rule span:last-child {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, rgb(214 184 120 / 0.7), transparent);
+}
+
+.admin-auth-rule span:nth-child(2) {
+  width: 0.38rem;
+  height: 0.38rem;
+  rotate: 45deg;
+  background: var(--color-legacy-gold);
+}
+
+.admin-auth-panel {
+  padding: 1.5rem 1.25rem 1.35rem;
+}
+
+.admin-auth-mobile-head {
+  margin-bottom: 1.25rem;
+}
+
+.admin-auth-field {
+  position: relative;
+}
+
+.admin-auth-field-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.95rem;
+  z-index: 1;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  translate: 0 -50%;
+  color: rgb(214 184 120 / 0.85);
+  pointer-events: none;
+}
+
+.admin-auth-field .glass-input {
+  border-radius: 1rem;
+  padding: 0.9rem 2.8rem 0.9rem 2.7rem;
+  font-size: 0.95rem;
+}
+
+.admin-auth-reveal {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  translate: 0 -50%;
+  place-items: center;
+  border-radius: 0.75rem;
+  color: var(--color-legacy-muted);
+}
+
+.admin-auth-reveal:hover {
+  color: var(--color-legacy-white);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.admin-auth-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.03);
+  padding: 0.7rem 0.8rem 0.7rem 0.9rem;
+  cursor: pointer;
+}
+
+.admin-auth-switch:hover {
+  border-color: rgb(214 184 120 / 0.22);
+}
+
+.admin-auth-switch-title {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-legacy-white);
+}
+
+.admin-auth-switch-hint {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--color-legacy-muted);
+}
+
+.admin-auth-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.admin-auth-switch-track {
+  position: relative;
+  display: block;
+  width: 2.7rem;
+  height: 1.55rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  transition: background-color 0.2s ease;
+}
+
+.admin-auth-switch-knob {
+  position: absolute;
+  top: 0.16rem;
+  left: 0.16rem;
+  width: 1.22rem;
+  height: 1.22rem;
+  border-radius: 999px;
+  background: var(--color-legacy-white);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  transition: translate 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-auth-switch-track.is-on {
+  background: var(--color-legacy-gold);
+}
+
+.admin-auth-switch-track.is-on .admin-auth-switch-knob {
+  translate: 1.15rem 0;
+  background: #1a140c;
+}
+
+.admin-auth-switch input:focus-visible + .admin-auth-switch-track {
+  outline: 2px solid rgb(214 184 120 / 0.7);
+  outline-offset: 2px;
+}
+
+.admin-auth-institution {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1.1rem;
+  background: rgb(255 255 255 / 0.035);
+  padding: 0.7rem 0.8rem;
+}
+
+.admin-auth-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border: 1px solid rgb(214 184 120 / 0.18);
+  border-radius: 1rem;
+  background: rgb(214 184 120 / 0.07);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--color-legacy-gold-soft);
+}
+
+@media (min-width: 768px) {
+  .admin-auth-stage {
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  }
+
+  .admin-auth-aside {
+    display: flex;
+  }
+
+  .admin-auth-mobile-head {
+    display: none;
+  }
+
+  .admin-auth-panel {
+    padding: 2rem 2rem 1.5rem;
   }
 }

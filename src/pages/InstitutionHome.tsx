@@ -5,6 +5,7 @@ import { ExploreFooter } from '@/components/explore/ExploreFooter'
 import { ExploreShell } from '@/components/layout/ExploreShell'
 import { InstitutionCover } from '@/components/institution/InstitutionCover'
 import { InstitutionHero } from '@/components/institution/InstitutionHero'
+import { HouseSelection, pickHouseSelection } from '@/components/institution/HouseSelection'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import {
@@ -70,6 +71,20 @@ export function InstitutionHome() {
       href: getProjectHref(project),
     }))
 
+  const heroIds = new Set(heroPreview.map((item) => item.id))
+  const house = pickHouseSelection(projects, [...heroIds])
+  const houseIds = new Set(
+    [house.main, ...house.companions].flatMap((project) => (project ? [project.id] : [])),
+  )
+  const vitrinePool = [...featured, ...projects].filter(
+    (project, index, list) =>
+      !houseIds.has(project.id) && list.findIndex((item) => item.id === project.id) === index,
+  )
+  const vitrine = [
+    ...vitrinePool.filter((project) => !heroIds.has(project.id)),
+    ...vitrinePool.filter((project) => heroIds.has(project.id)),
+  ].slice(0, 3)
+
   const sectionReveal = (delay = 0) =>
     reduceMotion
       ? {}
@@ -98,7 +113,7 @@ export function InstitutionHome() {
   }
 
   return (
-    <ExploreShell>
+    <ExploreShell className="is-institution-archive">
       <PublicHeader institution={institution} />
 
       <main id="contenido">
@@ -114,6 +129,12 @@ export function InstitutionHome() {
           preview={heroPreview}
           yearRange={yearRange}
           topAreas={areas.slice(0, 2)}
+        />
+
+        <HouseSelection
+          institution={institution}
+          selection={house}
+          projectsHref={projectsHref}
         />
 
         <div className="mx-auto max-w-[1200px] px-6 py-12 lg:px-8 lg:py-16">
@@ -136,7 +157,7 @@ export function InstitutionHome() {
             </div>
             <div className="institution-section-rule mb-7 mt-4" aria-hidden />
             <div className="knowledge-vitrine">
-              {featured.slice(0, 3).map((project, index) => (
+              {vitrine.map((project, index) => (
                 <motion.div
                   key={project.id}
                   className={
@@ -160,7 +181,7 @@ export function InstitutionHome() {
                   <ProjectCard
                     project={project}
                     layout={index === 0 ? 'hero' : 'plate'}
-                    folio={index + 1}
+                    folio={houseIds.size + index + 1}
                   />
                 </motion.div>
               ))}
@@ -250,7 +271,7 @@ function InstitutionPanel({
       <div className="mt-4 space-y-2">
         {items.length === 0 ? (
           <p className="text-sm text-legacy-muted">
-            Sin elementos en esta versión demo
+            Todavía no hay elementos en esta sección
           </p>
         ) : (
           items.map((item) => (

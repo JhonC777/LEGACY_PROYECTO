@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getRemoteProjects, overlayProjects } from '@/data/archiveRemote'
 import {
   DEMO_PROJECTS,
   getRelatedProjects as relatedFromPool,
@@ -66,7 +67,10 @@ export function resolveInstitution(institution: DemoInstitution): DemoInstitutio
     ...institution,
     name: snap.settings.name || institution.name,
     shortName: snap.settings.shortName || institution.shortName,
-    description: snap.settings.description || institution.description,
+    description:
+      snap.settings.description && !/demostrativ/i.test(snap.settings.description)
+        ? snap.settings.description
+        : institution.description,
     accent: snap.settings.accent || institution.accent,
     logoUrl: snap.settings.logoUrl || institution.logoUrl,
   }
@@ -90,8 +94,12 @@ export function resolveInstitutionProjects(
     (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
   )
   const merged = missing.length > 0 ? [...missing, ...pool] : pool
+  const remote = getRemoteProjects()?.filter(
+    (project) => project.institutionId === institution.id,
+  )
+  const withRemote = remote && remote.length > 0 ? overlayProjects(merged, remote) : merged
 
-  return publishedOnly ? merged.filter((project) => project.status === 'published') : merged
+  return publishedOnly ? withRemote.filter((project) => project.status === 'published') : withRemote
 }
 
 export function resolveProjectBySlug(institution: DemoInstitution, slug?: string) {

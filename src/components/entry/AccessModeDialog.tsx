@@ -85,11 +85,6 @@ export function AccessModeDialog({
                 >
                   {institution.name}
                 </h2>
-                {institution.isPilot ? (
-                  <span className="mt-2.5 inline-flex rounded-full border border-legacy-gold/45 bg-legacy-gold/10 px-2 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
-                    Institución piloto
-                  </span>
-                ) : null}
                 <p
                   id="access-dialog-copy"
                   className="mt-3 text-sm leading-relaxed text-legacy-muted"

@@ -18,7 +18,7 @@ export const MOCK_INSTITUTIONS: Institution[] = [
     id: 'mock-feyalegria',
     name: FE_Y_ALEGRIA_IDENTITY.name,
     slug: 'fe-y-alegria',
-    location: 'Institución piloto',
+    location: 'Archivo abierto',
     description: 'Legado académico institucional',
     primaryColor: '#d6b878',
     logoUrl: FE_Y_ALEGRIA_IDENTITY.logoUrl,

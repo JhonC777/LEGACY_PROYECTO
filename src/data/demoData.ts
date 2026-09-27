@@ -24,6 +24,7 @@ export type DemoInstitution = {
   slug: string
   shortName: string
   logoUrl?: string
+  coverImage?: string
   description: string
   accent: string
   isActive: boolean
@@ -83,8 +84,8 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
     slug: 'fe-y-alegria',
     shortName: FE_Y_ALEGRIA_IDENTITY.shortName,
     logoUrl: FE_Y_ALEGRIA_IDENTITY.logoUrl,
-    description:
-      'Espacio demostrativo de preservación académica. El contenido de esta versión no representa información institucional oficial.',
+    coverImage: FE_Y_ALEGRIA_IDENTITY.coverUrl,
+    description: 'Archivo académico de la IED Germán Vargas Cantillo Fe y Alegría.',
     accent: '#6b5ce6',
     isActive: true,
     isDemo: true,
@@ -94,7 +95,7 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
     name: 'Institución 2',
     slug: 'institucion-2',
     shortName: 'I2',
-    description: 'Entorno de demostración preparado para futuras instituciones afiliadas.',
+    description: 'Esta casa todavía no está abierta.',
     accent: '#7662c9',
     isActive: false,
     isDemo: true,

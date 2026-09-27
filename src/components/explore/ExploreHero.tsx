@@ -22,8 +22,7 @@ export function ExploreHero() {
             <span className="text-legacy-gold-soft italic">legado</span> para siempre.
           </h1>
           <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-legacy-muted">
-            Explora proyectos académicos de demostración organizados por institución, área y
-            año. Contenido claramente identificado como DEMO.
+            Explora los proyectos académicos organizados por institución, área y año.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -72,7 +71,7 @@ export function ExploreHero() {
             <div className="explore-hero-frame-shine" aria-hidden />
             <motion.img
               src={HERO_IMAGE}
-              alt="Edificio institucional de demostración"
+              alt="Edificio de la institución"
               className="aspect-[4/3] w-full object-cover"
               animate={
                 reduceMotion

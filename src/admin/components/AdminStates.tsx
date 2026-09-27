@@ -40,7 +40,7 @@ export function AdminEmptyState({
 
 export function AdminErrorState({
   title = 'No pudimos cargar el panel',
-  description = 'Ocurrió un error de demostración. Puedes intentar nuevamente.',
+  description = 'No se pudo cargar esta sección. Puedes intentar nuevamente.',
   onRetry,
 }: {
   title?: string

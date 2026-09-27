@@ -43,7 +43,7 @@ export function CategorySidebar() {
               <Link
                 to={`${PILOT_CATALOG_PATH}?category=${encodeURIComponent(category.name)}`}
                 className="group flex items-center gap-3 rounded-xl border border-transparent px-2.5 py-2.5 transition-colors hover:border-white/8 hover:bg-explore-panel"
-                aria-label={`${category.name}, ${category.count} ${category.count === 1 ? 'proyecto demo' : 'proyectos demo'}`}
+                aria-label={`${category.name}, ${category.count} ${category.count === 1 ? 'proyecto' : 'proyectos'}`}
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-explore-purple/10 text-explore-purple">
                   <Icon className="h-4 w-4" aria-hidden />
@@ -54,7 +54,7 @@ export function CategorySidebar() {
                   </span>
                   <span className="text-xs text-explore-muted">
                     {category.count}{' '}
-                    {category.count === 1 ? 'proyecto demo' : 'proyectos demo'}
+                    {category.count === 1 ? 'proyecto' : 'proyectos'}
                   </span>
                 </span>
                 <ChevronRight className="h-4 w-4 text-explore-muted transition-transform group-hover:translate-x-0.5 group-hover:text-explore-purple" aria-hidden />
@@ -65,7 +65,7 @@ export function CategorySidebar() {
       </ul>
 
       <p className="mt-4 border-t border-white/8 pt-3 text-[11px] leading-relaxed text-explore-muted">
-        Clasificación calculada a partir del catálogo de demostración.
+        Clasificación del archivo publicado.
       </p>
     </section>
   )

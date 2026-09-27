@@ -20,7 +20,7 @@ export function SmartImage({
   src,
   alt,
   className,
-  fallbackLabel = 'Portada demo no disponible',
+  fallbackLabel = 'Imagen no disponible',
   priority = false,
 }: SmartImageProps) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')

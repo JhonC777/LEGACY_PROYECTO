@@ -301,7 +301,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
               <LegacyMark size="sm" />
               <span className="min-w-0 leading-tight">
                 <LegacyWordmark className="block" />
-                <span className="hidden truncate text-[10px] text-legacy-muted sm:block">
+                <span className="header-brand-sub hidden truncate text-[10px] text-legacy-muted sm:block">
                   Museo Digital del Legado Estudiantil
                 </span>
               </span>
@@ -348,7 +348,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                   className="header-menu w-[22rem]"
                   aria-label="Cambiar de institución"
                 >
-                  <p className="header-menu-title">Instituciones demo</p>
+                  <p className="header-menu-title">Instituciones</p>
                   <ul>
                     {institutionOptions.map(({ item, count }) => {
                       const isCurrent = item.id === institution?.id
@@ -373,7 +373,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                                 {item.name}
                               </span>
                               <span className="block text-[11px] text-legacy-muted">
-                                {count} proyectos demo
+                                {count} {count === 1 ? 'proyecto' : 'proyectos'}
                               </span>
                             </span>
                             {isCurrent ? (
@@ -470,11 +470,12 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
 
             <Link
               to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
-              className="header-action header-action-quiet"
+              className="header-action header-action-quiet header-action-compact"
               title="Panel de administración institucional"
+              aria-label="Administrador"
             >
               <UserRound className="h-4 w-4" aria-hidden />
-              <span className="hidden sm:inline">Administrador</span>
+              <span className="header-action-label hidden sm:inline">Administrador</span>
             </Link>
 
             <button
@@ -550,7 +551,6 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                 <span>{yearRange}</span>
                 <span aria-hidden>·</span>
                 <span>{areas.length} áreas</span>
-                <span className="header-demo-pill">Demo</span>
               </p>
             </div>
           </div>
@@ -613,7 +613,6 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                     </span>
                   </>
                 )}
-                <span className="header-demo-pill">Contenido demo</span>
               </p>
             </div>
           </div>
@@ -722,7 +721,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                         {item.name}
                       </span>
                       <span className="block text-[11px] text-legacy-muted">
-                        {count} proyectos demo
+                        {count} {count === 1 ? 'proyecto' : 'proyectos'}
                       </span>
                     </span>
                     {isCurrent ? (
@@ -734,9 +733,6 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
             })}
           </ul>
 
-          <p className="mt-4 text-[11px] leading-relaxed text-legacy-muted">
-            Contenido de demostración. No representa información institucional oficial.
-          </p>
         </div>
       ) : null}
 

@@ -27,8 +27,8 @@ export function ExploreHeader() {
 
   return (
     <header className="glass-header sticky top-0 z-40">
-      <div className="mx-auto flex max-w-[1200px] items-center gap-4 px-6 py-3.5 lg:gap-6 lg:px-8">
-        <Link to="/" className="flex shrink-0 items-center gap-2.5">
+      <div className="explore-header-main">
+        <Link to="/" className="legacy-brand flex shrink-0 items-center gap-2.5 rounded-xl">
           <LegacyMark size="sm" />
           <span className="leading-tight">
             <LegacyWordmark className="block" />
@@ -38,7 +38,7 @@ export function ExploreHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 xl:flex" aria-label="Explorar">
+        <nav className="explore-header-nav hidden xl:flex" aria-label="Explorar">
           {NAV.map((item) => {
             const active = item.match(location.pathname)
             return (
@@ -62,7 +62,7 @@ export function ExploreHeader() {
           })}
         </nav>
 
-        <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-3 lg:max-w-md lg:flex-none">
+        <div className="explore-header-tools">
           <form
             className="relative hidden min-w-0 flex-1 md:block lg:w-72"
             onSubmit={(event) => {

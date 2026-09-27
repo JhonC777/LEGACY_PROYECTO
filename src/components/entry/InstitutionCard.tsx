@@ -141,11 +141,6 @@ export function InstitutionCard({
           >
             {institution.name}
           </span>
-          {institution.isPilot ? (
-            <span className="rounded border border-legacy-gold/45 bg-legacy-gold/12 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-legacy-gold uppercase">
-              Piloto
-            </span>
-          ) : null}
         </span>
         <span
           className={cn(

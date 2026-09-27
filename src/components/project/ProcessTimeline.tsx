@@ -41,7 +41,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
     {
       key: 'resultados',
       eyebrow: 'Lo que quedó',
-      title: 'Resultados e impacto demostrativo',
+      title: 'Resultados e impacto',
       text: project.results,
       icon: Target,
     },

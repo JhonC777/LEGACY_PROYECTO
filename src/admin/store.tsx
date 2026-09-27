@@ -24,6 +24,14 @@ import {
   type ProjectDraftInput,
   type StoreStatus,
 } from './types'
+import {
+  deleteRemoteProject,
+  getRemoteProjects,
+  overlayProjects,
+  refreshRemoteArchive,
+  saveRemoteProject,
+  subscribeRemoteReady,
+} from '@/data/archiveRemote'
 import { readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
 
 /**
@@ -192,7 +200,15 @@ export function emptyDraft(area = '', category = ''): ProjectDraftInput {
   }
 }
 
-/* ---------- semilla demo ---------- */
+function stripDemoDrafts(payload: Omit<State, 'status'>): Omit<State, 'status'> {
+  return {
+    ...payload,
+    projects: payload.projects.filter((project) => !project.slug.startsWith('borrador-demo')),
+    activity: payload.activity.filter(
+      (entry) => !/borrador de demostración|borrador-demo/i.test(entry.message),
+    ),
+  }
+}
 
 function seed(institution: DemoInstitution): Omit<State, 'status'> {
   const published: AdminProject[] = getInstitutionProjects(institution.id).map(
@@ -216,51 +232,7 @@ function seed(institution: DemoInstitution): Omit<State, 'status'> {
     }
   }
 
-  const refArea = published[0]?.area ?? ''
-  const refCategory = published[0]?.category ?? ''
-  const year = new Date().getFullYear()
-
-  const drafts: AdminProject[] = [
-    {
-      id: createId('draft'),
-      slug: 'borrador-demo-sin-portada',
-      institutionId: institution.id,
-      ...emptyDraft(refArea, refCategory),
-      title: 'Borrador de demostración · ficha incompleta',
-      subtitle: 'Ejemplo de proyecto en preparación',
-      year,
-      description:
-        'Contenido de demostración. Este borrador existe para mostrar cómo el panel señala los datos que faltan antes de publicar.',
-      problem: 'Pendiente de redacción.',
-      tags: ['demo'],
-      status: 'draft',
-      updatedAt: hoursAgo(3),
-    },
-    {
-      id: createId('draft'),
-      slug: 'borrador-demo-casi-listo',
-      institutionId: institution.id,
-      ...emptyDraft(refArea, refCategory),
-      title: 'Borrador de demostración · casi listo para publicar',
-      subtitle: 'Solo falta revisar los resultados',
-      year,
-      authors: [{ id: createId('author'), name: 'Autor de ejemplo (demo)', role: 'Coordinación' }],
-      description:
-        'Contenido de demostración con todos los campos principales completos. Sirve para probar el flujo de publicación desde el panel institucional.',
-      problem: 'Texto de ejemplo para el planteamiento del problema.',
-      solution: 'Texto de ejemplo para la solución propuesta.',
-      methodology: 'Texto de ejemplo para la metodología aplicada.',
-      results: '',
-      technologies: ['Demo'],
-      tags: ['demo', 'publicación'],
-      coverImage: published[1]?.coverImage ?? published[0]?.coverImage ?? '',
-      gallery: published[1] ? [...published[1].gallery] : [],
-      status: 'draft',
-      updatedAt: hoursAgo(26),
-    },
-  ]
-
-  const projects = [...drafts, ...published]
+  const projects = published
 
   const media: MediaAsset[] = published.slice(0, 6).flatMap((project, index) => {
     const image: MediaAsset = {
@@ -289,43 +261,16 @@ function seed(institution: DemoInstitution): Omit<State, 'status'> {
     return [image, pdf]
   })
 
-  const actor = 'Equipo demo'
-  const activity: ActivityEntry[] = [
-    ...published.slice(0, 4).map<ActivityEntry>((project, index) => ({
-      id: createId('act'),
-      type: 'publish',
-      message: `Publicó «${project.title}»`,
-      actor,
-      at: daysAgo(4 + index * 3),
-      projectId: project.id,
-      projectTitle: project.title,
-    })),
-    {
-      id: createId('act'),
-      type: 'upload' as const,
-      message: `Subió ${media.length} archivos al repositorio de medios`,
-      actor,
-      at: daysAgo(6),
-    },
-    {
-      id: createId('act'),
-      type: 'create' as const,
-      message: `Creó el borrador «${drafts[1].title}»`,
-      actor,
-      at: hoursAgo(30),
-      projectId: drafts[1].id,
-      projectTitle: drafts[1].title,
-    },
-    {
-      id: createId('act'),
-      type: 'create' as const,
-      message: `Creó el borrador «${drafts[0].title}»`,
-      actor,
-      at: hoursAgo(3),
-      projectId: drafts[0].id,
-      projectTitle: drafts[0].title,
-    },
-  ].sort((a, b) => b.at.localeCompare(a.at))
+  const actor = 'Administrador'
+  const activity: ActivityEntry[] = published.slice(0, 4).map<ActivityEntry>((project, index) => ({
+    id: createId('act'),
+    type: 'publish',
+    message: `Publicó «${project.title}»`,
+    actor,
+    at: daysAgo(4 + index * 3),
+    projectId: project.id,
+    projectTitle: project.title,
+  }))
 
   const settings: InstitutionSettings = {
     name: institution.name,
@@ -397,23 +342,36 @@ export function AdminStoreProvider({
     dispatch({ type: 'LOADING' })
     const current = ++attempt.current
     const timer = window.setTimeout(() => {
-      if (current !== attempt.current) return
-      if (simulateError && current === 1) {
-        dispatch({ type: 'FAILED' })
-        return
-      }
-      const stored = readArchiveSnapshot(institution.slug)
-      dispatch({
-        type: 'LOADED',
-        payload: stored
-          ? {
-              projects: stored.projects,
-              media: stored.media,
-              activity: stored.activity,
-              settings: stored.settings,
-            }
-          : seed(institution),
-      })
+      void (async () => {
+        if (current !== attempt.current) return
+        if (simulateError && current === 1) {
+          dispatch({ type: 'FAILED' })
+          return
+        }
+        await refreshRemoteArchive()
+        if (current !== attempt.current) return
+        const stored = readArchiveSnapshot(institution.slug)
+        const payload = stripDemoDrafts(
+          stored
+            ? {
+                projects: stored.projects,
+                media: stored.media,
+                activity: stored.activity,
+                settings: stored.settings,
+              }
+            : seed(institution),
+        )
+        const remote =
+          getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ??
+          []
+        dispatch({
+          type: 'LOADED',
+          payload:
+            remote.length > 0
+              ? { ...payload, projects: overlayProjects(payload.projects, remote) }
+              : payload,
+        })
+      })()
     }, 520)
     timers.current.add(timer)
   }, [institution, simulateError])
@@ -468,6 +426,8 @@ export function AdminStoreProvider({
 
   const projectsRef = useRef(state.projects)
   projectsRef.current = state.projects
+  const statusRef = useRef(state.status)
+  statusRef.current = state.status
   const settingsRef = useRef(state.settings)
   settingsRef.current = state.settings
   const mediaRef = useRef(state.media)
@@ -484,6 +444,51 @@ export function AdminStoreProvider({
       settings: settingsRef.current,
     })
   }, [institution.slug])
+
+  const persistRemote = useCallback((project: AdminProject) => {
+    void saveRemoteProject(project).then((saved) => {
+      const current = projectsRef.current.find((item) => item.id === saved.id)
+      if (!current) return
+      const mediaChanged =
+        current.coverImage !== saved.coverImage ||
+        current.docUrl !== saved.docUrl ||
+        current.pdfUrl !== saved.pdfUrl ||
+        current.videoUrl !== saved.videoUrl ||
+        current.gallery.join('|') !== saved.gallery.join('|')
+      if (!mediaChanged) return
+      const next: AdminProject = {
+        ...current,
+        coverImage: saved.coverImage,
+        gallery: saved.gallery,
+        docUrl: saved.docUrl,
+        pdfUrl: saved.pdfUrl,
+        videoUrl: saved.videoUrl,
+      }
+      projectsRef.current = projectsRef.current.map((item) => (item.id === next.id ? next : item))
+      dispatch({ type: 'UPSERT_PROJECT', project: next })
+      flushArchive()
+    })
+  }, [flushArchive])
+
+  useEffect(() => {
+    return subscribeRemoteReady(() => {
+      if (statusRef.current !== 'ready') return
+      const remote =
+        getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ?? []
+      if (remote.length === 0) return
+      const projects = overlayProjects(projectsRef.current, remote)
+      projectsRef.current = projects
+      dispatch({
+        type: 'LOADED',
+        payload: {
+          projects,
+          media: mediaRef.current,
+          activity: activityRef.current,
+          settings: settingsRef.current,
+        },
+      })
+    })
+  }, [institution.id])
 
   const createProject = useCallback<StoreContextValue['createProject']>(
     (input) => {
@@ -505,9 +510,10 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('create', `Creó el borrador «${project.title || 'Sin título'}»`, project)
       flushArchive()
+      persistRemote(project)
       return project
     },
-    [flushArchive, institution.id, log],
+    [flushArchive, institution.id, log, persistRemote],
   )
 
   const updateProject = useCallback<StoreContextValue['updateProject']>(
@@ -525,9 +531,10 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('update', `Actualizó «${project.title || 'Sin título'}»`, project)
       flushArchive()
+      persistRemote(project)
       return project
     },
-    [flushArchive, log],
+    [flushArchive, log, persistRemote],
   )
 
   const setProjectStatus = useCallback<StoreContextValue['setProjectStatus']>(
@@ -572,9 +579,10 @@ export function AdminStoreProvider({
       const [type, label] = verb[status]
       log(type, `${label} «${project.title}»`, project)
       flushArchive()
+      persistRemote(project)
       return { ok: true, errors: [] }
     },
-    [flushArchive, log],
+    [flushArchive, log, persistRemote],
   )
 
   const deleteProject = useCallback<StoreContextValue['deleteProject']>(
@@ -584,6 +592,7 @@ export function AdminStoreProvider({
       dispatch({ type: 'REMOVE_PROJECT', id })
       if (current) log('delete', `Eliminó «${current.title}»`, current)
       flushArchive()
+      void deleteRemoteProject(id)
     },
     [flushArchive, log],
   )
@@ -624,7 +633,7 @@ export function AdminStoreProvider({
           uploadedAt: new Date().toISOString(),
           status: tooLarge ? 'error' : 'uploading',
           progress: 0,
-          error: tooLarge ? 'Supera el límite demo de 15 MB' : undefined,
+          error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
           projectId,
         }
         dispatch({ type: 'ADD_MEDIA', asset })
@@ -646,7 +655,7 @@ export function AdminStoreProvider({
         dispatch({
           type: 'PATCH_MEDIA',
           id,
-          patch: { status: 'error', error: 'Supera el límite demo de 15 MB' },
+          patch: { status: 'error', error: 'Supera el límite de 15 MB' },
         })
         return
       }
@@ -686,14 +695,13 @@ export function AdminStoreProvider({
         )
         .slice(0, 6)
       const wanted = new Set(allowed)
-      projectsRef.current.forEach((project) => {
+      projectsRef.current = projectsRef.current.map((project) => {
         const shouldFeature = wanted.has(project.id)
-        if (project.isFeatured !== shouldFeature) {
-          dispatch({
-            type: 'UPSERT_PROJECT',
-            project: { ...project, isFeatured: shouldFeature },
-          })
-        }
+        if (project.isFeatured === shouldFeature) return project
+        const next = { ...project, isFeatured: shouldFeature }
+        dispatch({ type: 'UPSERT_PROJECT', project: next })
+        persistRemote(next)
+        return next
       })
       dispatch({
         type: 'SETTINGS',
@@ -701,7 +709,7 @@ export function AdminStoreProvider({
       })
       log('settings', `Actualizó los destacados de portada (${allowed.length})`)
     },
-    [log],
+    [log, persistRemote],
   )
 
   const value = useMemo<StoreContextValue>(

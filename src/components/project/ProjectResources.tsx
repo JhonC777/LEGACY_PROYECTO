@@ -179,7 +179,7 @@ export function ProjectResources({ project }: { project: DemoProject }) {
             </span>
           </span>
           <span className="resource-card-action">
-            {docIsFile ? 'Descargar' : docHref.startsWith('#') ? 'Demo' : 'Abrir'}
+            {docIsFile ? 'Descargar' : 'Abrir'}
             {docIsFile ? (
               <Download className="h-3.5 w-3.5" aria-hidden />
             ) : (

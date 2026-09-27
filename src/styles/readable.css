@@ -1,0 +1,154 @@
+/* Piso de lectura: rótulos, metas y frases nunca bajan de 13px
+   ni se quedan en oro/marfil casi transparente. */
+
+.header-chip-kicker,
+.header-nav-count,
+.header-kbd,
+.header-subbar-label,
+.header-demo-pill,
+.header-back,
+.header-folio span,
+.header-context-kicker,
+.header-context-summary,
+.header-pill-count,
+.header-menu-count,
+.header-menu-action,
+.header-sheet-context,
+.header-subbar-summary,
+.header-chip-name,
+.institution-cover-kicker,
+.institution-cover-change,
+.institution-hero-kicker,
+.institution-meta-pill,
+.house-kicker,
+.house-main-seal,
+.house-main-folio,
+.house-main-meta,
+.house-main-facts,
+.house-main-resources,
+.house-companions-label,
+.house-companion-meta,
+.home-product-nav,
+.home-chamber-foot,
+.home-threshold-kicker,
+.home-purpose-list,
+.home-threshold-ledger,
+.home-cta,
+.home-purpose-item span,
+.home-purpose-item em,
+.knowledge-fragment-featured,
+.knowledge-fragment-folio,
+.knowledge-fragment-register,
+.knowledge-fragment-cta,
+.knowledge-fragment-kicker,
+.archive-assistant-kicker,
+.archive-assistant-footnote,
+.archive-assistant-citation-meta,
+.admin-nav-badge,
+.admin-tab-count,
+.admin-table-head,
+.admin-status,
+.admin-chip,
+.admin-auth-kicker,
+.legacy-intro-skip,
+.glass-badge,
+.header-pill {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+}
+
+.header-nav-count,
+.header-pill-count,
+.admin-nav-badge,
+.admin-tab-count {
+  height: auto;
+  min-height: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+.header-chip-name,
+.header-subbar-summary,
+.header-context-summary,
+.house-main-meta,
+.house-companion-meta,
+.home-purpose-list,
+.header-pill,
+.archive-assistant-footnote {
+  letter-spacing: 0.02em;
+}
+
+.institution-cover-kicker,
+.institution-cover-change,
+.institution-cover-phrase,
+.institution-cover-copy,
+.institution-hero-kicker,
+.header-subbar-label,
+.header-folio span,
+.home-chamber-foot,
+.home-threshold-kicker,
+.home-threshold-ledger,
+.home-purpose.is-quiet .home-purpose-item span,
+.home-purpose-item span,
+.house-main-folio,
+.house-companions-label {
+  color: #f0d9a0;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.72);
+}
+
+.institution-cover-phrase {
+  color: #f7f5ef;
+  font-size: 1.15rem;
+}
+
+.institution-cover-phrase em {
+  color: #f0d9a0;
+}
+
+.institution-cover-copy,
+.home-threshold-copy,
+.home-purpose-item em,
+.house-main-desc,
+.house-lead {
+  color: #f3f1ea;
+}
+
+.header-search input::placeholder {
+  color: rgb(215 216 224 / 0.9);
+}
+
+.text-white\/25,
+.text-white\/30,
+.text-white\/45,
+.text-white\/50,
+.text-white\/60,
+.text-white\/70,
+.text-legacy-white\/60,
+.text-legacy-muted\/70,
+.text-legacy-muted\/75,
+.text-legacy-muted\/80,
+.text-legacy-muted\/85,
+.text-legacy-gold\/75 {
+  color: #f3f1ea;
+}
+
+.text-legacy-gold\/75 {
+  color: #f0d9a0;
+}
+
+.text-xs {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+[class*='text-[10px]'],
+[class*='text-[11px]'],
+[class*='text-[0.58rem]'],
+[class*='text-[0.62rem]'],
+[class*='text-[0.67rem]'],
+[class*='text-[0.68rem]'],
+[class*='text-[0.7rem]'] {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+}

@@ -69,7 +69,7 @@ export function InstitutionsSection() {
 
                 <p className="mb-4 text-sm text-legacy-muted">
                   {withLegacyName(
-                    'Acceso de demostración. Te lleva de vuelta al inicio cósmico de LEGACY.',
+                    'Abre el archivo de esta institución.',
                   )}
                 </p>
 
@@ -80,7 +80,7 @@ export function InstitutionsSection() {
                     onClick={() => navigate('/')}
                     className="uppercase tracking-wide"
                   >
-                    Demo
+                    Entrar
                   </Button>
                   <Button
                     variant="secondary"

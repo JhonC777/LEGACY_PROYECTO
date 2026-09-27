@@ -55,7 +55,7 @@ export function InstitutionSelector({
             <p className="home-threshold-title">Instituciones</p>
             <p className="home-threshold-copy">
               Cada institución conserva su propio archivo académico. Hoy está
-              abierto el piloto; las demás casas siguen en preparación.
+              abierta Fe y Alegría; las demás casas siguen en preparación.
             </p>
             {!empty ? (
               <p className="home-threshold-ledger">

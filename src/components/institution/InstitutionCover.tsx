@@ -32,6 +32,12 @@ export function InstitutionCover({
 
   return (
     <main id="contenido" className="institution-cover">
+      {institution.coverImage ? (
+        <div className="institution-cover-photo" aria-hidden>
+          <img src={institution.coverImage} alt="" />
+          <span className="institution-cover-veil" />
+        </div>
+      ) : null}
       <div className="institution-cover-sky" aria-hidden>
         <span className="institution-cover-nebula is-gold" />
         <span className="institution-cover-nebula is-violet" />
@@ -40,7 +46,7 @@ export function InstitutionCover({
 
       <div className="institution-cover-stage">
         <motion.p {...fade(0.08, 10)} className="institution-cover-kicker">
-          {institution.isDemo ? 'Núcleo de conocimiento · Demo' : 'Núcleo de conocimiento'}
+          Núcleo de conocimiento
         </motion.p>
 
         <motion.div {...fade(0.18, 16)} className="institution-cover-mark">

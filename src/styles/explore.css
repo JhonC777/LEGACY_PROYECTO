@@ -43,6 +43,17 @@
   flex-direction: column;
 }
 
+.explore-shell.is-institution-archive {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgb(214 184 120 / 0.05), transparent 60%),
+    #08090c;
+}
+
+.explore-shell.is-institution-archive > .living-field {
+  opacity: 0.35;
+  filter: grayscale(1) sepia(0.4);
+}
+
 .explore-shell.is-institution-cover .legacy-header,
 .explore-shell.is-institution-cover .glass-header {
   flex-shrink: 0;

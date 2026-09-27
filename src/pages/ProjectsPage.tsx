@@ -354,8 +354,7 @@ export function ProjectsPage() {
           </div>
           {filterPanel}
           <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-relaxed text-legacy-muted">
-            Contenidos de demostración. No representan información institucional oficial.
-            <span className="mt-2 block font-medium text-legacy-gold/90">
+            <span className="block font-medium text-legacy-gold/90">
               {LEGACY_SLOGAN}
             </span>
           </div>

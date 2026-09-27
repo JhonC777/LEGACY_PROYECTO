@@ -54,7 +54,7 @@ export function HomeFeaturedRail({
         <div>
           <p className="home-threshold-kicker">Fragmentos de conocimiento</p>
           <h2 id="home-fragments-title" className="home-fragments-title">
-            Del archivo piloto
+            Del archivo
           </h2>
         </div>
         <button type="button" className="home-explore-link home-fragments-more" onClick={onExploreCatalog}>

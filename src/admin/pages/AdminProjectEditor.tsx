@@ -600,7 +600,7 @@ export function AdminProjectEditor() {
             )}
           </Section>
 
-          <Section id="medios" icon={Images} title="Portada y galería" description="Imágenes que representan el proyecto. Límite demo: 15 MB por archivo.">
+          <Section id="medios" icon={Images} title="Portada y galería" description="Imágenes que representan el proyecto. Hasta 15 MB por archivo.">
             <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
               <div>
                 <p className="mb-2 text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
@@ -638,7 +638,7 @@ export function AdminProjectEditor() {
                         if (fallback) set('coverImage', fallback)
                       }}
                     >
-                      Usar portada demo
+                      Usar una portada del archivo
                     </button>
                   )}
                 </div>

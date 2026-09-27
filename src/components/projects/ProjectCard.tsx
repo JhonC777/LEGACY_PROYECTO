@@ -173,7 +173,7 @@ export function ProjectCard({
       >
         <SmartImage
           src={project.coverImage}
-          alt={`Portada demostrativa de ${project.title}`}
+          alt={`Portada de ${project.title}`}
           className="knowledge-fragment-image"
         />
         <span aria-hidden className="knowledge-fragment-grain" />

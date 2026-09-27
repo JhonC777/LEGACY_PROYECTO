@@ -454,9 +454,9 @@ function answerFor(
   const focus = clip(query, 72)
   if (count === 1) {
     const item = citations[0]
-    return `En el archivo publicado de ${institution.shortName} la ficha más cercana a «${focus}» es «${item.title}» (${item.year} · ${item.area}). Es contenido de demostración, no una ficha oficial. Hay ${total} proyectos publicados en esta institución.`
+    return `En el archivo publicado de ${institution.shortName} la ficha más cercana a «${focus}» es «${item.title}» (${item.year} · ${item.area}). Hay ${total} proyectos publicados en esta institución.`
   }
-  return `En el archivo publicado de ${institution.shortName} encontré ${count} fichas relacionadas con «${focus}». Cito solo proyectos publicados de esta institución; el contenido es de demostración.`
+  return `En el archivo publicado de ${institution.shortName} encontré ${count} fichas relacionadas con «${focus}». Cito solo proyectos publicados de esta institución.`
 }
 
 function toCitation(project: DemoProject, tokens: string[]): ArchiveCitation {

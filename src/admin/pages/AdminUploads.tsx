@@ -83,7 +83,7 @@ export function AdminUploads() {
           : `Subiendo ${ids.length} archivo${ids.length === 1 ? '' : 's'}`,
       description:
         rejected > 0
-          ? 'El límite demo es 15 MB por archivo. El resto continúa subiendo.'
+          ? 'El límite es 15 MB por archivo. El resto continúa subiendo.'
           : 'Puedes seguir trabajando; te avisaremos al terminar.',
     })
   }
@@ -185,7 +185,7 @@ export function AdminUploads() {
             Arrastra archivos aquí o haz clic para elegirlos
           </span>
           <span className="text-xs text-legacy-muted">
-            Imágenes, PDF, documentos y video · hasta 15 MB por archivo (límite demo)
+            Imágenes, PDF, documentos y video · hasta 15 MB por archivo
           </span>
         </button>
       </div>

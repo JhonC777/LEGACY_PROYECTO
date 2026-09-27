@@ -112,8 +112,8 @@ export function ProjectGallery({ title, images }: ProjectGalleryProps) {
             >
               <SmartImage
                 src={image}
-                alt={`Evidencia demostrativa ${index + 1} de ${title}`}
-                fallbackLabel="Evidencia demo no disponible"
+                alt={`Imagen ${index + 1} de ${title}`}
+                fallbackLabel="Imagen no disponible"
                 className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
               />
               <span aria-hidden className="gallery-tile-scrim" />
@@ -197,8 +197,8 @@ export function ProjectGallery({ title, images }: ProjectGalleryProps) {
                   <div className="lightbox-frame relative aspect-[16/10] w-full overflow-hidden rounded-[1.4rem] bg-legacy-surface">
                     <SmartImage
                       src={images[openIndex] ?? ''}
-                      alt={`Evidencia demostrativa ${openIndex + 1} de ${title}`}
-                      fallbackLabel="Evidencia demo no disponible"
+                      alt={`Imagen ${openIndex + 1} de ${title}`}
+                      fallbackLabel="Imagen no disponible"
                       className="object-contain"
                     />
                   </div>

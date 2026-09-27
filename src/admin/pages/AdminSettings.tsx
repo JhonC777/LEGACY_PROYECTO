@@ -121,7 +121,7 @@ export function AdminSettings() {
       notify({
         tone: 'success',
         title: 'Ajustes guardados',
-        description: 'Se aplican a esta sesión demo. El sitio público seguirá mostrando los datos de la semilla.',
+        description: 'Quedaron guardados en el panel de esta institución.',
       })
     }, 420)
   }
@@ -374,7 +374,7 @@ export function AdminSettings() {
                   <p className="truncate font-brand text-lg font-semibold text-legacy-white">
                     {form.name || 'Nombre de la institución'}
                   </p>
-                  <p className="text-[11px] text-legacy-muted">Espacio institucional · Demo</p>
+                  <p className="text-[11px] text-legacy-muted">Espacio institucional</p>
                 </div>
               </div>
               <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-legacy-muted">
@@ -382,8 +382,7 @@ export function AdminSettings() {
               </p>
             </div>
             <p className="mt-4 text-[11px] leading-relaxed text-legacy-muted">
-              Los cambios se guardan en esta sesión de demostración y no modifican el sitio público
-              hasta conectar la base de datos.
+              El nombre y la descripción identifican esta institución en el panel.
             </p>
           </section>
         </aside>

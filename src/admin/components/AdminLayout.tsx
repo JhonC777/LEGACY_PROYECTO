@@ -20,6 +20,7 @@ import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { cn } from '@/lib/cn'
 import { useAdminSession } from '../session'
 import { useAdminStore } from '../store'
+import { useToast } from '../toast'
 import { LivingField } from '@/components/atmosphere/LivingField'
 import { ConfirmDialog } from './ConfirmDialog'
 
@@ -34,8 +35,19 @@ type NavItem = {
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { institution, projects, settings, status, media } = useAdminStore()
   const { session, signOut } = useAdminSession()
+  const { notify } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
+  useEffect(() => {
+    const onError = (event: Event) => {
+      const message = (event as CustomEvent<string>).detail
+      if (!message) return
+      notify({ tone: 'error', title: 'Archivo remoto', description: message })
+    }
+    window.addEventListener('legacy-remote-error', onError)
+    return () => window.removeEventListener('legacy-remote-error', onError)
+  }, [notify])
+
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [confirmSignOut, setConfirmSignOut] = useState(false)
 
@@ -117,10 +129,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </nav>
 
       <div className="admin-sidebar-footer mt-auto flex flex-col">
-        <p className="admin-demo-note">
-          Datos de demostración. Los cambios viven en esta sesión y no se envían a ningún
-          servidor.
-        </p>
         <Link
           to={`/instituciones/${institution.slug}`}
           className="admin-nav-link flex items-center gap-2.5"
@@ -211,7 +219,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="header-demo-pill hidden sm:inline-flex">Demo</span>
             <span className="admin-user" title={session?.email}>
               <span className="admin-user-avatar" aria-hidden>
                 {(session?.name ?? 'A').charAt(0).toUpperCase()}
@@ -238,7 +245,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <ConfirmDialog
         open={confirmSignOut}
         title="¿Cerrar sesión?"
-        description="Los cambios de esta demo viven solo en la sesión actual y se perderán al salir."
+        description="Vas a salir del panel de esta institución."
         confirmLabel="Cerrar sesión"
         icon={LogOut}
         onConfirm={handleSignOut}

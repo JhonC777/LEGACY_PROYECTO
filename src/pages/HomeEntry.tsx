@@ -37,7 +37,12 @@ export function HomeEntry() {
           ? resolveInstitutionProjects(demo, true).filter((project) => project.isFeatured)
           : []
       })
-      .sort((a, b) => b.year - a.year || a.title.localeCompare(b.title, 'es'))
+      .sort(
+        (a, b) =>
+          Number(Boolean(b.isReal)) - Number(Boolean(a.isReal)) ||
+          b.year - a.year ||
+          a.title.localeCompare(b.title, 'es'),
+      )
       .slice(0, 3)
   }, [archiveRevision])
   const projectCounts = useMemo(() => {

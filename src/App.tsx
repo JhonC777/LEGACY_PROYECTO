@@ -18,6 +18,9 @@ const RequireAdmin = lazy(() =>
 const AdminLogin = lazy(() =>
   import('@/pages/AdminLogin').then((m) => ({ default: m.AdminLogin })),
 )
+const AdminNewPassword = lazy(() =>
+  import('@/pages/AdminNewPassword').then((m) => ({ default: m.AdminNewPassword })),
+)
 const AdminDashboard = lazy(() =>
   import('@/admin/pages/AdminDashboard').then((m) => ({ default: m.AdminDashboard })),
 )
@@ -72,6 +75,7 @@ export default function App() {
             />
 
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/nueva-clave" element={<AdminNewPassword />} />
             <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
             <Route path="/admin/:institutionSlug" element={<RequireAdmin />}>
               <Route index element={<AdminDashboard />} />

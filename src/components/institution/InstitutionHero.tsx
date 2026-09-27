@@ -109,6 +109,12 @@ export function InstitutionHero({
 
   return (
     <section className="institution-hero px-6 pt-10 pb-12 text-white lg:px-8 lg:pt-14 lg:pb-16">
+      {institution.coverImage ? (
+        <div aria-hidden className="institution-hero-backdrop">
+          <img src={institution.coverImage} alt="" decoding="async" />
+        </div>
+      ) : null}
+      <div aria-hidden className="institution-hero-veil" />
       <div aria-hidden className="institution-hero-grid" />
       <div aria-hidden className="institution-hero-grain" />
       <div aria-hidden className="institution-blur-streak institution-blur-streak-a" />
@@ -146,55 +152,54 @@ export function InstitutionHero({
         <motion.nav
           {...reveal(0.02, 8)}
           aria-label="Ruta"
-          className="mb-7 flex items-center gap-1.5 text-xs text-white/45"
+          className="mb-7 flex items-center gap-1.5 text-sm text-legacy-white/90"
         >
           <Link to="/" className="transition-colors hover:text-legacy-gold">
             Inicio
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden />
-          <span className="text-white/70">{institution.name}</span>
+          <span className="text-legacy-white">{institution.name}</span>
         </motion.nav>
 
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14">
-          <div>
-            <motion.div {...reveal(0.05, 12)}>
-              <GlassBadge className="border-white/20 bg-white/10 text-white">
-                {institution.isDemo
-                  ? 'Archivo institucional'
-                  : 'Espacio institucional'}
-              </GlassBadge>
-            </motion.div>
-
-            <motion.p
-              {...reveal(0.14, 14)}
-              className="mt-7 text-xs font-semibold tracking-[0.22em] text-[#d6b878] uppercase"
-            >
-              Espacio institucional
-            </motion.p>
-
+          <div className="min-w-0">
             <motion.div
-              {...reveal(0.22, 28)}
-              className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center"
+              {...reveal(0.05, 12)}
+              className="flex flex-wrap items-center gap-3"
             >
-              <motion.div className="shrink-0">
-                <InstitutionLogo
-                  name={institution.name}
-                  logoUrl={institution.logoUrl}
-                  fallback={institution.shortName}
-                  accent={institution.accent}
-                  decorative
-                  className="institution-mark institution-mark-logo h-[5.5rem] w-[5.5rem] rounded-2xl text-xl font-bold text-white lg:h-28 lg:w-28 lg:text-2xl"
-                  imageClassName="rounded-xl bg-white/95 p-2"
-                />
-              </motion.div>
-              <h1 className="font-brand text-[clamp(2.6rem,6vw,4.25rem)] leading-[0.94] font-semibold tracking-tight">
-                {institution.name}
-              </h1>
+              <InstitutionLogo
+                name={institution.name}
+                logoUrl={institution.logoUrl}
+                fallback={institution.shortName}
+                accent={institution.accent}
+                decorative
+                className="institution-mark institution-mark-logo h-16 w-16 shrink-0 rounded-2xl text-lg font-bold text-white lg:h-[4.5rem] lg:w-[4.5rem]"
+                imageClassName="rounded-xl bg-white/95 p-1.5"
+              />
+              <span className="flex flex-col gap-1.5">
+                <span className="institution-hero-kicker">Espacio institucional</span>
+                <GlassBadge className="w-fit border-legacy-gold/25 bg-legacy-gold/[0.07] text-legacy-white/85">
+                  Archivo institucional
+                </GlassBadge>
+              </span>
             </motion.div>
 
+            <motion.h1
+              {...reveal(0.18, 28)}
+              className="institution-hero-title mt-7 font-brand text-[clamp(2.4rem,4.9vw,4rem)] leading-[0.98] font-semibold tracking-tight text-legacy-white"
+            >
+              {institution.name}
+            </motion.h1>
+
+            <motion.span
+              {...reveal(0.26, 10)}
+              aria-hidden
+              className="institution-hero-rule mt-6 block"
+            />
+
             <motion.p
-              {...reveal(0.34, 16)}
-              className="mt-6 max-w-2xl text-base leading-relaxed text-white/70"
+              {...reveal(0.32, 16)}
+              className="mt-5 max-w-xl text-[0.98rem] leading-relaxed text-legacy-white/72"
             >
               {institution.description}
             </motion.p>
@@ -214,6 +219,7 @@ export function InstitutionHero({
               </li>
               {topAreas.map((area) => (
                 <li key={area} className="institution-meta-pill">
+                  <Layers3 className="h-3.5 w-3.5 text-legacy-gold/80" aria-hidden />
                   {area}
                 </li>
               ))}
@@ -233,15 +239,28 @@ export function InstitutionHero({
           {lead ? (
             <motion.div
               {...reveal(0.32, 30)}
-              className="institution-mosaic grid grid-cols-2 gap-3"
+              className="institution-mosaic-frame min-w-0 rounded-[1.6rem] p-3 sm:p-3.5"
             >
+              <div className="mb-3 flex items-center justify-between gap-3 px-1.5 pt-0.5">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-legacy-gold uppercase">
+                  Del archivo
+                </span>
+                <Link
+                  to={projectsHref}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-legacy-white/60 transition-colors hover:text-legacy-gold"
+                >
+                  Ver catálogo
+                  <ArrowRight className="h-3 w-3" aria-hidden />
+                </Link>
+              </div>
+              <div className="institution-mosaic grid grid-cols-2 gap-3">
               <Link
                 to={lead.href}
                 className="institution-mosaic-tile group relative col-span-2 block aspect-[16/9] overflow-hidden rounded-2xl"
               >
                 <SmartImage
                   src={lead.coverImage}
-                  alt={`Portada demostrativa de ${lead.title}`}
+                  alt={`Portada de ${lead.title}`}
                   className="transition-transform duration-700 group-hover:scale-[1.05]"
                 />
                 <span
@@ -266,7 +285,7 @@ export function InstitutionHero({
                 >
                   <SmartImage
                     src={item.coverImage}
-                    alt={`Portada demostrativa de ${item.title}`}
+                    alt={`Portada de ${item.title}`}
                     className="transition-transform duration-700 group-hover:scale-[1.06]"
                   />
                   <span
@@ -278,6 +297,7 @@ export function InstitutionHero({
                   </span>
                 </Link>
               ))}
+              </div>
             </motion.div>
           ) : null}
         </div>
@@ -287,7 +307,7 @@ export function InstitutionHero({
             <>
               <motion.span
                 aria-hidden
-                className="pointer-events-none absolute -top-12 -left-20 h-64 w-64 rounded-full bg-legacy-violet/20 blur-3xl"
+                className="pointer-events-none absolute -top-12 -left-20 h-64 w-64 rounded-full bg-[#b5462f]/15 blur-3xl"
                 animate={{
                   x: [0, 110, 30, 0],
                   y: [0, 20, -18, 0],
@@ -333,7 +353,7 @@ export function InstitutionHero({
                 El legado, en contexto
               </h2>
             </div>
-            <p className="max-w-md text-xs leading-relaxed text-white/50 sm:text-right">
+            <p className="max-w-md text-sm leading-relaxed text-legacy-white/90 sm:text-right">
               Accesos directos para recorrer el contenido académico de esta institución.
             </p>
           </motion.div>
@@ -372,27 +392,27 @@ export function InstitutionHero({
                     />
                   ) : null}
                   <span
-                    className="pointer-events-none absolute -top-14 -right-14 h-32 w-32 rounded-full border border-legacy-gold/10 shadow-[0_0_0_20px_rgb(214_184_120/0.025),0_0_0_40px_rgb(118_98_201/0.018)] transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2 group-hover:scale-110"
+                    className="pointer-events-none absolute -top-14 -right-14 h-32 w-32 rounded-full border border-legacy-gold/10 shadow-[0_0_0_20px_rgb(214_184_120/0.025),0_0_0_40px_rgb(214_184_120/0.015)] transition-transform duration-500 group-hover:-translate-x-2 group-hover:translate-y-2 group-hover:scale-110"
                     aria-hidden
                   />
                   <span className="relative flex items-center justify-between">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-legacy-gold/25 bg-legacy-gold/[0.08] text-legacy-gold shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] transition duration-300 group-hover:-rotate-3 group-hover:scale-105 group-hover:border-legacy-gold/45 group-hover:bg-legacy-gold/[0.14]">
                       <Icon className="h-5 w-5" aria-hidden />
                     </span>
-                    <span className="text-[0.58rem] font-bold tracking-[0.16em] text-white/25">
+                    <span className="text-[0.8125rem] font-bold tracking-[0.12em] text-legacy-gold-soft">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                   </span>
                   <span className="relative mt-5 font-brand text-4xl leading-none font-semibold text-legacy-white lg:text-5xl">
                     {stats[key]}
                   </span>
-                  <span className="relative mt-2 text-xs font-semibold tracking-wide text-white/85">
+                  <span className="relative mt-2 text-sm font-semibold tracking-wide text-legacy-white">
                     {label}
                   </span>
-                  <span className="relative mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-white/45">
+                  <span className="relative mt-1.5 line-clamp-2 text-sm leading-relaxed text-legacy-white/90">
                     {statDetails[key]}
                   </span>
-                  <span className="relative mt-auto inline-flex items-center gap-1.5 pt-4 text-[0.67rem] font-semibold text-legacy-gold/75 transition-all duration-300 group-hover:gap-2.5 group-hover:text-legacy-gold-soft">
+                  <span className="relative mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-legacy-gold-soft transition-all duration-300 group-hover:gap-2.5">
                     {action}
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </span>

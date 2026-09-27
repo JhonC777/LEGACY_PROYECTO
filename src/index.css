@@ -4,11 +4,13 @@
 @import "./styles/intro.css";
 @import "./styles/explore.css";
 @import "./styles/institution.css";
+@import "./styles/house.css";
 @import "./styles/glass.css";
 @import "./styles/header.css";
 @import "./styles/project.css";
 @import "./styles/assistant.css";
 @import "./styles/admin.css";
+@import "./styles/readable.css";
 
 @theme {
   --color-legacy-black: #08090c;
@@ -17,13 +19,13 @@
   --color-legacy-gold: #d6b878;
   --color-legacy-gold-soft: #f0d9a0;
   --color-legacy-white: #f7f5ef;
-  --color-legacy-muted: #a6a8b2;
+  --color-legacy-muted: #c8cad3;
   --color-legacy-violet: #7662c9;
   --color-legacy-border: rgb(255 255 255 / 0.12);
 
   --color-explore-bg: #ffffff;
   --color-explore-ink: #1f2430;
-  --color-explore-muted: #6b7280;
+  --color-explore-muted: #4a5160;
   --color-explore-line: #e8eaf0;
   --color-explore-panel: #f6f7fb;
   --color-explore-purple: #6b5ce6;

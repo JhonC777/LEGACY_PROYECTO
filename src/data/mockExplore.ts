@@ -48,7 +48,7 @@ export const MOCK_STATS = [
     id: 'projects',
     value: String(publicProjects.length),
     label: 'Proyectos publicados',
-    hint: 'Contenido de demostración',
+    hint: 'En el archivo publicado',
     icon: 'folder' as const,
   },
   {
@@ -57,15 +57,15 @@ export const MOCK_STATS = [
       new Set(publicProjects.flatMap((project) => project.authors.map((author) => author.id)))
         .size,
     ),
-    label: 'Participantes demo',
-    hint: `En ${publicInstitutions.length} institución${publicInstitutions.length === 1 ? '' : 'es'} demo`,
+    label: 'Participantes',
+    hint: `En ${publicInstitutions.length} institución${publicInstitutions.length === 1 ? '' : 'es'}`,
     icon: 'users' as const,
   },
   {
     id: 'categories',
     value: String(uniqueCategories.size),
     label: 'Categorías',
-    hint: 'Clasificación demostrativa',
+    hint: 'Del archivo',
     icon: 'grid' as const,
   },
   {
@@ -75,7 +75,7 @@ export const MOCK_STATS = [
         ? `${uniqueYears[0]} – ${uniqueYears[uniqueYears.length - 1]}`
         : '—',
     label: 'Años de legado',
-    hint: 'Periodo de demostración',
+    hint: 'Años con proyectos publicados',
     icon: 'calendar' as const,
   },
 ]
@@ -86,7 +86,7 @@ export const MOCK_FEATURED_PROJECTS: MockProject[] = publicProjects
   .map((project) => ({
     id: project.id,
     title: project.title,
-    badge: 'Proyecto demo',
+    badge: 'Destacado',
     category: project.category,
     authors: project.authors.map((author) => author.name).join(', '),
     year: project.year,
@@ -118,11 +118,11 @@ export const MOCK_INSTITUTION_CARDS: MockInstitutionCard[] = [
       id: institution.id,
       name: institution.name,
       slug: institution.slug,
-      location: institution.isActive ? 'Contenido de demostración' : 'Próximamente',
+      location: institution.isActive ? 'Archivo abierto' : 'Próximamente',
       projectsLabel: institution.isActive
-        ? `${count} proyecto${count === 1 ? '' : 's'} demo`
+        ? `${count} proyecto${count === 1 ? '' : 's'}`
         : '—',
-      yearsLabel: institution.isActive ? 'Datos no oficiales' : '—',
+      yearsLabel: institution.isActive ? 'Publicados' : '—',
       variant: (institution.isActive ? 'active' : 'locked') as 'active' | 'locked',
       logoLabel: institution.shortName,
       logoColor: institution.accent,

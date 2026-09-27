@@ -75,7 +75,7 @@ export function ProjectsError({ onRetry }: { onRetry: () => void }) {
     <StateCard
       icon={AlertCircle}
       title="No pudimos cargar los proyectos"
-      description="Ocurrió un error de demostración. Puedes intentar nuevamente."
+      description="No se pudo cargar el archivo. Puedes intentar nuevamente."
       actionLabel="Reintentar"
       onAction={onRetry}
     />

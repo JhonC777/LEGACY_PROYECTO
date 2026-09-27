@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { signOutRemote } from '@/data/archiveRemote'
 import { clearArchiveSnapshot } from './archiveBridge'
 
 /**
@@ -21,19 +22,28 @@ export type AdminSession = {
 }
 
 const STORAGE_KEY = 'legacy.admin.session'
+const PERSIST_KEY = 'legacy.admin.persist'
+
+function readRaw() {
+  return window.localStorage.getItem(STORAGE_KEY) ?? window.sessionStorage.getItem(STORAGE_KEY)
+}
 
 function readSession(): AdminSession | null {
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY)
+    const raw = readRaw()
     return raw ? (JSON.parse(raw) as AdminSession) : null
   } catch {
     return null
   }
 }
 
+export function adminSessionPersists() {
+  return window.localStorage.getItem(PERSIST_KEY) === '1'
+}
+
 type SessionContextValue = {
   session: AdminSession | null
-  signIn: (input: Omit<AdminSession, 'signedInAt'>) => AdminSession
+  signIn: (input: Omit<AdminSession, 'signedInAt'>, persist?: boolean) => AdminSession
   signOut: () => void
 }
 
@@ -44,9 +54,14 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
     typeof window === 'undefined' ? null : readSession(),
   )
 
-  const signIn = useCallback((input: Omit<AdminSession, 'signedInAt'>) => {
+  const signIn = useCallback((input: Omit<AdminSession, 'signedInAt'>, persist = true) => {
     const next: AdminSession = { ...input, signedInAt: new Date().toISOString() }
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    if (persist) window.localStorage.setItem(PERSIST_KEY, '1')
+    else window.localStorage.removeItem(PERSIST_KEY)
+    const primary = persist ? window.localStorage : window.sessionStorage
+    const other = persist ? window.sessionStorage : window.localStorage
+    other.removeItem(STORAGE_KEY)
+    primary.setItem(STORAGE_KEY, JSON.stringify(next))
     setSession(next)
     return next
   }, [])
@@ -54,7 +69,9 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => {
     const slug = session?.institutionSlug
     if (slug) clearArchiveSnapshot(slug)
+    void signOutRemote()
     window.sessionStorage.removeItem(STORAGE_KEY)
+    window.localStorage.removeItem(STORAGE_KEY)
     setSession(null)
   }, [session])
 
