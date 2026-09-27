@@ -174,8 +174,11 @@
   }
 }
 
-/* Ancho medio: se libera espacio para el nombre de la institución. */
-@media (min-width: 1024px) and (max-width: 1279.98px) {
+/*
+  Hasta 1680px se compactan subtítulo de marca y etiqueta de administrador:
+  el nombre completo de la institución y el buscador tienen prioridad.
+*/
+@media (min-width: 1024px) and (max-width: 1679.98px) {
   .header-brand-sub,
   .header-action-label {
     display: none !important;
@@ -298,6 +301,10 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.6rem;
+}
+
+.explore-header-tools > form {
+  max-width: 22rem;
 }
 
 @media (min-width: 1280px) {

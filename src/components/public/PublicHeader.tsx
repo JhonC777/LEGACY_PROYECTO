@@ -463,8 +463,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                 onClick={openAssistant}
               >
                 <MessageSquareText className="h-4 w-4" aria-hidden />
-                <span className="hidden sm:inline 2xl:hidden">Consultar</span>
-                <span className="hidden 2xl:inline">Consultar el archivo</span>
+                <span className="hidden sm:inline">Consultar</span>
               </button>
             ) : null}
 
