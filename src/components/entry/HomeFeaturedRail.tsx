@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
 import {
   DEMO_INSTITUTIONS,
   getProjectHref,
@@ -12,8 +13,6 @@ type HomeFeaturedRailProps = {
   awakened?: boolean
   onExploreCatalog: () => void
 }
-
-const EASE = [0.22, 1, 0.36, 1] as const
 
 function institutionName(project: DemoProject) {
   return (
@@ -27,28 +26,14 @@ export function HomeFeaturedRail({
   awakened = true,
   onExploreCatalog,
 }: HomeFeaturedRailProps) {
-  const reduceMotion = useReducedMotion()
-
   if (projects.length === 0) return null
 
   return (
-    <motion.section
+    <section
       id="home-fragmentos"
-      className="home-fragments is-quiet"
+      className={cn('legacy-rise home-fragments is-quiet', !awakened && 'is-dormant')}
+      style={riseStyle(awakened ? 1.2 : 0, 0.7, 16)}
       aria-labelledby="home-fragments-title"
-      initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 16 }}
-      animate={
-        reduceMotion
-          ? { opacity: awakened ? 1 : 0 }
-          : awakened
-            ? { opacity: 1, y: 0 }
-            : { opacity: 0, y: 16 }
-      }
-      transition={
-        reduceMotion
-          ? { duration: 0 }
-          : { duration: 0.7, delay: awakened ? 1.2 : 0, ease: EASE }
-      }
     >
       <div className="home-fragments-head">
         <div>
@@ -84,6 +69,6 @@ export function HomeFeaturedRail({
           )
         })}
       </ul>
-    </motion.section>
+    </section>
   )
 }

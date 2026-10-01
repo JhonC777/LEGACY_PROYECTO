@@ -8,6 +8,25 @@ export function RouteScrollManager() {
   const lastPathname = useRef<string | null>(null)
 
   useEffect(() => {
+    let timer = 0
+    const onScroll = (event: Event) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      if (!target.matches('.explore-scroll, .home-entry-stage, .admin-content')) return
+      const root = document.documentElement
+      root.classList.add('is-scrolling')
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => root.classList.remove('is-scrolling'), 160)
+    }
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    return () => {
+      document.removeEventListener('scroll', onScroll, true)
+      window.clearTimeout(timer)
+      document.documentElement.classList.remove('is-scrolling')
+    }
+  }, [])
+
+  useEffect(() => {
     // Cambios solo en ?query (buscador, filtros) no deben reiniciar el scroll.
     const pathChanged = lastPathname.current !== location.pathname
     lastPathname.current = location.pathname

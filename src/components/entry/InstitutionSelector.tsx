@@ -1,6 +1,7 @@
 import { Compass } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
 import type { Institution } from '@/data/mockInstitutions'
+import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
 import { HomeIsland } from './HomeIsland'
 import { InstitutionCard } from './InstitutionCard'
 
@@ -13,7 +14,6 @@ type InstitutionSelectorProps = {
 }
 
 const VISIBLE_COUNT = 3
-const EASE = [0.22, 1, 0.36, 1] as const
 
 export function InstitutionSelector({
   institutions,
@@ -22,7 +22,6 @@ export function InstitutionSelector({
   awakened = true,
   projectCounts,
 }: InstitutionSelectorProps) {
-  const reduceMotion = useReducedMotion()
   const visible = institutions.slice(0, VISIBLE_COUNT)
   const openCount = visible.filter((institution) => institution.isActive).length
   const soonCount = visible.length - openCount
@@ -30,21 +29,9 @@ export function InstitutionSelector({
 
   return (
     <div className="home-threshold-stack mx-auto flex min-h-0 w-full max-w-md flex-col lg:mx-0 lg:max-w-none">
-      <motion.div
-        className="home-threshold-island-wrap"
-        initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 18 }}
-        animate={
-          reduceMotion
-            ? { opacity: awakened ? 1 : 0 }
-            : awakened
-              ? { opacity: 1, y: 0 }
-              : { opacity: 0, y: 18 }
-        }
-        transition={
-          reduceMotion
-            ? { duration: 0 }
-            : { duration: 0.75, delay: awakened ? 0.7 : 0, ease: EASE }
-        }
+      <div
+        className={cn('legacy-rise home-threshold-island-wrap', !awakened && 'is-dormant')}
+        style={riseStyle(awakened ? 0.7 : 0, 0.75, 18)}
       >
         <HomeIsland
           className="home-threshold-island"
@@ -86,29 +73,17 @@ export function InstitutionSelector({
             </div>
           )}
         </HomeIsland>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 10 }}
-        animate={
-          reduceMotion
-            ? { opacity: awakened ? 1 : 0 }
-            : awakened
-              ? { opacity: 1, y: 0 }
-              : { opacity: 0, y: 10 }
-        }
-        transition={
-          reduceMotion
-            ? { duration: 0 }
-            : { duration: 0.55, delay: awakened ? 1.05 : 0, ease: EASE }
-        }
-        className="mt-3 shrink-0 lg:mt-[0.65rem]"
+      <div
+        className={cn('legacy-rise mt-3 shrink-0 lg:mt-[0.65rem]', !awakened && 'is-dormant')}
+        style={riseStyle(awakened ? 1.05 : 0, 0.55, 10)}
       >
         <button type="button" className="home-explore-link" onClick={onExploreAll}>
           <Compass className="h-3.5 w-3.5" aria-hidden />
           Explorar el archivo público
         </button>
-      </motion.div>
+      </div>
     </div>
   )
 }

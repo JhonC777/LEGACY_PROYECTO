@@ -1,15 +1,8 @@
 @import "tailwindcss";
+@import "./styles/fonts.css";
 @import "./styles/brand.css";
 @import "./styles/cosmic.css";
-@import "./styles/intro.css";
-@import "./styles/explore.css";
-@import "./styles/institution.css";
-@import "./styles/house.css";
 @import "./styles/glass.css";
-@import "./styles/header.css";
-@import "./styles/project.css";
-@import "./styles/assistant.css";
-@import "./styles/admin.css";
 @import "./styles/readable.css";
 
 @theme {
@@ -90,6 +83,20 @@ body.legacy-modal-open {
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* El scroll vive en estos paneles. pan-y deja que el navegador lo componga sin dudar. */
+.home-entry-stage,
+.explore-scroll,
+.admin-content {
+  touch-action: pan-y;
+}
+
+/* Mientras se desplaza, las auras decorativas no compiten con el scroll. */
+html.is-scrolling *,
+html.is-scrolling *::before,
+html.is-scrolling *::after {
+  animation-play-state: paused !important;
 }
 
 /* Paneles internos: rueda/trackpad sí, barra nativa de Windows no. */

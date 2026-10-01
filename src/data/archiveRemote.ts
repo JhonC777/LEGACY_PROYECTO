@@ -1,6 +1,15 @@
 import type { AdminProject } from '@/admin/types'
 import type { DemoAuthor, ProjectStatus } from '@/data/demoData'
-import { supabase, supabaseConfigured } from '@/lib/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+let clientPromise: Promise<SupabaseClient | null> | null = null
+
+function getClient() {
+  if (!clientPromise) {
+    clientPromise = import('@/lib/supabase').then((mod) => mod.supabase)
+  }
+  return clientPromise
+}
 
 const READY = 'legacy-remote-ready'
 const CHANGE = 'legacy-archive-change'
@@ -157,6 +166,7 @@ function canonicalMedia(value?: string | null) {
 }
 
 async function displayMedia(value?: string) {
+  const supabase = await getClient()
   if (!supabase || !value?.startsWith('storage:')) return value
   const path = value.slice('storage:'.length)
   const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 12)
@@ -178,6 +188,7 @@ async function withDisplayUrls(project: AdminProject): Promise<AdminProject> {
 }
 
 export async function refreshRemoteArchive() {
+  const supabase = await getClient()
   if (!supabase) return null
   const { data, error } = await supabase.from('projects').select('*')
   if (error) {
@@ -196,6 +207,7 @@ export async function signInInstitutionAdmin(
   password: string,
   institutionId: string,
 ) {
+  const supabase = await getClient()
   if (!supabase) return
   const existing = await supabase.auth.signInWithPassword({ email, password })
   if (existing.error) throw new Error(remoteErrorMessage(existing.error))
@@ -205,11 +217,13 @@ export async function signInInstitutionAdmin(
 }
 
 export async function signOutRemote() {
+  const supabase = await getClient()
   if (!supabase) return
   await supabase.auth.signOut()
 }
 
 export async function sendAdminPasswordReset(email: string) {
+  const supabase = await getClient()
   if (!supabase) throw new Error('El archivo remoto no está conectado.')
   const redirectTo = `${window.location.origin}/admin/nueva-clave`
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
@@ -217,6 +231,7 @@ export async function sendAdminPasswordReset(email: string) {
 }
 
 export async function updateAdminPassword(password: string) {
+  const supabase = await getClient()
   if (!supabase) throw new Error('El archivo remoto no está conectado.')
   const { data, error } = await supabase.auth.updateUser({ password })
   if (error) throw new Error(remoteErrorMessage(error))
@@ -275,6 +290,7 @@ function allowedContentType(blob: Blob, path: string) {
 }
 
 async function promoteUrl(url: string | undefined, path: string) {
+  const supabase = await getClient()
   if (!supabase || !url?.startsWith('blob:')) return url
   const blob = await fetch(url).then((response) => response.blob())
   const contentType = allowedContentType(blob, path)
@@ -314,6 +330,7 @@ async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
 }
 
 export async function saveRemoteProject(project: AdminProject) {
+  const supabase = await getClient()
   if (!supabase) return project
   try {
     const prepared = await withDisplayUrls(await withStoredMedia(project))
@@ -330,6 +347,7 @@ export async function saveRemoteProject(project: AdminProject) {
 }
 
 export async function deleteRemoteProject(id: string) {
+  const supabase = await getClient()
   if (!supabase) return
   const { error } = await supabase.from('projects').delete().eq('id', id)
   if (error) {
@@ -353,5 +371,3 @@ export function subscribeRemoteReady(listener: () => void) {
   window.addEventListener(READY, listener)
   return () => window.removeEventListener(READY, listener)
 }
-
-export { supabaseConfigured }

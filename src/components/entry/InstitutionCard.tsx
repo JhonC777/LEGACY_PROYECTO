@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { riseStyle } from '@/lib/rise'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
 import { cn } from '@/lib/cn'
@@ -60,11 +60,10 @@ export function InstitutionCard({
   awakened = true,
   projectCount,
 }: InstitutionCardProps) {
-  const reduceMotion = useReducedMotion()
   const disabled = !institution.isActive
 
   return (
-    <motion.button
+    <button
       type="button"
       disabled={disabled}
       aria-disabled={disabled}
@@ -74,25 +73,10 @@ export function InstitutionCard({
         if (disabled) return
         onSelect(institution)
       }}
-      initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 12 }}
-      animate={
-        reduceMotion
-          ? { opacity: awakened ? 1 : 0 }
-          : awakened
-            ? { opacity: 1, y: 0 }
-            : { opacity: 0, y: 12 }
-      }
-      transition={
-        reduceMotion
-          ? { duration: 0 }
-          : {
-              duration: 0.5,
-              delay: awakened ? 0.88 + index * 0.1 : 0,
-              ease: [0.22, 1, 0.36, 1],
-            }
-      }
-      whileTap={disabled || reduceMotion ? undefined : { scale: 0.99 }}
+      style={riseStyle(awakened ? 0.88 + index * 0.1 : 0, 0.5, 12)}
       className={cn(
+        'legacy-rise',
+        !awakened && 'is-dormant',
         'archive-file-card group relative w-full overflow-hidden rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-legacy-gold',
         compact
           ? 'flex min-h-[8.5rem] flex-col gap-2.5 px-3.5 py-3.5'
@@ -184,6 +168,6 @@ export function InstitutionCard({
           </span>
         )
       ) : null}
-    </motion.button>
+    </button>
   )
 }

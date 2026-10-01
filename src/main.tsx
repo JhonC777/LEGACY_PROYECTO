@@ -4,7 +4,14 @@ import { refreshRemoteArchive } from '@/data/archiveRemote'
 import App from './App'
 import './index.css'
 
-void refreshRemoteArchive()
+const startArchive = () => {
+  void refreshRemoteArchive()
+}
+if (typeof requestIdleCallback === 'function') {
+  requestIdleCallback(startArchive, { timeout: 1200 })
+} else {
+  window.setTimeout(startArchive, 300)
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

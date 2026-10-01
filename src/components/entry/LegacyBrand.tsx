@@ -1,7 +1,8 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import type { CSSProperties } from 'react'
 import { LegacyMark } from '@/components/brand/LegacyMark'
 import { LegacyWordmark } from '@/components/brand/LegacyWordmark'
 import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
 
 type LegacyBrandProps = {
   markDelay?: number
@@ -10,8 +11,6 @@ type LegacyBrandProps = {
   awakened?: boolean
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const
-
 /** Marca editorial del Home — sello de observatorio / casa de archivos. */
 export function LegacyBrand({
   markDelay = 0.12,
@@ -19,24 +18,8 @@ export function LegacyBrand({
   align = 'center',
   awakened = true,
 }: LegacyBrandProps) {
-  const reduceMotion = useReducedMotion()
   const start = align === 'start'
-
-  const fadeUp = (delay: number) =>
-    reduceMotion
-      ? {
-          initial: { opacity: awakened ? 1 : 0 },
-          animate: { opacity: awakened ? 1 : 0 },
-        }
-      : {
-          initial: { opacity: 0, y: 16 },
-          animate: awakened ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 },
-          transition: {
-            duration: 0.9,
-            delay: awakened ? delay : 0,
-            ease: EASE,
-          },
-        }
+  const rise = (delay: number): CSSProperties => riseStyle(awakened ? delay : 0, 0.9, 16)
 
   return (
     <div
@@ -45,31 +28,38 @@ export function LegacyBrand({
         start ? 'items-center text-center lg:items-start lg:text-left' : 'items-center text-center',
       )}
     >
-      <motion.div {...fadeUp(markDelay)} className="archive-mark mb-4 lg:mb-[clamp(0.65rem,2vh,1.35rem)]">
+      <div
+        style={rise(markDelay)}
+        className={cn('legacy-rise archive-mark mb-4 lg:mb-[clamp(0.65rem,2vh,1.35rem)]', !awakened && 'is-dormant')}
+      >
         <span aria-hidden className="archive-mark-glow absolute inset-[-42%] rounded-full" />
         <LegacyMark size="lg" />
-      </motion.div>
+      </div>
 
-      <motion.p
-        {...fadeUp(markDelay + 0.08)}
-        className="home-brand-kicker mb-2.5 lg:mb-3"
+      <p
+        style={rise(markDelay + 0.08)}
+        className={cn('legacy-rise home-brand-kicker mb-2.5 lg:mb-3', !awakened && 'is-dormant')}
       >
         Archivo académico institucional
-      </motion.p>
+      </p>
 
-      <motion.h1 {...fadeUp(titleDelay)} className="home-brand-title">
+      <h1 style={rise(titleDelay)} className={cn('legacy-rise home-brand-title', !awakened && 'is-dormant')}>
         <LegacyWordmark as="span" size="display" />
-      </motion.h1>
+      </h1>
 
-      <motion.div
-        {...fadeUp(titleDelay + 0.1)}
+      <div
+        style={rise(titleDelay + 0.1)}
         aria-hidden
-        className={cn('archive-rule mt-4 lg:mt-[clamp(0.55rem,1.6vh,1.15rem)]', start && 'is-start')}
+        className={cn(
+          'legacy-rise archive-rule mt-4 lg:mt-[clamp(0.55rem,1.6vh,1.15rem)]',
+          start && 'is-start',
+          !awakened && 'is-dormant',
+        )}
       >
         <span className="archive-rule-line" />
         <span className="archive-rule-diamond" />
         <span className="archive-rule-line" />
-      </motion.div>
+      </div>
     </div>
   )
 }

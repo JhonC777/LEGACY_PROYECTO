@@ -15,7 +15,6 @@
   position: absolute;
   inset: -5%;
   pointer-events: none;
-  will-change: transform;
 }
 
 .cosmic-parallax.is-far {
@@ -221,9 +220,14 @@
   animation: cosmic-star-twinkle 5.6s ease-in-out infinite;
 }
 
+.cosmic-sky {
+  contain: layout paint style;
+}
+
 .cosmic-grain {
   opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("../assets/grain-tile.png");
+  background-size: 128px 128px;
 }
 
 .cosmic-vignette {
@@ -800,6 +804,75 @@
   overscroll-behavior: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+@keyframes legacy-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-y, 16px), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.home-entry.is-awakened .legacy-rise {
+  /* backwards: oculto durante el retardo, y al terminar suelta el transform para no pisar el hover. */
+  animation: legacy-rise var(--rise-dur, 0.85s) cubic-bezier(0.22, 1, 0.36, 1) var(--rise-delay, 0s) backwards;
+}
+
+.legacy-rise.is-dormant {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes access-veil-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes access-veil-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes access-panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes access-panel-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+}
+
+.access-layer {
+  animation: access-veil-in 0.32s ease both;
+}
+
+.access-layer.is-leaving {
+  animation: access-veil-out 0.32s ease both;
+}
+
+.access-panel {
+  animation: access-panel-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.access-panel.is-leaving {
+  animation: access-panel-out 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .home-entry-stage::-webkit-scrollbar {
@@ -1882,7 +1955,7 @@
 }
 
 .archive-file-card:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
 }
 
 .archive-file-card.is-pilot {

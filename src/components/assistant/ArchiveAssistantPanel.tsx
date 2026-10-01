@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import '@/styles/assistant.css'
 import {
   AlertCircle,
   ArrowRight,

@@ -1,5 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
 
 const PILLARS = [
   { key: 'preservar', label: 'Preservar', hint: 'El trabajo no se pierde al cerrar el año.' },
@@ -13,27 +13,11 @@ type HomePurposeProps = {
   quiet?: boolean
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const
-
 export function HomePurpose({ awakened = true, quiet = false }: HomePurposeProps) {
-  const reduceMotion = useReducedMotion()
-
   return (
-    <motion.div
-      className={cn('home-purpose', quiet && 'is-quiet')}
-      initial={reduceMotion ? { opacity: awakened ? 1 : 0 } : { opacity: 0, y: 10 }}
-      animate={
-        reduceMotion
-          ? { opacity: awakened ? 1 : 0 }
-          : awakened
-            ? { opacity: 1, y: 0 }
-            : { opacity: 0, y: 10 }
-      }
-      transition={
-        reduceMotion
-          ? { duration: 0 }
-          : { duration: 0.7, delay: awakened ? (quiet ? 1.12 : 0.82) : 0, ease: EASE }
-      }
+    <div
+      className={cn('legacy-rise home-purpose', quiet && 'is-quiet', !awakened && 'is-dormant')}
+      style={riseStyle(awakened ? (quiet ? 1.12 : 0.82) : 0, 0.7, 10)}
     >
       <p className="home-purpose-line">Los proyectos terminan. El conocimiento permanece.</p>
       <ul className="home-purpose-list">
@@ -44,6 +28,6 @@ export function HomePurpose({ awakened = true, quiet = false }: HomePurposeProps
           </li>
         ))}
       </ul>
-    </motion.div>
+    </div>
   )
 }

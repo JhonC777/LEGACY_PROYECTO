@@ -1,5 +1,5 @@
-import feYAlegriaLogo from '@/assets/fe-y-alegria-logo.png'
-import feYAlegriaSede from '@/assets/ied-gvc-sede.jpg'
+import feYAlegriaLogo from '@/assets/fe-y-alegria-logo.webp'
+import feYAlegriaSede from '@/assets/ied-gvc-sede.webp'
 
 /** Identidad institucional real de la IED Germán Vargas Cantillo. */
 export const FE_Y_ALEGRIA_IDENTITY = {

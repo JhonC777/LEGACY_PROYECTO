@@ -1,9 +1,26 @@
 import { useEffect, useState } from 'react'
-import { useReducedMotion } from 'framer-motion'
+
+function usePrefersReducedMotion() {
+  const [reduceMotion, setReduceMotion] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduceMotion(media.matches)
+    sync()
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [])
+
+  return reduceMotion
+}
 
 /** Auras vivas solo si hay movimiento permitido y la pestaña está visible. */
 export function useAuraPlayback() {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = usePrefersReducedMotion()
   const [hidden, setHidden] = useState(
     () => typeof document !== 'undefined' && document.hidden,
   )

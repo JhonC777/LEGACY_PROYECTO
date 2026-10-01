@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, LockKeyhole, UserRound } from 'lucide-react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
+import { cn } from '@/lib/cn'
 import { HomeIsland } from './HomeIsland'
 
 type AccessModeDialogProps = {
@@ -21,10 +21,25 @@ export function AccessModeDialog({
   onGuestAccess,
   onAdminAccess,
 }: AccessModeDialogProps) {
-  const reduceMotion = useReducedMotion()
+  const [phase, setPhase] = useState<'closed' | 'open' | 'leave'>('closed')
 
   useEffect(() => {
-    if (!open) return
+    if (open) {
+      setPhase('open')
+      return
+    }
+    setPhase((current) => (current === 'open' ? 'leave' : 'closed'))
+  }, [open])
+
+  useEffect(() => {
+    if (phase !== 'leave') return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const timer = window.setTimeout(() => setPhase('closed'), reduce ? 0 : 400)
+    return () => window.clearTimeout(timer)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase === 'closed') return
     document.body.classList.add('legacy-modal-open')
 
     const onKey = (event: KeyboardEvent) => {
@@ -36,19 +51,15 @@ export function AccessModeDialog({
       document.body.classList.remove('legacy-modal-open')
       window.removeEventListener('keydown', onKey)
     }
-  }, [open, onClose])
+  }, [phase, onClose])
 
-  if (typeof document === 'undefined') return null
+  if (typeof document === 'undefined' || phase === 'closed' || !institution) return null
+
+  const leaving = phase === 'leave'
 
   return createPortal(
-    <AnimatePresence>
-      {open && institution ? (
-        <motion.div
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={reduceMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.32 }}
+        <div
+          className={cn('access-layer fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6', leaving && 'is-leaving')}
         >
           <button
             type="button"
@@ -57,16 +68,12 @@ export function AccessModeDialog({
             onClick={onClose}
           />
 
-          <motion.div
+          <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="access-dialog-title"
             aria-describedby="access-dialog-copy"
-            initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: 14, scale: 0.985 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-[26.5rem]"
+            className={cn('access-panel relative w-full max-w-[26.5rem]', leaving && 'is-leaving')}
           >
             <HomeIsland panelClassName="access-threshold legacy-hidden-scroll max-h-[min(36rem,calc(100dvh-2rem))] overflow-y-auto p-6 sm:p-8">
               <div className="relative mb-7 text-center">
@@ -136,10 +143,8 @@ export function AccessModeDialog({
                 Cambiar de institución
               </button>
             </HomeIsland>
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>,
+          </div>
+        </div>,
     document.body,
   )
 }
