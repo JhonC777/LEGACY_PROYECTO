@@ -10,6 +10,7 @@ import { GlassInput } from '@/components/ui/GlassInput'
 import { DEMO_INSTITUTIONS, getInstitutionBySlug } from '@/data/demoData'
 import { sendAdminPasswordReset, signInInstitutionAdmin } from '@/data/archiveRemote'
 import { cn } from '@/lib/cn'
+import { safeAdminNext } from '@/admin/safeNext'
 import { setKeepAdminSignedIn, supabaseConfigured } from '@/lib/supabase'
 
 const REMEMBER_KEY = 'legacy.admin.remember'
@@ -17,12 +18,12 @@ const EMAIL_KEY = 'legacy.admin.email'
 const PASSWORD_KEY = 'legacy.admin.password'
 
 function readRemembered() {
+  if (typeof window !== 'undefined') window.localStorage.removeItem(PASSWORD_KEY)
   if (typeof window === 'undefined' || window.localStorage.getItem(REMEMBER_KEY) !== '1') {
-    return { email: '', password: '', remember: false }
+    return { email: '', remember: false }
   }
   return {
     email: window.localStorage.getItem(EMAIL_KEY) ?? '',
-    password: window.localStorage.getItem(PASSWORD_KEY) ?? '',
     remember: true,
   }
 }
@@ -96,12 +97,12 @@ export function AdminLogin() {
   const { session, signIn } = useAdminSession()
 
   const requestedSlug = params.get('institution') ?? ''
-  const next = params.get('next')
+  const next = safeAdminNext(params.get('next'))
   const institution = getInstitutionBySlug(requestedSlug)
 
   const remembered = readRemembered()
   const [email, setEmail] = useState(remembered.email)
-  const [password, setPassword] = useState(remembered.password)
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(remembered.remember)
   const [keepSession, setKeepSession] = useState(true)
@@ -113,7 +114,7 @@ export function AdminLogin() {
   const [error, setError] = useState<string | null>(null)
 
   if (session && institution && session.institutionSlug === institution.slug) {
-    return <Navigate to={next && next.startsWith('/admin/') ? next : `/admin/${institution.slug}`} replace />
+    return <Navigate to={next ?? `/admin/${institution.slug}`} replace />
   }
 
   const handleSubmit = (event: FormEvent) => {
@@ -134,14 +135,13 @@ export function AdminLogin() {
     void (async () => {
       try {
         setKeepAdminSignedIn(keepSession)
+        window.localStorage.removeItem(PASSWORD_KEY)
         if (remember) {
           window.localStorage.setItem(REMEMBER_KEY, '1')
           window.localStorage.setItem(EMAIL_KEY, email.trim())
-          window.localStorage.setItem(PASSWORD_KEY, password)
         } else {
           window.localStorage.removeItem(REMEMBER_KEY)
           window.localStorage.removeItem(EMAIL_KEY)
-          window.localStorage.removeItem(PASSWORD_KEY)
         }
         if (supabaseConfigured) {
           await signInInstitutionAdmin(email.trim(), password, institution.id)
@@ -154,7 +154,7 @@ export function AdminLogin() {
           },
           keepSession,
         )
-        navigate(next && next.startsWith('/admin/') ? next : `/admin/${institution.slug}`, {
+        navigate(next ?? `/admin/${institution.slug}`, {
           replace: true,
         })
       } catch (caught) {
@@ -338,8 +338,8 @@ export function AdminLogin() {
                   <SwitchRow
                     checked={remember}
                     onChange={setRemember}
-                    title="Recordar correo y contraseña"
-                    hint="Quedan escritos la próxima vez, solo en este navegador"
+                    title="Recordar correo"
+                    hint="Solo el correo queda escrito la próxima vez, en este navegador"
                   />
                   <SwitchRow
                     checked={keepSession}
@@ -361,7 +361,9 @@ export function AdminLogin() {
 
           <p className="admin-auth-note mt-4">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            Usa el correo y la contraseña del administrador de esta institución.
+            {supabaseConfigured
+              ? 'Usa el correo y la contraseña del administrador de esta institución.'
+              : 'Modo demostración en este navegador: el archivo remoto no está conectado.'}
           </p>
         </>
       ) : (

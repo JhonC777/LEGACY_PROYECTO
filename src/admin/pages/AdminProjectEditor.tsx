@@ -38,7 +38,7 @@ import { AdminEmptyState, AdminErrorState, Skeleton } from '../components/AdminS
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatBytes, formatRelative } from '../format'
-import { isValidResourceUrl, resourceFileName, withResourceName } from '@/lib/resources'
+import { isValidResourceUrl, resourceFileName, safeHref, withResourceName } from '@/lib/resources'
 import { createId, emptyDraft, getProjectIssues, inferMediaKind, useAdminStore } from '../store'
 import { useToast } from '../toast'
 import type { AdminProject, MediaKind, ProjectDraftInput } from '../types'
@@ -1011,7 +1011,7 @@ function ResourceField({
       {local ? (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-legacy-muted">
           <a
-            href={value.split('#')[0]}
+            href={safeHref(value.split('#')[0]) ?? '#'}
             download={fileName}
             className="inline-flex items-center gap-1.5 text-legacy-gold hover:underline"
           >

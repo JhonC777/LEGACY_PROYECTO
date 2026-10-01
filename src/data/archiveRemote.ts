@@ -118,6 +118,9 @@ function fail(message: string) {
 
 export function remoteErrorMessage(error: { message?: string; code?: string }) {
   const message = error.message ?? ''
+  if (/tipo de archivo no permitido/i.test(message)) {
+    return 'Ese tipo de archivo no está permitido.'
+  }
   if (/claim_admin|schema cache|relation|does not exist/i.test(message)) {
     return 'La base todavía no está lista. Falta ejecutar el esquema en Supabase.'
   }
@@ -136,7 +139,8 @@ export function remoteErrorMessage(error: { message?: string; code?: string }) {
   if (/rate limit|too many/i.test(message)) {
     return 'Espera un momento antes de pedir otro correo.'
   }
-  return message || 'No se pudo conectar con el archivo.'
+  if (message) console.error('[legacy] archivo remoto:', message)
+  return 'No se pudo completar la operación. Intenta de nuevo.'
 }
 
 function canonicalMedia(value: string): string
@@ -230,12 +234,53 @@ function fileNameFrom(url: string, fallback: string) {
     .slice(0, 80) || fallback
 }
 
+const ALLOWED_ARCHIVE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.oasis.opendocument.text',
+  'text/plain',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+])
+
+const EXT_TO_TYPE: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  odt: 'application/vnd.oasis.opendocument.text',
+  txt: 'text/plain',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  mov: 'video/quicktime',
+}
+
+function allowedContentType(blob: Blob, path: string) {
+  const type = blob.type.toLowerCase().split(';')[0]?.trim() ?? ''
+  if (ALLOWED_ARCHIVE_TYPES.has(type)) return type
+  const ext = path.split('.').pop()?.toLowerCase() ?? ''
+  const fromExt = EXT_TO_TYPE[ext]
+  if ((type === '' || type === 'application/octet-stream') && fromExt) return fromExt
+  throw new Error('tipo de archivo no permitido')
+}
+
 async function promoteUrl(url: string | undefined, path: string) {
   if (!supabase || !url?.startsWith('blob:')) return url
   const blob = await fetch(url).then((response) => response.blob())
+  const contentType = allowedContentType(blob, path)
   const { error } = await supabase.storage.from('archive').upload(path, blob, {
     upsert: true,
-    contentType: blob.type || undefined,
+    contentType,
   })
   if (error) throw error
   return `storage:${path}`

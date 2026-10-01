@@ -58,7 +58,7 @@ export function AdminNewPassword() {
             true,
           )
           window.localStorage.setItem('legacy.admin.email', email)
-          window.localStorage.setItem('legacy.admin.password', password)
+          window.localStorage.removeItem('legacy.admin.password')
           window.localStorage.setItem('legacy.admin.remember', '1')
           navigate(`/admin/${institution.slug}`, { replace: true })
           return

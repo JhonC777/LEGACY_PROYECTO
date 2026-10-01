@@ -9,7 +9,7 @@ import {
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
-import { isFileResource, resourceFileName } from '@/lib/resources'
+import { isFileResource, resourceFileName, safeHref } from '@/lib/resources'
 
 type ProjectCardProps = {
   project: DemoProject
@@ -51,9 +51,9 @@ export function ProjectCard({
       ? {
           key: 'doc',
           label: 'Doc',
-          href: project.docUrl.startsWith('#')
-            ? `${href}${project.docUrl}`
-            : project.docUrl,
+          href: safeHref(
+            project.docUrl.startsWith('#') ? `${href}${project.docUrl}` : project.docUrl,
+          ),
           Icon: FileText,
           file: isFileResource(project.docUrl),
           download: resourceFileName(project.docUrl, 'documento-del-proyecto'),
@@ -63,7 +63,7 @@ export function ProjectCard({
       ? {
           key: 'video',
           label: 'Video',
-          href: project.videoUrl,
+          href: safeHref(project.videoUrl),
           Icon: Play,
           file: isFileResource(project.videoUrl),
           download: resourceFileName(project.videoUrl, 'video-del-proyecto'),
@@ -73,13 +73,20 @@ export function ProjectCard({
       ? {
           key: 'pdf',
           label: 'PDF',
-          href: project.pdfUrl,
+          href: safeHref(project.pdfUrl),
           Icon: FileType2,
           file: isFileResource(project.pdfUrl),
           download: resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf'),
         }
       : null,
-  ].filter((item): item is NonNullable<typeof item> => item !== null)
+  ].filter((item): item is {
+    key: string
+    label: string
+    href: string
+    Icon: typeof FileText
+    file: boolean
+    download: string
+  } => Boolean(item?.href))
 
   const real = isRealShowcase(project)
 

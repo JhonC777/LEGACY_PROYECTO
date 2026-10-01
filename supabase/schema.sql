@@ -273,7 +273,8 @@ create policy "read archive"
       or exists (
         select 1 from public.institution_admins admin
         where admin.user_id = auth.uid()
-          and name like admin.institution_id || '/%'
+          and admin.institution_id <> ''
+          and starts_with(name, admin.institution_id || '/')
       )
     )
   );
@@ -287,7 +288,8 @@ create policy "admin uploads archive"
     and exists (
       select 1 from public.institution_admins admin
       where admin.user_id = auth.uid()
-        and name like admin.institution_id || '/%'
+        and admin.institution_id <> ''
+        and starts_with(name, admin.institution_id || '/')
     )
   );
 
@@ -300,7 +302,8 @@ create policy "admin updates archive"
     and exists (
       select 1 from public.institution_admins admin
       where admin.user_id = auth.uid()
-        and name like admin.institution_id || '/%'
+        and admin.institution_id <> ''
+        and starts_with(name, admin.institution_id || '/')
     )
   )
   with check (
@@ -308,7 +311,8 @@ create policy "admin updates archive"
     and exists (
       select 1 from public.institution_admins admin
       where admin.user_id = auth.uid()
-        and name like admin.institution_id || '/%'
+        and admin.institution_id <> ''
+        and starts_with(name, admin.institution_id || '/')
     )
   );
 
@@ -321,6 +325,7 @@ create policy "admin deletes archive"
     and exists (
       select 1 from public.institution_admins admin
       where admin.user_id = auth.uid()
-        and name like admin.institution_id || '/%'
+        and admin.institution_id <> ''
+        and starts_with(name, admin.institution_id || '/')
     )
   );
