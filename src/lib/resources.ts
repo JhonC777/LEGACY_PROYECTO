@@ -1,7 +1,56 @@
 /** Recursos de ficha: URL externa o archivo local (blob de la sesión). */
 
+const CONTROL_CHARS = /[\u0000-\u001F\u007F]/
+
 export function isHttpUrl(value?: string) {
   return Boolean(value && /^https?:\/\/\S+$/i.test(value))
+}
+
+/**
+ * Destino de un enlace. Solo http(s), ruta del propio sitio, ancla o blob de la sesión.
+ * Bloquea javascript:, data: y URLs protocol-relative.
+ */
+export function safeHref(value?: string | null): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > 4000 || CONTROL_CHARS.test(trimmed) || trimmed.includes('\\')) {
+    return null
+  }
+  if (trimmed.startsWith('#') && !trimmed.includes(':') && !trimmed.startsWith('#//')) return trimmed
+  if (trimmed.startsWith('blob:')) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+      return trimmed
+    } catch {
+      return null
+    }
+  }
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed
+  return null
+}
+
+/** Origen de imagen o video. Rechaza SVG en data: y cualquier esquema que no sea http(s). */
+export function safeMediaSrc(value?: string | null): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.length > 4000 || CONTROL_CHARS.test(trimmed) || trimmed.includes('\\')) {
+    return null
+  }
+  if (trimmed.startsWith('blob:')) return trimmed
+  if (/^data:image\/(?!svg)/i.test(trimmed)) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+      return trimmed
+    } catch {
+      return null
+    }
+  }
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed.split('#')[0]
+  return null
 }
 
 export function isBlobUrl(value?: string) {

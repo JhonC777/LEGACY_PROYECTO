@@ -69,36 +69,94 @@ export function providerFor(config: AssistantConfig): 'gemini' | 'claude' | null
   return null
 }
 
+const WINDOW_MS = 60_000
+const MAX_POSTS = 20
+const hitsByIp = new Map<string, number[]>()
+
+function clientIp(req: IncomingMessage) {
+  return req.socket.remoteAddress || 'local'
+}
+
+function tooManyRequests(req: IncomingMessage) {
+  const now = Date.now()
+  const ip = clientIp(req)
+  const recent = (hitsByIp.get(ip) ?? []).filter((stamp) => now - stamp < WINDOW_MS)
+  if (recent.length >= MAX_POSTS) {
+    hitsByIp.set(ip, recent)
+    return true
+  }
+  recent.push(now)
+  hitsByIp.set(ip, recent)
+  if (hitsByIp.size > 2000) {
+    const oldest = hitsByIp.keys().next().value
+    if (oldest) hitsByIp.delete(oldest)
+  }
+  return false
+}
+
+function publicFailure(message: string) {
+  if (message === 'authentication_error') {
+    return { status: 401, error: 'authentication_error', message: 'La clave de la IA no es válida.' }
+  }
+  if (message === 'billing_error') {
+    return {
+      status: 402,
+      error: 'billing_error',
+      message: 'Claude no tiene crédito en Anthropic. Carga saldo en Plans & Billing y vuelve a preguntar.',
+    }
+  }
+  if (message === 'tls_error') {
+    return {
+      status: 502,
+      error: 'tls_error',
+      message: 'El equipo bloqueó el certificado al hablar con la IA. Reinicia con npm run dev.',
+    }
+  }
+  return {
+    status: 502,
+    error: 'assistant_failed',
+    message: 'No pude consultar la IA. Puedes reintentar la misma pregunta.',
+  }
+}
+
 export async function handleArchiveAssistantRequest(
   req: IncomingMessage,
   res: ServerResponse,
   config: AssistantConfig,
 ) {
-  const cors = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'content-type',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  const headers = {
+    'X-Content-Type-Options': 'nosniff',
+    'Cache-Control': 'no-store',
+    'Referrer-Policy': 'no-referrer',
   }
 
   if (req.method === 'OPTIONS') {
-    write(res, 204, cors)
+    write(res, 204, headers)
     return
   }
 
   if (req.method === 'GET') {
     const provider = providerFor(config)
-    write(res, 200, cors, { configured: Boolean(provider), provider })
+    write(res, 200, headers, { configured: Boolean(provider), provider })
     return
   }
 
   if (req.method !== 'POST') {
-    write(res, 405, cors, { error: 'method_not_allowed' })
+    write(res, 405, headers, { error: 'method_not_allowed' })
+    return
+  }
+
+  if (tooManyRequests(req)) {
+    write(res, 429, headers, {
+      error: 'rate_limited',
+      message: 'Demasiadas consultas. Espera un momento y vuelve a preguntar.',
+    })
     return
   }
 
   const provider = providerFor(config)
   if (!provider) {
-    write(res, 503, cors, { error: 'not_configured' })
+    write(res, 503, headers, { error: 'not_configured' })
     return
   }
 
@@ -106,18 +164,18 @@ export async function handleArchiveAssistantRequest(
   try {
     payload = await readJson(req)
   } catch {
-    write(res, 400, cors, { error: 'invalid_json' })
+    write(res, 400, headers, { error: 'invalid_json' })
     return
   }
 
   const parsed = parsePayload(payload)
   if (!parsed) {
-    write(res, 400, cors, { error: 'invalid_payload' })
+    write(res, 400, headers, { error: 'invalid_payload' })
     return
   }
 
   if (parsed.projects.length === 0) {
-    write(res, 200, cors, {
+    write(res, 200, headers, {
       status: 'empty-archive',
       text: `Esta institución todavía no tiene proyectos publicados en el archivo.`,
       projectIds: [],
@@ -130,24 +188,10 @@ export async function handleArchiveAssistantRequest(
   try {
     const result =
       provider === 'gemini' ? await consultGemini(parsed, config) : await consultClaude(parsed, config)
-    write(res, 200, cors, result)
+    write(res, 200, headers, result)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'claude_failed'
-    const status =
-      message === 'authentication_error'
-        ? 401
-        : message === 'billing_error'
-          ? 402
-          : 502
-    const publicMessage =
-      message === 'billing_error'
-        ? 'Claude no tiene crédito en Anthropic. Carga saldo en Plans & Billing y vuelve a preguntar.'
-        : message === 'tls_error'
-          ? 'El equipo bloqueó el certificado al hablar con la IA. Reinicia con npm run dev.'
-          : message === 'authentication_error'
-            ? 'La clave de la IA no es válida.'
-          : message
-    write(res, status, cors, { error: message, message: publicMessage })
+    const failure = publicFailure(error instanceof Error ? error.message : 'assistant_failed')
+    write(res, failure.status, headers, { error: failure.error, message: failure.message })
   }
 }
 

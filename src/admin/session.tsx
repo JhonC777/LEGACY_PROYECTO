@@ -50,9 +50,11 @@ type SessionContextValue = {
 const SessionContext = createContext<SessionContextValue | null>(null)
 
 export function AdminSessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AdminSession | null>(() =>
-    typeof window === 'undefined' ? null : readSession(),
-  )
+  const [session, setSession] = useState<AdminSession | null>(() => {
+    if (typeof window === 'undefined') return null
+    window.localStorage.removeItem('legacy.admin.password')
+    return readSession()
+  })
 
   const signIn = useCallback((input: Omit<AdminSession, 'signedInAt'>, persist = true) => {
     const next: AdminSession = { ...input, signedInAt: new Date().toISOString() }

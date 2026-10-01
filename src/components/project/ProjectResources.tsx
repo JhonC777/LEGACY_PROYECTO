@@ -4,16 +4,26 @@ import { ArrowUpRight, Download, FileText, Play } from 'lucide-react'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { withLegacyName } from '@/components/brand/LegacyName'
 import type { DemoProject } from '@/data/demoData'
-import { isDirectVideoFile, isFileResource, resourceFileName } from '@/lib/resources'
+import { isDirectVideoFile, isFileResource, resourceFileName, safeHref, safeMediaSrc } from '@/lib/resources'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
 function youtubeId(url: string) {
-  const match =
-    url.match(/[?&]v=([\w-]{6,})/) ??
-    url.match(/youtu\.be\/([\w-]{6,})/) ??
-    url.match(/youtube\.com\/embed\/([\w-]{6,})/)
-  return match?.[1] ?? null
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./, '')
+    if (host === 'youtu.be') {
+      const id = parsed.pathname.split('/').filter(Boolean)[0] ?? ''
+      return /^[\w-]{6,}$/.test(id) ? id : null
+    }
+    if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const id = parsed.searchParams.get('v') ?? parsed.pathname.match(/\/embed\/([\w-]{6,})/)?.[1] ?? ''
+      return /^[\w-]{6,}$/.test(id) ? id : null
+    }
+  } catch {
+    return null
+  }
+  return null
 }
 
 /** Reproductor con portada: el iframe solo se carga al pulsar reproducir. */
@@ -28,30 +38,33 @@ function VideoFacade({
 }) {
   const [playing, setPlaying] = useState(false)
   const id = youtubeId(url)
+  const mediaSrc = safeMediaSrc(url.split('#')[0])
 
   if (!id) {
-    if (isDirectVideoFile(url)) {
+    if (isDirectVideoFile(url) && mediaSrc) {
       const fileName = resourceFileName(url, 'video-del-proyecto.mp4')
       return (
         <div className="space-y-3">
           <video
-            src={url.split('#')[0]}
+            src={mediaSrc}
             controls
             className="aspect-video w-full overflow-hidden rounded-[1.4rem] bg-legacy-black"
             poster={poster}
           >
             Tu navegador no puede reproducir este video.
           </video>
-          <a href={url.split('#')[0]} download={fileName} className="btn btn-secondary btn-sm">
+          <a href={mediaSrc} download={fileName} className="btn btn-secondary btn-sm">
             <Download className="h-4 w-4" aria-hidden />
             Descargar video
           </a>
         </div>
       )
     }
+    const href = safeHref(url)
+    if (!href) return null
     return (
       <a
-        href={url}
+        href={href}
         target="_blank"
         rel="noreferrer"
         className="btn btn-primary btn-sm pickup"
@@ -130,6 +143,9 @@ export function ProjectResources({ project }: { project: DemoProject }) {
   const pdfName = project.pdfUrl
     ? resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf')
     : ''
+  const docLink = safeHref(docIsFile ? project.docUrl!.split('#')[0] : docHref) ?? '#recursos'
+  const pdfFileLink = project.pdfUrl ? safeHref(project.pdfUrl.split('#')[0]) : null
+  const pdfOpenLink = project.pdfUrl ? safeHref(project.pdfUrl) : null
 
   return (
     <section id="recursos" className="project-block" aria-labelledby="recursos-title">
@@ -157,11 +173,11 @@ export function ProjectResources({ project }: { project: DemoProject }) {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <motion.a
           {...reveal(0.14)}
-          href={docIsFile ? project.docUrl!.split('#')[0] : docHref}
+          href={docLink}
           className="resource-card group"
-          {...(docIsFile
+          {...(docIsFile && docLink !== '#recursos'
             ? { download: docName }
-            : docHref.startsWith('#')
+            : docLink.startsWith('#')
               ? {}
               : { target: '_blank', rel: 'noreferrer' })}
         >
@@ -188,10 +204,10 @@ export function ProjectResources({ project }: { project: DemoProject }) {
           </span>
         </motion.a>
 
-        {project.pdfUrl && isFileResource(project.pdfUrl) ? (
+        {project.pdfUrl && isFileResource(project.pdfUrl) && pdfFileLink ? (
           <motion.a
             {...reveal(0.2)}
-            href={project.pdfUrl.split('#')[0]}
+            href={pdfFileLink}
             download={pdfName}
             className="resource-card group"
           >
@@ -211,10 +227,10 @@ export function ProjectResources({ project }: { project: DemoProject }) {
               <Download className="h-3.5 w-3.5" aria-hidden />
             </span>
           </motion.a>
-        ) : project.pdfUrl ? (
+        ) : pdfOpenLink ? (
           <motion.a
             {...reveal(0.2)}
-            href={project.pdfUrl}
+            href={pdfOpenLink}
             target="_blank"
             rel="noreferrer"
             className="resource-card group"

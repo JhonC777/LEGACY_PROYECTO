@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ImageOff } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { safeMediaSrc } from '@/lib/resources'
 
 type SmartImageProps = {
   src: string
@@ -23,6 +24,7 @@ export function SmartImage({
   fallbackLabel = 'Imagen no disponible',
   priority = false,
 }: SmartImageProps) {
+  const usable = safeMediaSrc(src)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [trackedSrc, setTrackedSrc] = useState(src)
 
@@ -33,7 +35,7 @@ export function SmartImage({
     setStatus('loading')
   }
 
-  if (status === 'error') {
+  if (!usable || status === 'error') {
     return (
       <span
         role="img"
@@ -57,7 +59,7 @@ export function SmartImage({
         <span aria-hidden className="image-skeleton absolute inset-0" />
       ) : null}
       <img
-        src={src}
+        src={usable}
         alt={alt}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'auto'}

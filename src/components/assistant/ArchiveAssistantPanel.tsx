@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { safeHref } from '@/lib/resources'
 import { Button } from '@/components/ui/Button'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
@@ -548,10 +549,12 @@ function ResourceChip({
   const className = 'archive-assistant-resource'
 
   if (resource.external) {
+    const href = safeHref(resource.href)
+    if (!href) return null
     return (
       <a
         className={className}
-        href={resource.href}
+        href={href}
         target="_blank"
         rel="noreferrer"
       >
