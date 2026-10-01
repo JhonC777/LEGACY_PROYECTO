@@ -1,4 +1,5 @@
 import { ArrowRight, FileText, FileType2, Library, Play } from 'lucide-react'
+import '@/styles/project.css'
 import { Link, useLocation } from 'react-router-dom'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { SmartImage } from '@/components/ui/SmartImage'

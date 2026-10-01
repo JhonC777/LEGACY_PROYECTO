@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import '@/styles/intro.css'
 import { useAuraPlayback } from '@/lib/useAuraPlayback'
 import { LEGACY_SLOGAN } from '@/lib/brand'
 

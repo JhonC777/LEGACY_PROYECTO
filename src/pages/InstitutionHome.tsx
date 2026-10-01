@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import '@/styles/institution.css'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'

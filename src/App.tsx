@@ -5,11 +5,20 @@ import { RouteFallback } from '@/components/navigation/RouteFallback'
 import { GlassButtonEffects } from '@/components/ui/GlassButtonEffects'
 import { AdminSessionProvider } from '@/admin/session'
 import { PILOT_CATALOG_PATH, PILOT_COLLECTIONS_PATH } from '@/data/demoData'
-import { ExploreHome } from '@/pages/ExploreHome'
 import { HomeEntry } from '@/pages/HomeEntry'
-import { InstitutionHome } from '@/pages/InstitutionHome'
-import { ProjectDetail } from '@/pages/ProjectDetail'
-import { ProjectsPage } from '@/pages/ProjectsPage'
+
+const ExploreHome = lazy(() =>
+  import('@/pages/ExploreHome').then((m) => ({ default: m.ExploreHome })),
+)
+const InstitutionHome = lazy(() =>
+  import('@/pages/InstitutionHome').then((m) => ({ default: m.InstitutionHome })),
+)
+const ProjectDetail = lazy(() =>
+  import('@/pages/ProjectDetail').then((m) => ({ default: m.ProjectDetail })),
+)
+const ProjectsPage = lazy(() =>
+  import('@/pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })),
+)
 
 /* El panel institucional solo lo usan administradores: se descarga bajo demanda. */
 const RequireAdmin = lazy(() =>

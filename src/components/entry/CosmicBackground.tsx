@@ -1,4 +1,4 @@
-import cosmosPlate from '@/assets/home-cosmos-plate.jpg'
+import cosmosPlate from '@/assets/home-cosmos-plate.webp'
 import { LivingField } from '@/components/atmosphere/LivingField'
 import { cn } from '@/lib/cn'
 import { useAuraPlayback } from '@/lib/useAuraPlayback'
@@ -26,7 +26,7 @@ export function CosmicBackground() {
   const { live } = useAuraPlayback()
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div aria-hidden className="cosmic-sky pointer-events-none absolute inset-0 overflow-hidden">
       <div className="cosmic-layer cosmic-base" />
 
       <div className="cosmic-parallax is-far">

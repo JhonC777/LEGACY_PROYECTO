@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import '@/styles/admin.css'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { LegacyMark } from '@/components/brand/LegacyMark'

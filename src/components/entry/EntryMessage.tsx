@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
 import { withLegacyName } from '@/components/brand/LegacyName'
 import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
 
 type EntryMessageProps = {
   quoteDelay?: number
@@ -11,8 +11,6 @@ type EntryMessageProps = {
   actions?: ReactNode
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const
-
 export function EntryMessage({
   quoteDelay = 0.46,
   welcomeDelay = 0.62,
@@ -20,24 +18,9 @@ export function EntryMessage({
   awakened = true,
   actions,
 }: EntryMessageProps) {
-  const reduceMotion = useReducedMotion()
   const start = align === 'start'
-
-  const fadeUp = (delay: number) =>
-    reduceMotion
-      ? {
-          initial: { opacity: awakened ? 1 : 0 },
-          animate: { opacity: awakened ? 1 : 0 },
-        }
-      : {
-          initial: { opacity: 0, y: 14 },
-          animate: awakened ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 },
-          transition: {
-            duration: 0.85,
-            delay: awakened ? delay : 0,
-            ease: EASE,
-          },
-        }
+  const rise = (delay: number) => riseStyle(awakened ? delay : 0, 0.85, 14)
+  const dormant = !awakened && 'is-dormant'
 
   return (
     <div
@@ -48,36 +31,38 @@ export function EntryMessage({
             : 'mx-auto max-w-lg text-center',
         )}
     >
-      <motion.blockquote {...fadeUp(quoteDelay)} className="home-quote">
+      <blockquote style={rise(quoteDelay)} className={cn('legacy-rise home-quote', dormant)}>
         <p>
           Donde el conocimiento
           <br />
           <span className="home-quote-accent">deja legado.</span>
         </p>
-      </motion.blockquote>
+      </blockquote>
 
-      <motion.p
-        {...fadeUp(welcomeDelay)}
+      <p
+        style={rise(welcomeDelay)}
         className={cn(
-          'home-welcome',
+          'legacy-rise home-welcome',
+          dormant,
           start ? 'mx-auto max-w-md lg:mx-0 lg:max-w-lg' : 'mx-auto max-w-md',
         )}
       >
         {withLegacyName(
           'El conocimiento de cada generación merece permanecer. LEGACY es la plataforma donde cada institución educativa preserva, organiza y exhibe los proyectos de grado de sus estudiantes.',
         )}
-      </motion.p>
+      </p>
 
       {actions ? (
-        <motion.div
-          {...fadeUp(welcomeDelay + 0.12)}
+        <div
+          style={rise(welcomeDelay + 0.12)}
           className={cn(
-            'home-hero-actions',
+            'legacy-rise home-hero-actions',
+            dormant,
             start ? 'justify-center lg:justify-start' : 'justify-center',
           )}
         >
           {actions}
-        </motion.div>
+        </div>
       ) : null}
     </div>
   )

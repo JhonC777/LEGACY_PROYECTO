@@ -1,4 +1,5 @@
 import { ChevronDown, Search, UserRound } from 'lucide-react'
+import '@/styles/header.css'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlassInput } from '@/components/ui/GlassInput'

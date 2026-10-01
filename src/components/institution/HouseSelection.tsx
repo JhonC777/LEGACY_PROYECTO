@@ -1,4 +1,5 @@
 import { ArrowRight, BookMarked, FileText, FileType2, Library, Play } from 'lucide-react'
+import '@/styles/house.css'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { SmartImage } from '@/components/ui/SmartImage'

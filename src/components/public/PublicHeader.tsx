@@ -23,6 +23,7 @@ import { withLegacyName } from '@/components/brand/LegacyName'
 import { cn } from '@/lib/cn'
 import { getLegacyScrollRoot } from '@/lib/legacyScroll'
 import { ArchiveAssistantPanel } from '@/components/assistant/ArchiveAssistantPanel'
+import '@/styles/header.css'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
   DEMO_INSTITUTIONS,

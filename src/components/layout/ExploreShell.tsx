@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { LivingField } from '@/components/atmosphere/LivingField'
+import '@/styles/explore.css'
 import { cn } from '@/lib/cn'
 
 type ExploreShellProps = {
