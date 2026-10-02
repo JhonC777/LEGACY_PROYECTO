@@ -177,7 +177,7 @@ export function createHero(el: HeroElements): () => void {
     probe.style.top = '0'
     probe.style.width = 'auto'
     document.body.appendChild(probe)
-    const t = probe.querySelector<HTMLElement>('.type-text')
+    const t = probe.querySelector<HTMLElement>('.home-type-text')
     let widest = 0
     if (t) {
       for (const word of HERO_WORDS) {
