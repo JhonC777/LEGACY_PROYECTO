@@ -4,7 +4,6 @@ import { cn } from '@/lib/cn'
 import { riseStyle } from '@/lib/rise'
 
 type EntryMessageProps = {
-  quoteDelay?: number
   welcomeDelay?: number
   align?: 'center' | 'start'
   awakened?: boolean
@@ -12,7 +11,6 @@ type EntryMessageProps = {
 }
 
 export function EntryMessage({
-  quoteDelay = 0.46,
   welcomeDelay = 0.62,
   align = 'center',
   awakened = true,
@@ -31,14 +29,6 @@ export function EntryMessage({
             : 'mx-auto max-w-lg text-center',
         )}
     >
-      <blockquote style={rise(quoteDelay)} className={cn('legacy-rise home-quote', dormant)}>
-        <p>
-          Donde el conocimiento
-          <br />
-          <span className="home-quote-accent">deja legado.</span>
-        </p>
-      </blockquote>
-
       <p
         style={rise(welcomeDelay)}
         className={cn(

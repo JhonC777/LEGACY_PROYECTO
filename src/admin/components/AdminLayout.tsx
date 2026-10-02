@@ -88,8 +88,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     <>
       <Link to="/" className="admin-brand flex items-center gap-2.5" aria-label="Ir al inicio de LEGACY">
         <LegacyMark size="sm" />
+        <span className="legacy-brand-rule" aria-hidden />
         <span className="min-w-0 leading-tight">
-          <LegacyWordmark className="block text-lg" />
+          <LegacyWordmark className="block" />
           <span className="block text-xs text-legacy-muted">Panel institucional</span>
         </span>
       </Link>

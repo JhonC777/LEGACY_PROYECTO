@@ -58,6 +58,7 @@ Iconos Lucide, sin emojis de UI. Respetar `prefers-reduced-motion`.
 - `--font-brand`: Cinzel — marca y titulares
 - `--font-display`: Cormorant Garamond — editorial
 - `--font-sans`: Manrope — UI (cuerpo)
+- `--font-wordmark`: Ballet (OFL, autoalojada, eje `opsz`) — solo el wordmark «Legacy» y el lema de la portada. En el header, `opsz` 16 y como mínimo 32 px. Nunca para cuerpo ni texto de interfaz. Solo sobre fondos oscuros.
 
 **Móvil** (estándar de `cursor/mobile-nav-school-colors-9baa`, aunque ese PR no esté fusionado): drawer en todas las rutas, cierre con Escape, bloqueo de scroll, controles de 44×44, tap targets de mínimo 44 px y ningún texto menor de 12 px. Espaciado, radios y tipo unificados. Esa rama no autoriza colores del colegio.
 
