@@ -1246,13 +1246,13 @@
 }
 
 .home-brand-stack {
-  font-size: clamp(4.5rem, min(22vw, 22vh), 186px);
+  font-size: clamp(4.5rem, min(24vw, 26vh), 186px);
   max-width: 100%;
 }
 
 @container (min-width: 1px) {
   .home-brand-stack {
-    font-size: clamp(4.5rem, min(27cqi, 22vh), 186px);
+    font-size: clamp(4.5rem, min(30cqi, 26vh), 186px);
   }
 }
 
