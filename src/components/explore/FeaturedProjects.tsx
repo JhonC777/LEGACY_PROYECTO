@@ -125,7 +125,7 @@ export function FeaturedProjects() {
                 alt={`Portada de ${project.title}`}
                 className="transition-transform duration-500 group-hover:scale-[1.04]"
               />
-              <span className="absolute top-3 left-3 rounded-md bg-explore-purple px-2 py-1 text-[10px] font-semibold tracking-wide text-white uppercase">
+              <span className="absolute top-3 left-3 rounded-md bg-explore-purple px-2 py-1 text-xs font-semibold tracking-wide text-white uppercase">
                 {project.badge}
               </span>
               <span className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-explore-muted shadow-sm transition-colors group-hover:text-explore-purple">
@@ -139,7 +139,7 @@ export function FeaturedProjects() {
                   {project.title}
                 </Link>
               </h3>
-              <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-explore-muted">
+              <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-explore-muted">
                 <span className="inline-flex items-center gap-1">
                   <Circle
                     className="h-2 w-2 fill-explore-purple text-explore-purple"

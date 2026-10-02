@@ -117,10 +117,10 @@ export function ProjectDetail() {
           transition: { duration: 0.7, delay, ease: EASE },
         }
 
-  const heroStyle = { '--project-accent': institution.accent } as CSSProperties
+  const heroStyle = { '--project-accent': 'var(--legacy-gold)' } as CSSProperties
 
   return (
-    <ExploreShell style={heroStyle}>
+    <ExploreShell className="is-institution" style={heroStyle}>
       <PublicHeader institution={institution} />
 
       <main id="contenido" className="project-stage">

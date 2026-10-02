@@ -35,7 +35,7 @@ export function InstitutionsSection() {
                 </span>
                 <h3 className="font-semibold text-legacy-white">{institution.name}</h3>
                 <p className="mt-1 text-sm text-legacy-muted">{institution.location}</p>
-                <span className="mt-4 rounded-full border border-white/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-legacy-muted uppercase">
+                <span className="mt-4 rounded-full border border-white/10 px-3 py-1 text-xs font-semibold tracking-wide text-legacy-muted uppercase">
                   Próximamente
                 </span>
               </article>

@@ -90,7 +90,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <LegacyMark size="sm" />
         <span className="min-w-0 leading-tight">
           <LegacyWordmark className="block text-lg" />
-          <span className="block text-[10px] text-legacy-muted">Panel institucional</span>
+          <span className="block text-xs text-legacy-muted">Panel institucional</span>
         </span>
       </Link>
 
@@ -108,7 +108,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <span className="block truncate text-sm font-semibold text-legacy-white">
             {settings.name}
           </span>
-          <span className="block text-[11px] text-legacy-muted">Solo tu institución</span>
+          <span className="block text-xs text-legacy-muted">Solo tu institución</span>
         </span>
       </div>
 
@@ -228,7 +228,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 <span className="block truncate text-xs font-semibold text-legacy-white">
                   {session?.name}
                 </span>
-                <span className="block truncate text-[10px] text-legacy-muted">
+                <span className="block truncate text-xs text-legacy-muted">
                   Administrador
                 </span>
               </span>

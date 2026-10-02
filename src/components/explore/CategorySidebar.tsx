@@ -64,7 +64,7 @@ export function CategorySidebar() {
         })}
       </ul>
 
-      <p className="mt-4 border-t border-white/8 pt-3 text-[11px] leading-relaxed text-explore-muted">
+      <p className="mt-4 border-t border-white/8 pt-3 text-xs leading-relaxed text-explore-muted">
         Clasificación del archivo publicado.
       </p>
     </section>

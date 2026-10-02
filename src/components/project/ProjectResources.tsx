@@ -109,7 +109,7 @@ function VideoFacade({
         <Play className="ml-0.5 h-6 w-6 fill-current" />
       </span>
       <span className="video-facade-caption">
-        <span className="text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold uppercase">
+        <span className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
           Video del proyecto
         </span>
         <span className="mt-1 block text-sm font-medium text-legacy-white">

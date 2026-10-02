@@ -202,7 +202,7 @@ export function AdminLogin() {
       />
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-sm leading-snug font-semibold text-legacy-white">{institution.name}</p>
-        <p className="text-[11px] text-legacy-muted">Solo esta institución</p>
+        <p className="text-xs text-legacy-muted">Solo esta institución</p>
       </div>
       <Link to="/admin/login" className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
         Cambiar
@@ -389,7 +389,7 @@ export function AdminLogin() {
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-legacy-white">{item.name}</span>
-                    <span className="flex items-center gap-1 text-[11px] text-legacy-muted">
+                    <span className="flex items-center gap-1 text-xs text-legacy-muted">
                       <Building2 className="h-3 w-3" aria-hidden />
                       Espacio institucional
                     </span>

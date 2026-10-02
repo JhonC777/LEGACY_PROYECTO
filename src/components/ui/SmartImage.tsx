@@ -46,7 +46,7 @@ export function SmartImage({
         )}
       >
         <ImageOff className="h-5 w-5 text-legacy-gold/70" aria-hidden />
-        <span className="text-[10px] font-semibold tracking-[0.12em] text-legacy-muted uppercase">
+        <span className="text-xs font-semibold tracking-[0.12em] text-legacy-muted uppercase">
           {fallbackLabel}
         </span>
       </span>

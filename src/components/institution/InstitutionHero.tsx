@@ -242,12 +242,12 @@ export function InstitutionHero({
               className="institution-mosaic-frame min-w-0 rounded-[1.6rem] p-3 sm:p-3.5"
             >
               <div className="mb-3 flex items-center justify-between gap-3 px-1.5 pt-0.5">
-                <span className="text-[10px] font-bold tracking-[0.2em] text-legacy-gold uppercase">
+                <span className="text-xs font-bold tracking-[0.2em] text-legacy-gold uppercase">
                   Del archivo
                 </span>
                 <Link
                   to={projectsHref}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-legacy-white/60 transition-colors hover:text-legacy-gold"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-legacy-white/60 transition-colors hover:text-legacy-gold"
                 >
                   Ver catálogo
                   <ArrowRight className="h-3 w-3" aria-hidden />
@@ -268,7 +268,7 @@ export function InstitutionHero({
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-legacy-black/85 via-legacy-black/15 to-transparent"
                 />
                 <span className="absolute inset-x-4 bottom-4">
-                  <span className="block text-[10px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
+                  <span className="block text-xs font-semibold tracking-[0.16em] text-legacy-gold uppercase">
                     Del archivo
                   </span>
                   <span className="mt-1 line-clamp-2 block font-brand text-lg leading-snug font-semibold text-legacy-white">
@@ -346,7 +346,7 @@ export function InstitutionHero({
             className="relative z-10 mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
           >
             <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] text-legacy-gold uppercase">
+              <p className="text-xs font-bold tracking-[0.2em] text-legacy-gold uppercase">
                 Panorama del archivo
               </p>
               <h2 className="mt-1 font-brand text-2xl font-semibold text-legacy-white sm:text-3xl">

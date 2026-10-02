@@ -155,7 +155,7 @@ export function AdminHistory() {
         <div className="mt-6 space-y-7">
           {byDay.map(([day, entries]) => (
             <section key={day} aria-labelledby={`day-${day}`}>
-              <h2 id={`day-${day}`} className="mb-3 text-[11px] font-bold tracking-[0.16em] text-legacy-gold uppercase">
+              <h2 id={`day-${day}`} className="mb-3 text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
                 {formatDay(entries[0].at)}
               </h2>
               <ol className="admin-timeline admin-card p-4">
@@ -168,7 +168,7 @@ export function AdminHistory() {
                       <span className={cn('admin-timeline-dot', `is-${entry.type}`)} aria-hidden />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm text-legacy-white">{entry.message}</p>
-                        <p className="mt-0.5 text-[11px] text-legacy-muted">
+                        <p className="mt-0.5 text-xs text-legacy-muted">
                           {entry.actor} · {formatDateTime(entry.at)} · {ACTIVITY_LABEL[entry.type]}
                         </p>
                       </div>

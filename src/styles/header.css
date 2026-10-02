@@ -10,7 +10,7 @@
   border-radius: 999px;
   background: rgb(8 9 12 / 0.92);
   color: var(--color-legacy-gold-soft);
-  font-size: 0.8rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   transform: translateY(-160%);
   opacity: 0;
@@ -49,7 +49,7 @@
     90deg,
     transparent 0%,
     rgb(214 184 120 / 0.35) 30%,
-    rgb(240 217 160 / 0.55) 50%,
+    rgb(214 184 120 / 0.55) 50%,
     rgb(214 184 120 / 0.35) 70%,
     transparent 100%
   );
@@ -199,7 +199,7 @@
   gap: 0.45rem;
   padding: 0 1rem;
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.01em;
   text-decoration: none;
@@ -231,7 +231,7 @@
 .header-action-gold:hover {
   border-color: rgb(214 184 120 / 0.62);
   background: rgb(214 184 120 / 0.16);
-  color: #fff8e8;
+  color: var(--legacy-gold);
 }
 
 .header-action-quiet {
@@ -259,7 +259,7 @@
   bottom: -1px;
   height: 2px;
   transform-origin: left center;
-  background: linear-gradient(90deg, #c4a35a 0%, #f0d9a0 55%, #d6b878 100%);
+  background: linear-gradient(90deg, var(--legacy-gold) 0%, var(--legacy-gold) 55%, #d6b878 100%);
   box-shadow: 0 0 12px rgb(214 184 120 / 0.55);
   pointer-events: none;
   will-change: transform;
@@ -338,7 +338,7 @@
     0 10px 24px -14px rgb(214 184 120 / 0.55);
   font-family: var(--font-brand);
   font-size: 1.15rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--color-legacy-gold-soft);
   transition:
@@ -388,7 +388,7 @@
   border-radius: 999px;
   background: rgb(255 255 255 / 0.035);
   padding: 0 0.85rem 0 0.3rem;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: var(--color-legacy-white);
   backdrop-filter: blur(18px) saturate(160%);
@@ -439,7 +439,7 @@
 }
 
 .header-chip-kicker {
-  font-size: 0.56rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   line-height: 1.1;
@@ -451,7 +451,7 @@
   display: block;
   overflow: hidden;
   width: 100%;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   line-height: 1.25;
   text-overflow: ellipsis;
@@ -473,7 +473,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.55rem;
-  font-size: 0.55rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #fff;
@@ -495,7 +495,7 @@
   border-radius: 999px;
   border: 0.5px solid rgb(214 184 120 / 0.3);
   background: rgb(214 184 120 / 0.1);
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-legacy-gold);
@@ -545,7 +545,7 @@
   border: 0;
   background: transparent;
   color: var(--color-legacy-white);
-  font-size: 0.82rem;
+  font-size: var(--legacy-text-sm);
   outline: none;
 }
 
@@ -565,7 +565,7 @@
   border-radius: 0.4rem;
   background: rgb(255 255 255 / 0.05);
   font-family: var(--font-sans);
-  font-size: 0.6rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--color-legacy-muted);
@@ -591,7 +591,7 @@
 
 .header-subbar-label {
   margin-right: 0.35rem;
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -602,7 +602,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-variant-numeric: tabular-nums;
   color: var(--color-legacy-muted);
 }
@@ -613,7 +613,7 @@
   border: 0.5px solid rgb(214 184 120 / 0.32);
   border-radius: 999px;
   background: rgb(214 184 120 / 0.08);
-  font-size: 0.58rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -629,7 +629,7 @@
   background: transparent;
   padding: 0;
   color: rgb(214 184 120 / 0.88);
-  font-size: 0.66rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -644,7 +644,7 @@
 
 .header-folio {
   font-family: var(--font-brand);
-  font-size: 0.9rem;
+  font-size: var(--legacy-text-sm);
   letter-spacing: 0.08em;
   color: rgb(214 184 120 / 0.82);
   font-variant-numeric: tabular-nums;
@@ -652,7 +652,7 @@
 
 .header-folio span {
   font-family: var(--font-sans);
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   letter-spacing: 0.14em;
   color: rgb(166 168 178 / 0.7);
 }
@@ -670,14 +670,14 @@
   gap: 0.45rem;
   min-width: 0;
   flex: 1 1 auto;
-  font-size: 0.74rem;
+  font-size: var(--legacy-text-xs);
   white-space: nowrap;
 }
 
 .header-context-kicker {
   flex-shrink: 0;
   gap: 0.42rem;
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 750;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -719,7 +719,7 @@
   gap: 0.6rem;
   margin-left: auto;
   color: var(--color-legacy-muted);
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -745,7 +745,7 @@
   border-radius: 999px;
   background: transparent;
   padding: 0 0.75rem;
-  font-size: 0.76rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 500;
   color: var(--color-legacy-muted);
   cursor: pointer;
@@ -772,7 +772,7 @@
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.07);
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-legacy-muted);
@@ -838,7 +838,7 @@
 
 .header-menu-title {
   padding: 0.35rem 0.6rem 0.5rem;
-  font-size: 0.6rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -885,7 +885,7 @@
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.06);
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -911,7 +911,7 @@
   min-width: 0;
   padding: 0.45rem 0.6rem;
   border-radius: 0.65rem;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   text-align: center;
   text-decoration: none;
@@ -969,7 +969,7 @@
 .header-sheet-context p {
   margin: 0.3rem 0 0;
   color: var(--color-legacy-muted);
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
@@ -980,7 +980,7 @@
   justify-content: space-between;
   border-radius: 0.8rem;
   padding: 0.7rem 0.85rem;
-  font-size: 0.9rem;
+  font-size: var(--legacy-text-sm);
   font-weight: 500;
   color: var(--color-legacy-muted);
   text-decoration: none;

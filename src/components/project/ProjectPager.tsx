@@ -70,7 +70,7 @@ function PagerCard({
           />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="inline-flex items-center gap-1.5 text-[0.62rem] font-bold tracking-[0.16em] text-legacy-muted uppercase">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.16em] text-legacy-muted uppercase">
             {isNext ? null : <ArrowLeft className="h-3 w-3" aria-hidden />}
             {isNext ? 'Siguiente proyecto' : 'Proyecto anterior'}
             {isNext ? <ArrowRight className="h-3 w-3" aria-hidden /> : null}

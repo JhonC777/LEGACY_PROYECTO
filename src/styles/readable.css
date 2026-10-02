@@ -53,7 +53,7 @@
 .legacy-intro-skip,
 .glass-badge,
 .header-pill {
-  font-size: 0.8125rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.35;
   letter-spacing: 0.08em;
 }
@@ -92,7 +92,7 @@
 .home-purpose-item span,
 .house-main-folio,
 .house-companions-label {
-  color: #f0d9a0;
+  color: var(--legacy-gold);
   text-shadow: 0 1px 12px rgb(0 0 0 / 0.72);
 }
 
@@ -102,7 +102,7 @@
 }
 
 .institution-cover-phrase em {
-  color: #f0d9a0;
+  color: var(--legacy-gold);
 }
 
 .institution-cover-copy,
@@ -133,11 +133,11 @@
 }
 
 .text-legacy-gold\/75 {
-  color: #f0d9a0;
+  color: var(--legacy-gold);
 }
 
 .text-xs {
-  font-size: 0.875rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.45;
 }
 
@@ -148,7 +148,7 @@
 [class*='text-[0.67rem]'],
 [class*='text-[0.68rem]'],
 [class*='text-[0.7rem]'] {
-  font-size: 0.8125rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.4;
   letter-spacing: 0.06em;
 }

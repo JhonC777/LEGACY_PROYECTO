@@ -302,7 +302,7 @@ export function ArchiveAssistantPanel({
                 >
                   El archivo te escucha
                 </h2>
-                <p className="truncate text-[11px] text-legacy-muted">
+                <p className="truncate text-xs text-legacy-muted">
                   {institution.name} · solo fichas publicadas
                 </p>
               </div>
@@ -425,7 +425,7 @@ function WelcomePanel({
 }) {
   return (
     <div className="archive-assistant-welcome">
-      <p className="text-[11px] font-semibold tracking-[0.16em] text-legacy-gold uppercase">
+      <p className="text-xs font-semibold tracking-[0.16em] text-legacy-gold uppercase">
         Archivo de {institution.shortName}
       </p>
       <p className="mt-2 font-brand text-[1.65rem] leading-tight font-semibold text-legacy-white">

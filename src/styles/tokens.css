@@ -1,0 +1,59 @@
+/*
+  Sistema visual LEGACY.
+  Dorado de marca, violeta sutil, escala de 8 px,
+  radios 12 / 999 y tipo desde 12 px.
+*/
+
+:root {
+  --legacy-bg: #08090c;
+  --legacy-bg-mid: #0c0e14;
+  --legacy-surface: #11131a;
+  --legacy-gold: #d6b878;
+  --legacy-cream: #f7f5ef;
+  --legacy-grey: #c8cad3;
+  --legacy-grey-soft: #a6a8b2;
+  --legacy-violet: #7662c9;
+
+  --legacy-space-1: 8px;
+  --legacy-space-2: 16px;
+  --legacy-space-3: 24px;
+  --legacy-space-4: 32px;
+  --legacy-space-6: 48px;
+  --legacy-space-8: 64px;
+
+  --legacy-radius-control: 12px;
+  --legacy-radius-pill: 999px;
+
+  --legacy-text-xs: 12px;
+  --legacy-text-sm: 14px;
+  --legacy-text-md: 16px;
+  --legacy-text-lg: 20px;
+  --legacy-text-xl: 24px;
+  --legacy-text-2xl: 32px;
+  --legacy-text-3xl: 48px;
+
+  --legacy-header-h: 64px;
+}
+
+/* Cinzel solo en 400 y 700. Manrope conserva 400 / 600 / 700. */
+.font-brand {
+  font-weight: 400;
+}
+
+.font-brand.font-semibold,
+.font-brand.font-medium,
+.font-brand.font-bold {
+  font-weight: 700;
+}
+
+html.legacy-nav-open,
+html.legacy-nav-open body {
+  overflow: hidden;
+}
+
+html.legacy-nav-open .explore-scroll,
+html.legacy-nav-open .home-entry-stage,
+html.legacy-nav-open .admin-content {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}

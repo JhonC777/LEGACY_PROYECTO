@@ -23,6 +23,7 @@ import { withLegacyName } from '@/components/brand/LegacyName'
 import { cn } from '@/lib/cn'
 import { getLegacyScrollRoot } from '@/lib/legacyScroll'
 import { ArchiveAssistantPanel } from '@/components/assistant/ArchiveAssistantPanel'
+import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer'
 import '@/styles/header.css'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import {
@@ -175,18 +176,16 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
   }, [location.pathname, institution?.id])
 
   useEffect(() => {
-    if (!openMenu && !sheetOpen) return
+    if (!openMenu) return
 
     const onPointerDown = (event: PointerEvent) => {
       if (!headerRef.current?.contains(event.target as Node)) {
         setOpenMenu(null)
-        setSheetOpen(false)
       }
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpenMenu(null)
-        setSheetOpen(false)
       }
     }
 
@@ -196,7 +195,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
       document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [openMenu, sheetOpen])
+  }, [openMenu])
 
   useEffect(() => {
     let frame = 0
@@ -302,7 +301,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
               <LegacyMark size="sm" />
               <span className="min-w-0 leading-tight">
                 <LegacyWordmark className="block" />
-                <span className="header-brand-sub hidden truncate text-[10px] text-legacy-muted sm:block">
+                <span className="header-brand-sub hidden truncate text-xs text-legacy-muted sm:block">
                   Museo Digital del Legado Estudiantil
                 </span>
               </span>
@@ -373,7 +372,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
                               <span className="block text-sm font-medium text-legacy-white">
                                 {item.name}
                               </span>
-                              <span className="block text-[11px] text-legacy-muted">
+                              <span className="block text-xs text-legacy-muted">
                                 {count} {count === 1 ? 'proyecto' : 'proyectos'}
                               </span>
                             </span>
@@ -480,17 +479,17 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
 
             <button
               type="button"
-              className="header-action header-action-quiet header-menu-toggle"
+              className="nav-menu-toggle"
               aria-expanded={sheetOpen}
               aria-controls="public-mobile-nav"
+              aria-label={sheetOpen ? 'Cerrar menú' : 'Abrir menú'}
               onClick={() => setSheetOpen((open) => !open)}
             >
               {sheetOpen ? (
-                <X className="h-4 w-4" aria-hidden />
+                <X className="h-6 w-6" aria-hidden />
               ) : (
-                <Menu className="h-4 w-4" aria-hidden />
+                <Menu className="h-6 w-6" aria-hidden />
               )}
-              <span className="sr-only">Menú</span>
             </button>
           </div>
         </div>
@@ -625,116 +624,104 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
         />
       </header>
 
-      {sheetOpen ? (
-        <div id="public-mobile-nav" className="header-sheet lg:hidden">
-          {onProjectDetail ? (
-            <button type="button" className="header-back mb-3" onClick={goBackToArchive}>
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-              Volver
-            </button>
-          ) : null}
+      <MobileNavDrawer
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        id="public-mobile-nav"
+        label="Menú de la institución"
+        tone={institution ? 'institution' : 'brand'}
+      >
+        {onProjectDetail ? (
+          <button type="button" className="nav-drawer-link" onClick={goBackToArchive}>
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Volver al catálogo
+          </button>
+        ) : null}
 
-          {showToolbar ? (
-            <form role="search" onSubmit={submitSearch} className="header-search w-full">
-              <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
-              <input
-                type="search"
-                value={term}
-                onChange={(event) => setTerm(event.target.value)}
-                placeholder="Buscar proyectos..."
-                aria-label="Buscar en el catálogo"
-              />
-            </form>
-          ) : null}
-
-          <div className={cn('header-sheet-context', !showToolbar && !onProjectDetail && 'mt-0')}>
-            <span className="header-context-kicker">
-              <Archive className="h-3.5 w-3.5" aria-hidden />
-              {onProjectDetail ? 'Ficha académica' : 'Archivo académico'}
-            </span>
-            <p>
-              {onProjectDetail && currentProject
-                ? currentProject.title
-                : `${scoped.length} proyectos publicados · ${yearRange} · ${areas.length} áreas`}
-            </p>
-          </div>
-
+        <nav className="flex flex-col gap-2" aria-label="Secciones">
           {institution ? (
-            <button
-              type="button"
-              className="btn btn-primary btn-md mt-3 w-full"
-              aria-expanded={assistantOpen}
-              aria-controls="archive-assistant-panel"
-              aria-haspopup="dialog"
-              onClick={openAssistant}
+            <Link
+              to={archiveHref}
+              className={cn('nav-drawer-link', onInstitutionView && 'is-active')}
+              aria-current={onInstitutionView ? 'page' : undefined}
             >
-              <MessageSquareText className="h-4 w-4" aria-hidden />
-              Consultar el archivo
-            </button>
+              Institución
+            </Link>
           ) : null}
+          <Link
+            to={projectsHref}
+            className={cn('nav-drawer-link', onProjectsView && 'is-active')}
+            aria-current={onProjectsView ? 'page' : undefined}
+          >
+            Proyectos
+            <span className="header-nav-count">{scoped.length}</span>
+          </Link>
+          <Link
+            to="/explorar"
+            className={cn('nav-drawer-link', onExploreView && 'is-active')}
+            aria-current={onExploreView ? 'page' : undefined}
+          >
+            Explorar
+          </Link>
+        </nav>
 
-          <nav className="mt-3 flex flex-col gap-1" aria-label="Secciones móviles">
-            {institution ? (
-              <Link
-                to={archiveHref}
-                className={cn('header-sheet-link', onInstitutionView && 'is-current')}
-              >
-                Institución
-              </Link>
-            ) : null}
-            <Link
-              to={projectsHref}
-              className={cn('header-sheet-link', onProjectsView && 'is-current')}
-            >
-              Proyectos
-              <span className="header-nav-count">{scoped.length}</span>
-            </Link>
-            <Link
-              to="/explorar"
-              className={cn('header-sheet-link', onExploreView && 'is-current')}
-            >
-              Explorar
-            </Link>
-          </nav>
+        {showToolbar ? (
+          <form role="search" onSubmit={submitSearch} className="nav-drawer-search">
+            <Search className="h-4 w-4 shrink-0 text-legacy-muted" aria-hidden />
+            <input
+              type="search"
+              value={term}
+              onChange={(event) => setTerm(event.target.value)}
+              placeholder="Buscar proyectos, autores..."
+              aria-label="Buscar en el catálogo"
+            />
+          </form>
+        ) : null}
 
-          <p className="header-menu-title mt-4">Cambiar institución</p>
-          <ul className="flex flex-col gap-1">
+        {institution ? (
+          <button
+            type="button"
+            className="btn btn-primary btn-md nav-drawer-admin"
+            aria-expanded={assistantOpen}
+            aria-controls="archive-assistant-panel"
+            aria-haspopup="dialog"
+            onClick={openAssistant}
+          >
+            <MessageSquareText className="h-4 w-4" aria-hidden />
+            Consultar el archivo
+          </button>
+        ) : null}
+
+        <div className="nav-drawer-block">
+          <p className="nav-drawer-label">Instituciones</p>
+          <ul className="flex flex-col gap-2">
             {institutionOptions.map(({ item, count }) => {
               const isCurrent = item.id === institution?.id
               return (
                 <li key={item.id}>
                   <Link
                     to={`/instituciones/${item.slug}`}
-                    className={cn('header-menu-item', isCurrent && 'is-current')}
+                    className={cn('nav-drawer-link', isCurrent && 'is-active')}
+                    aria-current={isCurrent ? 'page' : undefined}
                   >
-                    <InstitutionLogo
-                      name={item.name}
-                      logoUrl={item.logoUrl}
-                      fallback={item.shortName}
-                      accent={item.accent}
-                      decorative
-                      className="header-avatar"
-                      imageClassName="bg-white/95 p-0.5"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-legacy-white">
-                        {item.name}
-                      </span>
-                      <span className="block text-[11px] text-legacy-muted">
-                        {count} {count === 1 ? 'proyecto' : 'proyectos'}
-                      </span>
+                    <span className="truncate">{item.shortName}</span>
+                    <span className="text-sm text-legacy-muted">
+                      {count} {count === 1 ? 'proyecto' : 'proyectos'}
                     </span>
-                    {isCurrent ? (
-                      <Check className="h-4 w-4 shrink-0 text-legacy-gold" aria-hidden />
-                    ) : null}
                   </Link>
                 </li>
               )
             })}
           </ul>
-
+          <Link
+            to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
+            className="btn btn-secondary btn-md nav-drawer-admin"
+          >
+            <UserRound className="h-4 w-4" aria-hidden />
+            Administrador
+          </Link>
         </div>
-      ) : null}
+      </MobileNavDrawer>
 
       {institution ? (
         <ArchiveAssistantPanel

@@ -149,7 +149,7 @@ export function ProjectGallery({ title, images }: ProjectGalleryProps) {
 
             <div className="relative z-10 flex items-center justify-between gap-4 px-5 py-4 sm:px-8">
               <div className="min-w-0">
-                <p className="text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold uppercase">
+                <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
                   Evidencia {String(openIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
                 </p>
                 <p className="mt-0.5 truncate text-sm text-legacy-white/85">{title}</p>

@@ -55,7 +55,7 @@ export function LegacyTimeline() {
 
       <div className="space-y-5">
         <div>
-          <p className="mb-2.5 text-[11px] font-semibold tracking-[0.14em] text-explore-muted uppercase">
+          <p className="mb-2.5 text-xs font-semibold tracking-[0.14em] text-explore-muted uppercase">
             Por año
           </p>
           <div className="flex flex-wrap gap-2">
@@ -73,7 +73,7 @@ export function LegacyTimeline() {
         </div>
 
         <div>
-          <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-explore-muted uppercase">
+          <p className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] text-explore-muted uppercase">
             <Layers3 className="h-3.5 w-3.5" aria-hidden />
             Por área
           </p>
@@ -94,7 +94,7 @@ export function LegacyTimeline() {
 
         {COLLECTIONS.length > 0 ? (
           <div>
-            <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-explore-muted uppercase">
+            <p className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] text-explore-muted uppercase">
               <Library className="h-3.5 w-3.5" aria-hidden />
               Colecciones
             </p>

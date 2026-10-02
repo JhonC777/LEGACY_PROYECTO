@@ -192,7 +192,7 @@ export function AdminUploads() {
 
       {uploading.length > 0 ? (
         <section className="admin-card mt-5 p-4" aria-live="polite" aria-label="Cargas en curso">
-          <p className="mb-3 text-[11px] font-bold tracking-[0.14em] text-legacy-gold uppercase">
+          <p className="mb-3 text-xs font-bold tracking-[0.14em] text-legacy-gold uppercase">
             Subiendo {uploading.length}
           </p>
           <ul className="space-y-2.5">

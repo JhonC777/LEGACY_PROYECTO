@@ -20,6 +20,7 @@ import {
   ProjectsLoading,
   ProjectsNoResults,
 } from '@/components/projects/ProjectStates'
+import { ExploreFooter } from '@/components/explore/ExploreFooter'
 import { ExploreShell } from '@/components/layout/ExploreShell'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import {
@@ -338,7 +339,7 @@ export function ProjectsPage() {
   )
 
   return (
-    <ExploreShell>
+    <ExploreShell className={institution ? 'is-institution' : undefined}>
       <PublicHeader institution={institution} />
 
       <main
@@ -426,7 +427,7 @@ export function ProjectsPage() {
                   <SlidersHorizontal className="h-4 w-4" aria-hidden />
                   Filtros
                   {hasFilters ? (
-                    <span className="rounded-full bg-legacy-gold/15 px-2 py-0.5 text-[10px] font-bold text-legacy-gold">
+                    <span className="rounded-full bg-legacy-gold/15 px-2 py-0.5 text-xs font-bold text-legacy-gold">
                       {activeFilterCount}
                     </span>
                   ) : null}
@@ -452,7 +453,7 @@ export function ProjectsPage() {
             {activeFilters.length > 0 ? (
               <div className="mt-5 rounded-2xl border border-legacy-gold/15 bg-legacy-gold/[0.035] p-3.5">
                 <div className="mb-2.5 flex items-center justify-between gap-3">
-                  <p className="text-[11px] font-bold tracking-[0.12em] text-legacy-muted uppercase">
+                  <p className="text-xs font-bold tracking-[0.12em] text-legacy-muted uppercase">
                     Selección activa · {activeFilterCount}
                   </p>
                   <button
@@ -536,6 +537,7 @@ export function ProjectsPage() {
           </div>
         </div>
       </main>
+      <ExploreFooter />
     </ExploreShell>
   )
 }
@@ -553,7 +555,7 @@ function FilterSelect({
 }) {
   return (
     <div className="mb-4">
-      <span className="mb-2 block text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+      <span className="mb-2 block text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
         {label}
       </span>
       <ArchiveSelect

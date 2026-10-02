@@ -22,7 +22,7 @@ export function SentryFallback() {
       className="flex h-full min-h-0 items-center justify-center overflow-y-auto bg-[#08090C] px-4 py-8 text-[#F7F5EF] sm:px-8"
     >
       <div className="flex w-full max-w-[28rem] flex-col items-center rounded-2xl border border-white/10 bg-[#0C0E14] px-6 py-8 text-center">
-        <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#E05459]/15 text-[#E05459]">
+        <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#D6B878]/15 text-[#D6B878]">
           <AlertCircle className="h-6 w-6" aria-hidden />
         </span>
         <p className="font-brand text-sm font-semibold tracking-[0.22em] text-[#F7F5EF] uppercase">
@@ -41,7 +41,7 @@ export function SentryFallback() {
           <button
             type="button"
             onClick={reloadPage}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#D20B12] px-6 font-sans text-base font-semibold text-white transition-colors hover:bg-[#B2090F] active:bg-[#B2090F] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#D6B878] motion-reduce:transition-none"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#D6B878] px-6 font-sans text-base font-semibold text-[#08090C] transition-colors hover:brightness-110 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#D6B878] motion-reduce:transition-none"
           >
             Recargar
           </button>

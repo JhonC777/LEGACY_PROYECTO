@@ -8,7 +8,7 @@
   overflow: hidden;
   overscroll-behavior: none;
   background:
-    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(118 98 201 / 0.1), transparent 55%),
+    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(214 184 120 / 0.08), transparent 55%),
     radial-gradient(ellipse 50% 35% at 8% 88%, rgb(214 184 120 / 0.05), transparent 50%),
     linear-gradient(180deg, rgb(8 9 12 / 0.82) 0%, rgb(10 14 22 / 0.86) 42%, rgb(8 9 12 / 0.92) 100%);
   color: var(--color-legacy-white);
@@ -268,8 +268,8 @@
 }
 
 .explore-shell .bg-explore-purple {
-  background: linear-gradient(180deg, #e2c98a 0%, #d6b878 100%);
-  color: #1a1408;
+  background: var(--legacy-gold);
+  color: var(--legacy-bg);
 }
 
 .explore-shell .bg-explore-purple\/10 {

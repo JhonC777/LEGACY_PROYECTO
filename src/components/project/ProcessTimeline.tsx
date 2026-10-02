@@ -89,7 +89,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="process-cell-index">{String(index + 1).padStart(2, '0')}</p>
-                    <p className="mt-2 text-[0.62rem] font-bold tracking-[0.16em] text-legacy-gold/80 uppercase">
+                    <p className="mt-2 text-xs font-bold tracking-[0.16em] text-legacy-gold/80 uppercase">
                       {step.eyebrow}
                     </p>
                     <h3 className="mt-1 font-brand text-[1.35rem] leading-tight font-semibold text-legacy-white">
