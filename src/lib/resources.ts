@@ -68,6 +68,18 @@ export function isFileResource(value?: string) {
   return isHttpUrl(value) || isBlobUrl(value) || isPublicFilePath(value)
 }
 
+/**
+ * Archivo o URL que se puede abrir. Una ancla (`#documentacion`) no es un documento:
+ * el sello del catálogo debe ir a la sección de la ficha, no a un destino vacío.
+ */
+export function openableResourceHref(value?: string | null): string | null {
+  if (!value || value.trim().startsWith('#')) return null
+  const href = safeHref(value)
+  if (!href || href.startsWith('#')) return null
+  if (!isFileResource(value)) return null
+  return href
+}
+
 export function isValidResourceUrl(value?: string) {
   if (!value) return true
   if (value.startsWith('#')) return true

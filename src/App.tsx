@@ -6,6 +6,7 @@ import { GlassButtonEffects } from '@/components/ui/GlassButtonEffects'
 import { AdminSessionProvider } from '@/admin/session'
 import { PILOT_CATALOG_PATH, PILOT_COLLECTIONS_PATH } from '@/data/demoData'
 import { HomeEntry } from '@/pages/HomeEntry'
+import { NotFound } from '@/pages/NotFound'
 
 const ExploreHome = lazy(() =>
   import('@/pages/ExploreHome').then((m) => ({ default: m.ExploreHome })),
@@ -96,7 +97,7 @@ export default function App() {
               <Route path="ajustes" element={<AdminSettings />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </AdminSessionProvider>

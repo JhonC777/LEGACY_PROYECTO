@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
-import { scrollLegacyTo } from '@/lib/legacyScroll'
+import { scrollLegacyElementIntoView, scrollLegacyTo } from '@/lib/legacyScroll'
 
 export function RouteScrollManager() {
   const location = useLocation()
@@ -32,12 +32,27 @@ export function RouteScrollManager() {
     lastPathname.current = location.pathname
 
     if (location.hash) {
-      window.requestAnimationFrame(() => {
-        document
-          .getElementById(location.hash.slice(1))
-          ?.scrollIntoView({ block: 'start' })
-      })
-      return
+      let id = location.hash.slice(1)
+      try {
+        id = decodeURIComponent(id)
+      } catch {
+        /* el ancla se busca tal cual */
+      }
+      let frame = 0
+      let cancelled = false
+      const tick = () => {
+        if (cancelled) return
+        const node = document.getElementById(id)
+        if (node) {
+          scrollLegacyElementIntoView(node, 'start')
+          return
+        }
+        if (frame++ < 24) window.requestAnimationFrame(tick)
+      }
+      tick()
+      return () => {
+        cancelled = true
+      }
     }
 
     if (pathChanged && navigationType !== 'POP') {

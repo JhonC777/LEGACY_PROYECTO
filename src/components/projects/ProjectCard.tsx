@@ -10,7 +10,7 @@ import {
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
-import { isFileResource, resourceFileName, safeHref } from '@/lib/resources'
+import { openableResourceHref, resourceFileName } from '@/lib/resources'
 
 type ProjectCardProps = {
   project: DemoProject
@@ -47,47 +47,41 @@ export function ProjectCard({
     return `${catalogPath}?${next.toString()}`
   }
 
-  const resources = [
-    project.docUrl
-      ? {
-          key: 'doc',
-          label: 'Doc',
-          href: safeHref(
-            project.docUrl.startsWith('#') ? `${href}${project.docUrl}` : project.docUrl,
-          ),
-          Icon: FileText,
-          file: isFileResource(project.docUrl),
-          download: resourceFileName(project.docUrl, 'documento-del-proyecto'),
-        }
-      : null,
-    project.videoUrl
-      ? {
-          key: 'video',
-          label: 'Video',
-          href: safeHref(project.videoUrl),
-          Icon: Play,
-          file: isFileResource(project.videoUrl),
-          download: resourceFileName(project.videoUrl, 'video-del-proyecto'),
-        }
-      : null,
-    project.pdfUrl
-      ? {
-          key: 'pdf',
-          label: 'PDF',
-          href: safeHref(project.pdfUrl),
-          Icon: FileType2,
-          file: isFileResource(project.pdfUrl),
-          download: resourceFileName(project.pdfUrl, 'informe-del-proyecto.pdf'),
-        }
-      : null,
-  ].filter((item): item is {
-    key: string
-    label: string
-    href: string
-    Icon: typeof FileText
-    file: boolean
-    download: string
-  } => Boolean(item?.href))
+  const resources = (
+    [
+      { key: 'doc', label: 'Doc', url: project.docUrl, Icon: FileText, fallback: 'documento-del-proyecto' },
+      { key: 'video', label: 'Video', url: project.videoUrl, Icon: Play, fallback: 'video-del-proyecto' },
+      { key: 'pdf', label: 'PDF', url: project.pdfUrl, Icon: FileType2, fallback: 'informe-del-proyecto.pdf' },
+    ] as const
+  ).flatMap((item) => {
+    const open = openableResourceHref(item.url)
+    if (open) {
+      const external = /^https?:\/\//i.test(open)
+      return [
+        {
+          key: item.key,
+          label: item.label,
+          Icon: item.Icon,
+          href: external ? open : open.split('#')[0],
+          external,
+          download: external ? undefined : resourceFileName(item.url ?? open, item.fallback),
+        },
+      ]
+    }
+    if (item.key === 'doc' && item.url?.trim().startsWith('#')) {
+      return [
+        {
+          key: item.key,
+          label: item.label,
+          Icon: item.Icon,
+          href: `${href}#documentacion`,
+          external: false,
+          download: undefined,
+        },
+      ]
+    }
+    return []
+  })
 
   const real = isRealShowcase(project)
 
@@ -117,7 +111,7 @@ export function ProjectCard({
 
   const stamps = (
     <div className="knowledge-fragment-stamps" aria-label="Recursos disponibles">
-      {resources.map(({ key, label, href: resourceHref, Icon, file, download }) => {
+      {resources.map(({ key, label, href: resourceHref, Icon, external, download }) => {
         const className = 'knowledge-fragment-stamp'
         const inner = (
           <>
@@ -125,15 +119,15 @@ export function ProjectCard({
             <span>{label}</span>
           </>
         )
-        if (file) {
+        if (external || download) {
           return (
             <a
               key={key}
-              href={resourceHref.split('#')[0]}
-              download={download}
+              href={resourceHref}
+              {...(download ? { download } : { target: '_blank', rel: 'noreferrer' })}
               className={className}
-              title={`Descargar ${download ?? label}`}
-              aria-label={`Descargar ${label}`}
+              title={download ? `Descargar ${download}` : `Abrir ${label}`}
+              aria-label={download ? `Descargar ${label}` : `Abrir ${label}`}
               onClick={(event) => event.stopPropagation()}
             >
               {inner}
@@ -146,8 +140,8 @@ export function ProjectCard({
             to={resourceHref}
             state={{ from }}
             className={className}
-            title={label}
-            aria-label={label}
+            title={`Ver ${label} en la ficha`}
+            aria-label={`Ver ${label} en la ficha`}
             onClick={(event) => event.stopPropagation()}
           >
             {inner}
