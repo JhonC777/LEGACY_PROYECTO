@@ -784,7 +784,6 @@
     0 8px 24px rgb(0 0 0 / 0.28),
     inset 0 1px 0 rgb(255 255 255 / 0.1);
   backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
 }
 
 .home-threshold-panel {
@@ -1585,7 +1584,7 @@
   padding: 0.4rem 0;
   border: 0;
   background: transparent;
-  color: rgb(214 184 120 / 0.62);
+  color: rgb(214 184 120 / 0.85);
   font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -1935,7 +1934,6 @@
     rgb(8 9 12 / 0.22);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
   backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
   transition:
     border-color 0.28s ease,
     background-color 0.28s ease,
@@ -1987,7 +1985,6 @@
       rgb(8 9 12 / 0.9) 72%
     );
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
 }
 
@@ -2161,4 +2158,66 @@ html.home-aura-paused .archive-mark-tick {
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
   }
+}
+
+/* ===== OPCIÓN B — "Umbral arquitectónico" =====
+   Archivo: src/styles/cosmic.css (al final del archivo). Solo SVG inline de línea fina (~2 KB). */
+
+/* La placa fotográfica (planeta + anillo espacial) y el planeta CSS son lo que se ve ajeno detrás del umbral */
+.home-entry .cosmic-plate,
+.home-entry .cosmic-plate-grade,
+.home-entry .cosmic-planet,
+.home-entry .cosmic-sun,
+.home-entry .cosmic-constellation {
+  display: none;
+}
+
+.home-entry-threshold {
+  isolation: isolate;
+}
+
+/* Galería de arcos (archivo / biblioteca) que se desvanece hacia los bordes */
+.home-entry-threshold::before {
+  content: '';
+  position: absolute;
+  inset: -6% -48%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='220' viewBox='0 0 120 220' fill='none' stroke='%23d6b878'%3E%3Cpath d='M12 220V78a48 48 0 0 1 96 0v142' stroke-opacity='.3'/%3E%3Cpath d='M22 220V80a38 38 0 0 1 76 0v140' stroke-opacity='.13'/%3E%3Cpath d='M0 219.5h120M0 24.5h120' stroke-opacity='.2'/%3E%3Cpath d='M60 28l4 4-4 4-4-4z' fill='%23d6b878' fill-opacity='.5' stroke='none'/%3E%3C/svg%3E") center top / 120px 220px repeat,
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgb(214 184 120 / 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 50% 30%, rgb(118 98 201 / 0.2) 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 30%, transparent 100%);
+}
+
+/* Portal principal: doble arco que abraza el panel */
+.home-entry-threshold::after {
+  content: '';
+  position: absolute;
+  inset: -2.5% -9% -1.5%;
+  z-index: -1;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 1000' preserveAspectRatio='none' fill='none' stroke='%23d6b878'%3E%3Cpath d='M6 1000V300C6 138 138 6 300 6s294 132 294 294v700' stroke-opacity='.55' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M22 1000V306C22 153 146 22 300 22s278 131 278 284v694' stroke-opacity='.22' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+/* Dentro del panel: la puerta del archivo grabada en el hueco inferior */
+/* El ::after es un hijo flex más: ocupa SOLO el espacio sobrante bajo las tarjetas
+   (en pantallas bajas o en móvil mide ~0 y desaparece; nunca queda detrás de texto). */
+.home-entry .home-threshold-panel > .legacy-hidden-scroll {
+  flex: 0 1 auto;
+}
+
+.home-threshold-panel::after {
+  content: '';
+  flex: 1 1 0;
+  min-height: 0;
+  pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 260' fill='none' stroke='%23d6b878'%3E%3Cpath d='M40 248V120a110 110 0 0 1 220 0v128' stroke-opacity='.42'/%3E%3Cpath d='M66 248V126a84 84 0 0 1 168 0v122' stroke-opacity='.22'/%3E%3Cpath d='M50 132v116M57 132v116M243 132v116M250 132v116' stroke-opacity='.14'/%3E%3Cpath d='M150 42v206' stroke-opacity='.08'/%3E%3Cpath d='M20 248.5h260M8 255.5h284' stroke-opacity='.3'/%3E%3Cpath d='M150 2l8 9-8 9-8-9z' fill='%23d6b878' fill-opacity='.6' stroke='none'/%3E%3C/svg%3E") center bottom 0.4rem / auto 15rem no-repeat,
+    radial-gradient(ellipse 60% 80% at 50% 100%, rgb(214 184 120 / 0.12) 0%, transparent 75%);
+}
+
+.home-entry .cosmic-grain {
+  opacity: 0.06;
 }
