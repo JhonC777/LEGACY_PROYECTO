@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import {
   ArrowUpRight,
   Calendar,
@@ -19,12 +20,29 @@ function hrefFor(projectId: string) {
   return getProjectHref(project)
 }
 
+function moveTrack(track: HTMLDivElement, left: number, behavior: ScrollBehavior) {
+  const root = track.closest<HTMLElement>('.explore-scroll')
+  const locked = root?.scrollTop ?? 0
+  track.scrollTo({ left, behavior })
+  if (!root) return
+  const lock = () => {
+    if (root.scrollTop !== locked) root.scrollTop = locked
+  }
+  root.addEventListener('scroll', lock, { passive: true })
+  window.setTimeout(() => {
+    root.removeEventListener('scroll', lock)
+    lock()
+  }, behavior === 'smooth' ? 650 : 40)
+}
+
 export function FeaturedProjects() {
   const trackRef = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
   const [activeIndex, setActiveIndex] = useState(0)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
   const total = MOCK_FEATURED_PROJECTS.length
+  const behavior: ScrollBehavior = reduceMotion ? 'auto' : 'smooth'
 
   const syncPosition = useCallback(() => {
     const track = trackRef.current
@@ -54,15 +72,17 @@ export function FeaturedProjects() {
 
   const scrollToIndex = (index: number) => {
     const track = trackRef.current
-    if (!track) return
-    const step = track.scrollWidth / total
-    track.scrollTo({ left: step * index, behavior: 'smooth' })
+    const slide = track?.children[index] as HTMLElement | undefined
+    if (!track || !slide) return
+    const left =
+      slide.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft
+    moveTrack(track, left, behavior)
   }
 
   const nudge = (direction: 1 | -1) => {
     const track = trackRef.current
     if (!track) return
-    track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: 'smooth' })
+    moveTrack(track, track.scrollLeft + direction * track.clientWidth * 0.8, behavior)
   }
 
   return (
@@ -82,6 +102,7 @@ export function FeaturedProjects() {
           <div className="hidden items-center gap-1.5 sm:flex">
             <button
               type="button"
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => nudge(-1)}
               disabled={atStart}
               aria-label="Proyectos anteriores"
@@ -91,6 +112,7 @@ export function FeaturedProjects() {
             </button>
             <button
               type="button"
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => nudge(1)}
               disabled={atEnd}
               aria-label="Proyectos siguientes"
@@ -166,6 +188,7 @@ export function FeaturedProjects() {
           <button
             key={project.id}
             type="button"
+            onMouseDown={(event) => event.preventDefault()}
             onClick={() => scrollToIndex(index)}
             aria-label={`Ir al proyecto ${index + 1}`}
             aria-current={index === activeIndex}

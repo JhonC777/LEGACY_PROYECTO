@@ -378,7 +378,11 @@ export function InstitutionHero({
                 }
               >
                 <Link
-                  to={target ? `${location.pathname}${target}` : projectsHref}
+                  to={
+                    target
+                      ? `${location.pathname}${location.search}${target}`
+                      : projectsHref
+                  }
                   className={cn(
                     'institution-stat group flex h-full min-h-[12rem] flex-col rounded-2xl p-4 text-inherit no-underline hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-legacy-gold lg:p-5',
                     key === 'projects' && 'border-legacy-gold/25',

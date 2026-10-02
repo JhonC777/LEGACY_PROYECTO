@@ -106,7 +106,8 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
 export const PILOT_SLUG = 'fe-y-alegria' as const
 export const PILOT_HOME_PATH = `/instituciones/${PILOT_SLUG}`
 export const PILOT_CATALOG_PATH = `${PILOT_HOME_PATH}/proyectos`
-export const PILOT_COLLECTIONS_PATH = `${PILOT_HOME_PATH}#colecciones`
+/** El catálogo de la casa. Sin ancla: la portada no tiene `#colecciones`. */
+export const PILOT_COLLECTIONS_PATH = PILOT_CATALOG_PATH
 
 const gallery = {
   technology: [

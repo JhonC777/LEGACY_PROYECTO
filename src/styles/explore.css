@@ -102,6 +102,8 @@
   scrollbar-width: none;
   scroll-padding-left: 0;
   -ms-overflow-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .featured-track::-webkit-scrollbar {

@@ -11,7 +11,8 @@ import {
   resolveInstitutionProjects,
   useArchiveRevision,
 } from '@/admin/archiveBridge'
-import { getInstitutionBySlug } from '@/data/demoData'
+import { getInstitutionBySlug, PILOT_CATALOG_PATH } from '@/data/demoData'
+import { scrollLegacyElementIntoView } from '@/lib/legacyScroll'
 import { useAuraPlayback } from '@/lib/useAuraPlayback'
 import { useCosmicParallax } from '@/lib/useCosmicParallax'
 import {
@@ -75,8 +76,10 @@ export function HomeEntry() {
     navigate(`/admin/login?institution=${institution.slug}`)
   }
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const handleFragments = () => {
+    const section = document.getElementById('home-fragmentos')
+    if (section && scrollLegacyElementIntoView(section, 'nearest')) return
+    navigate(PILOT_CATALOG_PATH)
   }
 
   return (
@@ -104,17 +107,19 @@ export function HomeEntry() {
                       <button
                         type="button"
                         className="home-cta is-primary"
-                        onClick={() => scrollToSection('home-instituciones')}
+                        onClick={() => navigate('/instituciones')}
                       >
                         Explorar instituciones
                       </button>
-                      <button
-                        type="button"
-                        className="home-cta is-ghost"
-                        onClick={() => scrollToSection('home-fragmentos')}
-                      >
-                        Ver fragmentos
-                      </button>
+                      {featured.length > 0 ? (
+                        <button
+                          type="button"
+                          className="home-cta is-ghost"
+                          onClick={handleFragments}
+                        >
+                          Ver fragmentos
+                        </button>
+                      ) : null}
                     </>
                   }
                 />

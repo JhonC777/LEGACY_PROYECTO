@@ -29,6 +29,7 @@ import {
   useArchiveRevision,
 } from '@/admin/archiveBridge'
 import { getInstitutionBySlug, isRealShowcase } from '@/data/demoData'
+import { openableResourceHref } from '@/lib/resources'
 import { cn } from '@/lib/cn'
 
 const SECTIONS = [
@@ -190,7 +191,7 @@ export function ProjectDetail() {
                     <Images className="h-3.5 w-3.5" aria-hidden />
                     Galería
                   </a>
-                  {project.videoUrl ? (
+                  {openableResourceHref(project.videoUrl) ? (
                     <a href="#recursos" className="home-cta is-ghost">
                       <Play className="h-3.5 w-3.5" aria-hidden />
                       Video
