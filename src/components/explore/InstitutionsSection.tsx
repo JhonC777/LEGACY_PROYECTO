@@ -126,7 +126,7 @@ export function InstitutionsSection() {
 
               <Link
                 to={`/instituciones/${institution.slug}`}
-                className="btn btn-institutional btn-md mt-auto w-full"
+                className="btn btn-primary btn-md mt-auto w-full"
               >
                 Explorar Institución →
               </Link>

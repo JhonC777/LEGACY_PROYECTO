@@ -1,7 +1,7 @@
 /* Ficha de proyecto — hero teñido por la institución y navegación interna */
 
 .project-hero {
-  --project-accent: var(--legacy-institution, #d20b12);
+  --project-accent: var(--legacy-gold);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -1054,8 +1054,8 @@
   border-radius: 999px;
   background: linear-gradient(
     150deg,
-    color-mix(in srgb, var(--project-accent, var(--legacy-institution, #d20b12)) 70%, #ffffff 10%),
-    color-mix(in srgb, var(--project-accent, var(--legacy-institution, #d20b12)) 45%, #000000 20%)
+    color-mix(in srgb, var(--project-accent, var(--legacy-gold)) 70%, #ffffff 10%),
+    color-mix(in srgb, var(--project-accent, var(--legacy-gold)) 45%, #000000 20%)
   );
   font-size: var(--legacy-text-xs);
   font-weight: 800;

@@ -260,7 +260,7 @@
 }
 
 .explore-shell .text-explore-purple {
-  color: var(--legacy-institution-text);
+  color: var(--color-legacy-gold);
 }
 
 .explore-shell .bg-explore-panel {
@@ -268,38 +268,24 @@
 }
 
 .explore-shell .bg-explore-purple {
-  background: var(--legacy-institution);
-  color: #fff;
+  background: var(--legacy-gold);
+  color: var(--legacy-bg);
 }
 
 .explore-shell .bg-explore-purple\/10 {
-  background: rgb(210 11 18 / 0.1);
-}
-
-.explore-shell .bg-explore-purple\/25 {
-  background: rgb(210 11 18 / 0.25);
-}
-
-.explore-shell .hover\:bg-explore-purple\/45:hover {
-  background: rgb(210 11 18 / 0.45);
-}
-
-.explore-shell .fill-explore-purple {
-  fill: var(--legacy-institution-text);
+  background: rgb(214 184 120 / 0.1);
 }
 
 .explore-shell .hover\:bg-explore-purple-deep:hover {
-  background: var(--legacy-institution-hover);
-  filter: none;
+  filter: brightness(0.96);
 }
 
 .explore-shell .border-explore-line {
   border-color: rgb(255 255 255 / 0.1);
 }
 
-.explore-shell .border-explore-purple\/40,
-.explore-shell .border-explore-purple\/15 {
-  border-color: rgb(224 84 89 / 0.35);
+.explore-shell .border-explore-purple\/40 {
+  border-color: rgb(214 184 120 / 0.4);
 }
 
 .explore-shell .text-explore-gold {

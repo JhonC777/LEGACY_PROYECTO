@@ -70,7 +70,7 @@ export function InstitutionCover({
         </motion.p>
 
         <motion.div {...fade(0.54, 12)} className="institution-cover-actions">
-          <Link to={archiveHref} className="btn btn-institutional btn-md">
+          <Link to={archiveHref} className="btn btn-primary btn-md">
             Abrir el archivo
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>

@@ -681,7 +681,7 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
         {institution ? (
           <button
             type="button"
-            className="btn btn-institutional btn-md nav-drawer-admin"
+            className="btn btn-primary btn-md nav-drawer-admin"
             aria-expanded={assistantOpen}
             aria-controls="archive-assistant-panel"
             aria-haspopup="dialog"

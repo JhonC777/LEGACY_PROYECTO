@@ -17,9 +17,6 @@
   --color-legacy-muted: #c8cad3;
   --color-legacy-grey: #a6a8b2;
   --color-legacy-violet: #7662c9;
-  --color-legacy-institution: #d20b12;
-  --color-legacy-institution-hover: #b2090f;
-  --color-legacy-institution-text: #e05459;
   --color-legacy-border: rgb(255 255 255 / 0.12);
 
   --color-explore-bg: #ffffff;
@@ -27,8 +24,8 @@
   --color-explore-muted: #a6a8b2;
   --color-explore-line: #e8eaf0;
   --color-explore-panel: #f6f7fb;
-  --color-explore-purple: #d20b12;
-  --color-explore-purple-deep: #b2090f;
+  --color-explore-purple: #7662c9;
+  --color-explore-purple-deep: #7662c9;
   --color-explore-gold: #d6b878;
 
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
