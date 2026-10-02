@@ -50,6 +50,7 @@ export function ExploreHeader() {
       <div className="explore-header-main">
         <Link to="/" className="legacy-brand flex shrink-0 items-center gap-2.5 rounded-xl">
           <LegacyMark size="sm" />
+          <span className="legacy-brand-rule" aria-hidden />
           <span className="leading-tight">
             <LegacyWordmark className="block" />
             <span className="header-brand-sub hidden text-xs text-legacy-muted sm:block">
@@ -98,7 +99,14 @@ export function ExploreHeader() {
             />
           </form>
 
-          <Link to="/admin/login" className="btn btn-secondary btn-sm pickup hidden shrink-0 lg:inline-flex">
+          <Link
+            to="/admin/login"
+            className="header-admin-icon"
+            aria-label="Administrador"
+          >
+            <UserRound className="h-5 w-5" aria-hidden />
+          </Link>
+          <Link to="/admin/login" className="btn btn-secondary btn-sm pickup header-admin-pill shrink-0">
             <UserRound className="h-4 w-4" aria-hidden />
             Administrador
           </Link>

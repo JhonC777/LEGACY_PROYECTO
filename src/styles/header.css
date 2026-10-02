@@ -307,6 +307,76 @@
   max-width: 22rem;
 }
 
+/*
+  «Administrador» en el header de explorar.
+  .btn fija display:inline-flex después de Tailwind, así que `hidden lg:inline-flex`
+  no ocultaba la pastilla en móvil y chocaba con el wordmark.
+  Debajo de lg: botón redondo de 44px, solo icono. El texto vive en el drawer.
+*/
+.header-admin-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d6b878;
+  border-radius: 999px;
+  background: transparent;
+  color: #d6b878;
+  text-decoration: none;
+}
+
+.header-admin-icon:hover {
+  background: rgb(214 184 120 / 0.1);
+  color: #f0d9a0;
+}
+
+.header-admin-icon:focus-visible {
+  outline: 2px solid var(--color-legacy-gold);
+  outline-offset: 3px;
+}
+
+.header-admin-pill {
+  display: none !important;
+}
+
+@media (min-width: 1024px) {
+  .header-admin-icon {
+    display: none !important;
+  }
+
+  .header-admin-pill.btn {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  a.header-action.header-admin-compact {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid #d6b878;
+    background: transparent;
+    color: #d6b878;
+  }
+
+  a.header-action.header-admin-compact:hover {
+    background: rgb(214 184 120 / 0.1);
+    color: #f0d9a0;
+  }
+
+  a.header-action.header-admin-compact .header-action-label {
+    display: none;
+  }
+}
+
+.legacy-brand .header-brand-sub {
+  margin-top: 0.45rem;
+}
+
 @media (min-width: 1280px) {
   .explore-header-tools {
     flex: 0 1 24rem;
@@ -1022,4 +1092,42 @@
   .header-progress {
     transition: none;
   }
+}
+
+/*
+  Legibilidad: las barras fijas no dejan ver el contenido que pasa por detrás
+  (fondo opaco, sin desenfoque) y todos los controles miden al menos 44 px.
+*/
+.legacy-header.glass-header,
+.legacy-header.glass-header.is-condensed {
+  background: #0a0b0f;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.header-rail,
+.header-rail.is-filters {
+  background: #0c0e14;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.legacy-header {
+  --header-control-h: 2.75rem;
+}
+
+.explore-header-nav .nav-liquid,
+.header-nav .nav-liquid {
+  min-height: 44px;
+  height: 2.75rem;
+}
+
+.legacy-brand,
+.header-chip {
+  min-height: 44px;
+}
+
+.legacy-header .header-admin-pill.btn,
+.legacy-header input.liquid-field[type="search"] {
+  min-height: 44px;
 }
