@@ -428,7 +428,7 @@ export function AdminDashboard() {
                         <span className={cn('admin-timeline-dot', `is-${entry.type}`)} aria-hidden />
                         <div className="min-w-0">
                           <p className="text-sm text-legacy-white">{entry.message}</p>
-                          <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-legacy-muted">
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-legacy-muted">
                             <Clock className="h-3 w-3" aria-hidden />
                             {formatRelative(entry.at)}
                             <span aria-hidden>·</span>

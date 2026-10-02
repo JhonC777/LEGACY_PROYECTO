@@ -105,7 +105,7 @@ export function InstitutionCard({
               <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </span>
           ) : (
-            <span className="shrink-0 rounded-full border border-legacy-border/50 px-2 py-0.5 text-[10px] tracking-[0.12em] text-legacy-muted uppercase">
+            <span className="shrink-0 rounded-full border border-legacy-border/50 px-2 py-0.5 text-xs tracking-[0.12em] text-legacy-muted uppercase">
               Próximamente
             </span>
           )
@@ -129,7 +129,7 @@ export function InstitutionCard({
         <span
           className={cn(
             'mt-0.5 block text-legacy-muted',
-            compact ? 'line-clamp-2 text-[11px] leading-snug' : 'truncate text-[0.8rem]',
+            compact ? 'line-clamp-2 text-xs leading-snug' : 'truncate text-[0.8rem]',
           )}
         >
           {institution.description}
@@ -137,17 +137,17 @@ export function InstitutionCard({
         {!compact && !disabled ? (
           <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             {typeof projectCount === 'number' && projectCount > 0 ? (
-              <span className="text-[10px] tracking-[0.12em] text-legacy-muted/85 uppercase">
+              <span className="text-xs tracking-[0.12em] text-legacy-muted/85 uppercase">
                 {projectCount} proyecto{projectCount === 1 ? '' : 's'}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1 text-[0.62rem] font-semibold tracking-[0.16em] text-legacy-gold/80 uppercase transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold tracking-[0.16em] text-legacy-gold/80 uppercase transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
               Entrar al archivo
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </span>
           </span>
         ) : (
-          <span className="mt-1 block text-[10px] tracking-[0.14em] text-legacy-muted/75 uppercase">
+          <span className="mt-1 block text-xs tracking-[0.14em] text-legacy-muted/75 uppercase">
             {disabled
               ? 'Próxima incorporación'
               : typeof projectCount === 'number' && projectCount > 0
@@ -163,7 +163,7 @@ export function InstitutionCard({
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </span>
         ) : (
-          <span className="self-center shrink-0 rounded-full border border-dashed border-legacy-border/60 px-2.5 py-1 text-[10px] tracking-[0.12em] text-legacy-muted uppercase">
+          <span className="self-center shrink-0 rounded-full border border-dashed border-legacy-border/60 px-2.5 py-1 text-xs tracking-[0.12em] text-legacy-muted uppercase">
             Próximamente
           </span>
         )

@@ -21,14 +21,14 @@ export function StatsBar() {
                 index < MOCK_STATS.length - 1 ? 'lg:border-r lg:border-explore-purple/15' : ''
               }`}
             >
-              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-explore-purple/10 text-explore-purple">
+              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-legacy-gold/10 text-legacy-gold">
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
               <div>
                 <p className="font-brand text-2xl font-semibold text-explore-ink lg:text-[1.65rem]">
                   {stat.value}
                 </p>
-                <p className="text-sm font-medium text-explore-ink/80">{stat.label}</p>
+                <p className="text-sm font-medium text-legacy-muted">{stat.label}</p>
                 <p className="text-xs text-explore-muted">{stat.hint}</p>
               </div>
             </div>

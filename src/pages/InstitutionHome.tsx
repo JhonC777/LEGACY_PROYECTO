@@ -102,7 +102,7 @@ export function InstitutionHome() {
 
   if (!showArchive) {
     return (
-      <ExploreShell className="is-institution-cover">
+      <ExploreShell className="is-institution is-institution-cover">
         <PublicHeader institution={institution} />
         <InstitutionCover
           institution={institution}
@@ -114,7 +114,7 @@ export function InstitutionHome() {
   }
 
   return (
-    <ExploreShell className="is-institution-archive">
+    <ExploreShell className="is-institution is-institution-archive">
       <PublicHeader institution={institution} />
 
       <main id="contenido">

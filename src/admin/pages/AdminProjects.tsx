@@ -426,7 +426,7 @@ export function AdminProjects() {
                         </span>
                       </span>
                       {!issues.complete && project.status !== 'archived' ? (
-                        <span className="mt-1 inline-flex items-center gap-1 text-[11px] text-amber-300/90">
+                        <span className="mt-1 inline-flex items-center gap-1 text-xs text-amber-300/90">
                           <CircleDashed className="h-3 w-3" aria-hidden />
                           {issues.errors.length}{' '}
                           {issues.errors.length === 1 ? 'dato pendiente' : 'datos pendientes'}

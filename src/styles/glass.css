@@ -92,7 +92,7 @@
   border: 1px solid rgb(214 184 120 / 0.28);
   background: rgb(214 184 120 / 0.1);
   padding: 0.2rem 0.65rem;
-  font-size: 0.65rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.055);
   color: var(--color-legacy-white);
-  font-size: 0.95rem;
+  font-size: var(--legacy-text-md);
   font-weight: 500;
   letter-spacing: -0.005em;
   line-height: 1.2;
@@ -230,48 +230,82 @@
 }
 
 .btn-sm {
-  padding: 0.7rem 1.35rem;
-  font-size: 0.84rem;
-  gap: 0.4rem;
+  min-height: 32px;
+  padding: var(--legacy-space-1) var(--legacy-space-2);
+  font-size: var(--legacy-text-sm);
+  gap: var(--legacy-space-1);
 }
 
 .btn-md {
-  padding: 1rem 2rem;
-  font-size: 0.95rem;
+  min-height: 48px;
+  padding: var(--legacy-space-1) var(--legacy-space-3);
+  font-size: var(--legacy-text-md);
 }
 
 .btn-lg {
-  padding: 1.25rem 2.6rem;
-  font-size: 1.05rem;
+  min-height: 48px;
+  padding: var(--legacy-space-2) var(--legacy-space-4);
+  font-size: var(--legacy-text-md);
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-institutional {
+  border-radius: var(--legacy-radius-pill);
+  border-width: 1px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.btn-primary::before,
+.btn-primary::after,
+.btn-secondary::before,
+.btn-secondary::after,
+.btn-institutional::before,
+.btn-institutional::after {
+  display: none;
 }
 
 .btn-primary {
-  background: rgba(214, 184, 120, 0.12);
-  border-color: rgba(214, 184, 120, 0.38);
-  color: var(--color-legacy-gold-soft);
+  background: var(--legacy-gold);
+  border-color: var(--legacy-gold);
+  color: var(--legacy-bg);
 }
 
 .btn-primary:hover:not(:disabled):not([aria-disabled='true']) {
-  background: rgba(214, 184, 120, 0.18);
-  color: #fff8e8;
-  filter: none;
-  border-color: rgba(214, 184, 120, 0.5);
+  background: var(--legacy-gold);
+  border-color: var(--legacy-gold);
+  color: var(--legacy-bg);
+  filter: brightness(1.08);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.025);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: var(--color-legacy-white);
-}
-
-.btn-secondary::before {
-  opacity: 0.45;
+  background: transparent;
+  border-color: var(--legacy-gold);
+  color: var(--legacy-gold);
 }
 
 .btn-secondary:hover:not(:disabled):not([aria-disabled='true']) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.32);
+  background: rgb(214 184 120 / 0.1);
+  border-color: var(--legacy-gold);
+  color: var(--legacy-cream);
+  filter: none;
+}
+
+.btn-institutional {
+  background: var(--legacy-institution);
+  border-color: var(--legacy-institution);
   color: #fff;
+}
+
+.btn-institutional:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--legacy-institution-hover);
+  border-color: var(--legacy-institution-hover);
+  color: #fff;
+  filter: none;
 }
 
 .btn-ghost {
@@ -475,7 +509,7 @@
   background-repeat: no-repeat;
   background-position: right 0.9rem center;
   padding: 0.7rem 2.4rem 0.7rem 1rem;
-  font-size: 0.875rem;
+  font-size: var(--legacy-text-sm);
 }
 
 .glass-select:hover,
@@ -519,7 +553,7 @@
   background-position: right 0.9rem center;
   padding: 0.7rem 2.4rem 0.7rem 1rem;
   color: var(--color-legacy-white);
-  font-size: 0.875rem;
+  font-size: var(--legacy-text-sm);
   text-align: left;
   cursor: pointer;
   box-shadow:
@@ -554,7 +588,7 @@
 .archive-select-hint {
   flex-shrink: 0;
   color: var(--color-legacy-muted);
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -590,7 +624,7 @@
   border-radius: 0.6rem;
   background: transparent;
   color: #f7f5ef;
-  font-size: 0.84rem;
+  font-size: var(--legacy-text-sm);
   text-align: left;
   cursor: pointer;
 }
@@ -605,7 +639,7 @@
 .archive-select-count {
   flex-shrink: 0;
   color: #a6a8b2;
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -654,9 +688,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    #c4a35a 22%,
-    #f0d9a0 50%,
-    #c4a35a 78%,
+    var(--legacy-gold) 22%,
+    var(--legacy-gold) 50%,
+    var(--legacy-gold) 78%,
     transparent 100%
   );
   box-shadow: 0 0 10px rgba(214, 184, 120, 0.55);
@@ -696,7 +730,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
   padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: var(--legacy-text-xs);
   color: var(--color-legacy-white);
   backdrop-filter: blur(16px);
   cursor: pointer;

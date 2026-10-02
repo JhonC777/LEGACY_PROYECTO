@@ -1,0 +1,103 @@
+/*
+  Sistema visual LEGACY.
+  Un dorado de marca, un rojo institucional, escala de 8 px,
+  radios 12 / 999 y tipo desde 12 px.
+*/
+
+:root {
+  --legacy-bg: #08090c;
+  --legacy-bg-mid: #0c0e14;
+  --legacy-surface: #11131a;
+  --legacy-gold: #d6b878;
+  --legacy-cream: #f7f5ef;
+  --legacy-grey: #c8cad3;
+  --legacy-grey-soft: #a6a8b2;
+  --legacy-institution: #d20b12;
+  --legacy-institution-hover: #b2090f;
+  --legacy-institution-text: #e05459;
+
+  --legacy-space-1: 8px;
+  --legacy-space-2: 16px;
+  --legacy-space-3: 24px;
+  --legacy-space-4: 32px;
+  --legacy-space-6: 48px;
+  --legacy-space-8: 64px;
+
+  --legacy-radius-control: 12px;
+  --legacy-radius-pill: 999px;
+
+  --legacy-text-xs: 12px;
+  --legacy-text-sm: 14px;
+  --legacy-text-md: 16px;
+  --legacy-text-lg: 20px;
+  --legacy-text-xl: 24px;
+  --legacy-text-2xl: 32px;
+  --legacy-text-3xl: 48px;
+
+  --legacy-header-h: 64px;
+}
+
+/* Cinzel solo en 400 y 700. Manrope conserva 400 / 600 / 700. */
+.font-brand {
+  font-weight: 400;
+}
+
+.font-brand.font-semibold,
+.font-brand.font-medium,
+.font-brand.font-bold {
+  font-weight: 700;
+}
+
+html.legacy-nav-open,
+html.legacy-nav-open body {
+  overflow: hidden;
+}
+
+html.legacy-nav-open .explore-scroll,
+html.legacy-nav-open .home-entry-stage,
+html.legacy-nav-open .admin-content {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+/* Acento institucional en portada, catálogo y ficha. El dorado de LEGACY no cambia. */
+.explore-shell.is-institution {
+  --project-accent: var(--legacy-institution);
+  background:
+    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(210 11 18 / 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 8% 88%, rgb(214 184 120 / 0.05), transparent 50%),
+    linear-gradient(180deg, rgb(8 9 12 / 0.82) 0%, var(--legacy-bg-mid) 42%, rgb(8 9 12 / 0.92) 100%);
+}
+
+.explore-shell.is-institution .chip-liquid.is-active {
+  border-color: rgb(224 84 89 / 0.55);
+  background: rgb(210 11 18 / 0.14);
+  color: var(--legacy-institution-text);
+}
+
+.explore-shell.is-institution .knowledge-fragment-kicker,
+.explore-shell.is-institution .knowledge-fragment-kicker a:hover,
+.explore-shell.is-institution .knowledge-fragment-register:hover,
+.explore-shell.is-institution .project-hero-meta a:hover,
+.explore-shell.is-institution .project-crumb a:hover,
+.explore-shell.is-institution .header-sheet-link.is-current {
+  color: var(--legacy-institution-text);
+}
+
+.explore-shell.is-institution .nav-drawer-link.is-active,
+.nav-drawer-root.is-institution .nav-drawer-link.is-active {
+  color: var(--legacy-institution-text);
+  background: rgb(210 11 18 / 0.1);
+  box-shadow: inset 3px 0 0 var(--legacy-institution);
+}
+
+.explore-shell.is-institution .nav-liquid.is-active,
+.explore-shell.is-institution .nav-liquid[aria-current='page'] {
+  color: var(--legacy-institution-text);
+}
+
+.explore-shell.is-institution .nav-liquid.is-active::after,
+.explore-shell.is-institution .nav-liquid[aria-current='page']::after {
+  background: var(--legacy-institution-text);
+  box-shadow: none;
+}

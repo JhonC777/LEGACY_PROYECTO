@@ -64,7 +64,7 @@
 .archive-assistant-head .header-avatar {
   width: 2.35rem;
   height: 2.35rem;
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
 }
 
 .archive-assistant-kicker {
@@ -73,7 +73,7 @@
   gap: 0.4rem;
   margin: 0 0 0.15rem;
   color: var(--color-legacy-gold);
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -152,21 +152,21 @@
 .archive-assistant-welcome p:last-of-type {
   margin: 0.35rem 0 0;
   color: var(--color-legacy-muted);
-  font-size: 0.86rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.55;
 }
 
 .archive-assistant-reply p {
   margin: 0;
   color: var(--color-legacy-white);
-  font-size: 0.94rem;
+  font-size: var(--legacy-text-md);
   line-height: 1.55;
 }
 
 .archive-assistant-reply p + p {
   margin-top: 0.65rem;
   color: rgb(247 245 239 / 0.82);
-  font-size: 0.88rem;
+  font-size: var(--legacy-text-sm);
 }
 
 .archive-assistant-state-icon {
@@ -187,7 +187,7 @@
   border-radius: 999px;
   background: rgb(214 184 120 / 0.08);
   color: var(--color-legacy-gold-soft);
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   padding: 0.4rem 0.75rem;
   transition:
@@ -211,7 +211,7 @@
   background: rgb(214 184 120 / 0.14);
   border: 1px solid rgb(214 184 120 / 0.22);
   color: var(--color-legacy-white);
-  font-size: 0.86rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.45;
 }
 
@@ -231,7 +231,7 @@
   border-radius: 999px;
   background: rgb(214 184 120 / 0.08);
   color: var(--color-legacy-gold-soft);
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-decoration: none;
@@ -284,7 +284,7 @@
   align-items: center;
   gap: 0.3rem;
   color: var(--color-legacy-gold);
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -292,14 +292,14 @@
 
 .archive-assistant-citation strong {
   color: var(--color-legacy-white);
-  font-size: 0.92rem;
+  font-size: var(--legacy-text-sm);
   font-weight: 650;
   line-height: 1.3;
 }
 
 .archive-assistant-citation-excerpt {
   color: var(--color-legacy-muted);
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.45;
 }
 
@@ -309,7 +309,7 @@
   gap: 0.3rem;
   margin-top: 0.2rem;
   color: var(--color-legacy-gold);
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
 }
 
@@ -385,7 +385,7 @@
   color: var(--color-legacy-white);
   padding: 0.45rem 0;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.4;
   outline: none;
   box-shadow: none;
@@ -426,7 +426,7 @@
 .archive-assistant-footnote {
   margin: 0.55rem 0 0;
   color: rgb(166 168 178 / 0.85);
-  font-size: 0.65rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.45;
 }
 

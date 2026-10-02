@@ -153,7 +153,7 @@ export function ProjectSheet({
 
       <Link to={nextHref} className="project-sheet-next group">
         <span className="min-w-0">
-          <span className="block text-[0.62rem] font-bold tracking-[0.16em] text-legacy-muted uppercase">
+          <span className="block text-xs font-bold tracking-[0.16em] text-legacy-muted uppercase">
             Siguiente en el archivo
           </span>
           <span className="mt-1 block truncate text-sm font-semibold text-legacy-white transition-colors group-hover:text-legacy-gold-soft">
@@ -184,7 +184,7 @@ function SheetRow({
         <Icon className="h-3.5 w-3.5" aria-hidden />
       </span>
       <div className="min-w-0">
-        <dt className="text-[0.68rem] text-legacy-muted">{label}</dt>
+        <dt className="text-xs text-legacy-muted">{label}</dt>
         <dd className="text-sm font-semibold text-legacy-white">{children}</dd>
       </div>
     </div>

@@ -43,7 +43,7 @@
   opacity: 0.5;
   background-image:
     radial-gradient(1px 1px at 8% 14%, rgb(247 245 239 / 0.42), transparent),
-    radial-gradient(1.2px 1.2px at 16% 38%, rgb(240 217 160 / 0.38), transparent),
+    radial-gradient(1.2px 1.2px at 16% 38%, rgb(214 184 120 / 0.38), transparent),
     radial-gradient(1px 1px at 24% 8%, rgb(247 245 239 / 0.28), transparent),
     radial-gradient(1px 1px at 33% 62%, rgb(186 174 235 / 0.32), transparent),
     radial-gradient(1.3px 1.3px at 41% 22%, rgb(214 184 120 / 0.4), transparent),
@@ -51,11 +51,11 @@
     radial-gradient(1px 1px at 61% 48%, rgb(214 184 120 / 0.28), transparent),
     radial-gradient(1.1px 1.1px at 72% 18%, rgb(247 245 239 / 0.36), transparent),
     radial-gradient(1px 1px at 81% 57%, rgb(118 98 201 / 0.3), transparent),
-    radial-gradient(1px 1px at 91% 12%, rgb(240 217 160 / 0.3), transparent),
+    radial-gradient(1px 1px at 91% 12%, rgb(214 184 120 / 0.3), transparent),
     radial-gradient(1.2px 1.2px at 12% 78%, rgb(247 245 239 / 0.28), transparent),
     radial-gradient(1px 1px at 28% 88%, rgb(214 184 120 / 0.22), transparent),
     radial-gradient(1px 1px at 47% 74%, rgb(247 245 239 / 0.2), transparent),
-    radial-gradient(1.15px 1.15px at 66% 86%, rgb(240 217 160 / 0.26), transparent),
+    radial-gradient(1.15px 1.15px at 66% 86%, rgb(214 184 120 / 0.26), transparent),
     radial-gradient(1px 1px at 84% 80%, rgb(247 245 239 / 0.22), transparent);
 }
 
@@ -64,12 +64,12 @@
   background-image:
     radial-gradient(1.4px 1.4px at 11% 26%, rgb(255 248 232 / 0.7), transparent),
     radial-gradient(1px 1px at 37% 16%, rgb(247 245 239 / 0.45), transparent),
-    radial-gradient(1.6px 1.6px at 58% 34%, rgb(240 217 160 / 0.55), transparent),
+    radial-gradient(1.6px 1.6px at 58% 34%, rgb(214 184 120 / 0.55), transparent),
     radial-gradient(1px 1px at 77% 8%, rgb(247 245 239 / 0.4), transparent),
     radial-gradient(1.3px 1.3px at 93% 41%, rgb(186 174 235 / 0.42), transparent),
     radial-gradient(1px 1px at 19% 54%, rgb(214 184 120 / 0.35), transparent),
     radial-gradient(1.2px 1.2px at 44% 66%, rgb(247 245 239 / 0.32), transparent),
-    radial-gradient(1px 1px at 69% 71%, rgb(240 217 160 / 0.3), transparent),
+    radial-gradient(1px 1px at 69% 71%, rgb(214 184 120 / 0.3), transparent),
     radial-gradient(1.5px 1.5px at 88% 64%, rgb(247 245 239 / 0.5), transparent);
 }
 
@@ -139,7 +139,7 @@
   top: -12%;
   width: 48%;
   height: 30%;
-  background: radial-gradient(ellipse at 50% 80%, rgb(240 217 160 / 0.18), transparent 72%);
+  background: radial-gradient(ellipse at 50% 80%, rgb(214 184 120 / 0.18), transparent 72%);
 }
 
 .legacy-intro-galaxy {
@@ -224,7 +224,7 @@
   height: 28%;
   margin: -14% 0 0 -88%;
   border-radius: 50%;
-  border: 1px solid rgb(240 217 160 / 0.5);
+  border: 1px solid rgb(214 184 120 / 0.5);
   box-shadow:
     0 0 18px rgb(214 184 120 / 0.28),
     inset 0 0 12px rgb(214 184 120 / 0.14);
@@ -280,12 +280,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(240 217 160 / 0.35) 28%,
+    rgb(214 184 120 / 0.35) 28%,
     rgb(255 252 244 / 0.95) 50%,
     rgb(214 184 120 / 0.35) 72%,
     transparent
   );
-  box-shadow: 0 0 22px rgb(240 217 160 / 0.55);
+  box-shadow: 0 0 22px rgb(214 184 120 / 0.55);
   pointer-events: none;
 }
 
@@ -320,7 +320,7 @@
     transparent
   );
   box-shadow:
-    0 0 28px rgb(240 217 160 / 0.5),
+    0 0 28px rgb(214 184 120 / 0.5),
     0 10px 36px rgb(118 98 201 / 0.14);
   pointer-events: none;
 }
@@ -335,12 +335,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(240 217 160 / 0.16) 16%,
+    rgb(214 184 120 / 0.16) 16%,
     rgb(247 245 239 / 0.95) 50%,
     rgb(214 184 120 / 0.2) 84%,
     transparent
   );
-  box-shadow: 0 0 32px rgb(240 217 160 / 0.5);
+  box-shadow: 0 0 32px rgb(214 184 120 / 0.5);
   pointer-events: none;
 }
 
@@ -444,7 +444,7 @@
   fill: rgb(247 245 239 / 0.92);
   transform-box: fill-box;
   transform-origin: center;
-  filter: drop-shadow(0 0 3px rgb(240 217 160 / 0.75));
+  filter: drop-shadow(0 0 3px rgb(214 184 120 / 0.75));
 }
 
 .legacy-intro-swarm {
@@ -469,9 +469,9 @@
   border-radius: 50%;
   background: #fffef8;
   box-shadow:
-    0 0 8px rgb(240 217 160 / 0.9),
-    22px 0 6px -5px rgb(240 217 160 / 0.55),
-    -22px 0 6px -5px rgb(240 217 160 / 0.55);
+    0 0 8px rgb(214 184 120 / 0.9),
+    22px 0 6px -5px rgb(214 184 120 / 0.55),
+    -22px 0 6px -5px rgb(214 184 120 / 0.55);
 }
 
 .legacy-intro-node.is-violet {
@@ -488,9 +488,9 @@
   border-radius: 50%;
   background: #fff8ec;
   box-shadow:
-    0 0 10px rgb(240 217 160 / 0.95),
-    16px 0 5px -4px rgb(240 217 160 / 0.55),
-    -16px 0 5px -4px rgb(240 217 160 / 0.55);
+    0 0 10px rgb(214 184 120 / 0.95),
+    16px 0 5px -4px rgb(214 184 120 / 0.55),
+    -16px 0 5px -4px rgb(214 184 120 / 0.55);
 }
 
 .legacy-intro-spark.is-violet {
@@ -507,9 +507,9 @@
   width: 2px;
   height: 2px;
   margin: -1px 0 0 -1px;
-  background: #f0d9a0;
+  background: var(--legacy-gold);
   box-shadow:
-    0 0 8px rgb(240 217 160 / 0.9),
+    0 0 8px rgb(214 184 120 / 0.9),
     12px 0 4px -3px rgb(214 184 120 / 0.5),
     -12px 0 4px -3px rgb(214 184 120 / 0.5);
   pointer-events: none;
@@ -535,12 +535,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(240 217 160 / 0.45) 22%,
+    rgb(214 184 120 / 0.45) 22%,
     rgb(255 252 244 / 0.9) 50%,
     rgb(214 184 120 / 0.4) 78%,
     transparent
   );
-  box-shadow: 0 0 28px rgb(240 217 160 / 0.45);
+  box-shadow: 0 0 28px rgb(214 184 120 / 0.45);
   pointer-events: none;
 }
 
@@ -550,7 +550,7 @@
   margin: 0;
   font-family: var(--font-brand);
   font-size: clamp(4rem, 18vw, 10rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 0.86;
   letter-spacing: 0.16em;
   color: #fff8ec;
@@ -614,14 +614,14 @@
 .legacy-intro-created {
   position: relative;
   margin: 0;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.32em;
   text-transform: uppercase;
 }
 
 .legacy-intro-credit-kicker {
-  color: #e8d4a0;
+  color: var(--legacy-gold);
   text-shadow: 0 0 18px rgb(214 184 120 / 0.35);
 }
 
@@ -666,7 +666,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -692,7 +692,7 @@
   background: rgb(0 0 0 / 0.45);
   color: var(--color-legacy-muted);
   padding: 0.42rem 0.9rem;
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;

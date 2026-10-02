@@ -30,6 +30,7 @@ import {
 } from '@/admin/archiveBridge'
 import { getInstitutionBySlug, isRealShowcase } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { institutionFill } from '@/lib/institutionTheme'
 
 const SECTIONS = [
   { id: 'resumen', label: 'Resumen' },
@@ -117,10 +118,10 @@ export function ProjectDetail() {
           transition: { duration: 0.7, delay, ease: EASE },
         }
 
-  const heroStyle = { '--project-accent': institution.accent } as CSSProperties
+  const heroStyle = { '--project-accent': institutionFill(institution) } as CSSProperties
 
   return (
-    <ExploreShell style={heroStyle}>
+    <ExploreShell className="is-institution" style={heroStyle}>
       <PublicHeader institution={institution} />
 
       <main id="contenido" className="project-stage">

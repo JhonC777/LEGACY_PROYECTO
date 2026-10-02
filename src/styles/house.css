@@ -14,7 +14,7 @@
     90deg,
     transparent,
     rgb(214 184 120 / 0.28) 30%,
-    rgb(240 217 160 / 0.45) 50%,
+    rgb(214 184 120 / 0.45) 50%,
     rgb(214 184 120 / 0.28) 70%,
     transparent
   );
@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -59,7 +59,7 @@
   margin-top: 0.6rem;
   font-family: var(--font-brand);
   font-size: clamp(2.1rem, 4.2vw, 3.4rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.02;
   color: var(--color-legacy-white);
   text-wrap: balance;
@@ -68,7 +68,7 @@
 .house-lead {
   max-width: 34rem;
   margin-top: 0.85rem;
-  font-size: 0.95rem;
+  font-size: var(--legacy-text-md);
   line-height: 1.6;
   color: var(--color-legacy-muted);
 }
@@ -83,7 +83,7 @@
   border: 0.5px solid rgb(214 184 120 / 0.4);
   border-radius: 999px;
   background: rgb(214 184 120 / 0.08);
-  font-size: 0.8rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: var(--color-legacy-gold-soft);
   text-decoration: none;
@@ -96,7 +96,7 @@
 .house-all:hover {
   border-color: rgb(214 184 120 / 0.65);
   background: rgb(214 184 120 / 0.15);
-  color: #fff8e8;
+  color: var(--legacy-gold);
 }
 
 .house-all:focus-visible,
@@ -248,7 +248,7 @@
   bottom: 0.7rem;
   font-family: var(--font-brand);
   font-size: clamp(2.2rem, 4vw, 3.2rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.04em;
   color: rgb(247 245 239 / 0.9);
@@ -260,12 +260,12 @@
   top: 0.9rem;
   right: 0.9rem;
   padding: 0.3rem 0.7rem;
-  border: 0.5px solid rgb(240 217 160 / 0.6);
+  border: 0.5px solid rgb(214 184 120 / 0.6);
   border-radius: 999px;
   background: rgb(8 9 12 / 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  font-size: 0.6rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -305,7 +305,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -314,7 +314,7 @@
 
 .house-folio-num {
   font-family: var(--font-brand);
-  font-size: 1rem;
+  font-size: var(--legacy-text-md);
   letter-spacing: 0.06em;
   color: var(--color-legacy-gold-soft);
 }
@@ -324,7 +324,7 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   margin-top: 1.1rem;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--color-legacy-muted);
@@ -334,7 +334,7 @@
   margin-top: 0.55rem;
   font-family: var(--font-brand);
   font-size: clamp(1.6rem, 2.6vw, 2.25rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.12;
   color: var(--color-legacy-white);
   text-wrap: balance;
@@ -356,7 +356,7 @@
 
 .house-main-dek {
   margin-top: 0.75rem;
-  font-size: 0.95rem;
+  font-size: var(--legacy-text-md);
   line-height: 1.55;
   color: rgb(247 245 239 / 0.82);
 }
@@ -365,7 +365,7 @@
   display: -webkit-box;
   overflow: hidden;
   margin-top: 0.85rem;
-  font-size: 0.86rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.65;
   color: var(--color-legacy-muted);
   line-clamp: 4;
@@ -389,7 +389,7 @@
 }
 
 .house-main-facts dt {
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -402,7 +402,7 @@
   align-items: center;
   gap: 0.4rem;
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.5;
   color: rgb(247 245 239 / 0.88);
 }
@@ -428,7 +428,7 @@
   border: 0.5px solid rgb(255 255 255 / 0.14);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.04);
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   color: var(--color-legacy-muted);
 }
 
@@ -439,10 +439,10 @@
   gap: 0.55rem;
   height: 2.75rem;
   padding: 0 1.35rem;
-  border: 0.5px solid rgb(240 217 160 / 0.6);
+  border: 0.5px solid rgb(214 184 120 / 0.6);
   border-radius: 999px;
   background: linear-gradient(160deg, #e7cf98, #c9a860 60%, #b8964e);
-  font-size: 0.85rem;
+  font-size: var(--legacy-text-sm);
   font-weight: 700;
   color: #14120c;
   text-decoration: none;
@@ -473,7 +473,7 @@
 
 .house-companions-label {
   margin-bottom: 0.85rem;
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -545,22 +545,22 @@
   display: inline-flex;
   align-items: baseline;
   gap: 0.55rem;
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--color-legacy-muted);
 }
 
 .house-companion-meta .house-folio-num {
-  font-size: 0.85rem;
+  font-size: var(--legacy-text-sm);
 }
 
 .house-companion-title {
   display: -webkit-box;
   overflow: hidden;
   font-family: var(--font-brand);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: var(--legacy-text-md);
+  font-weight: 700;
   line-height: 1.2;
   color: var(--color-legacy-white);
   line-clamp: 2;
@@ -570,7 +570,7 @@
 
 .house-companion-dek {
   overflow: hidden;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   color: var(--color-legacy-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -599,7 +599,7 @@
   border: 1px dashed rgb(214 184 120 / 0.25);
   border-radius: 1.25rem;
   color: var(--color-legacy-muted);
-  font-size: 0.9rem;
+  font-size: var(--legacy-text-sm);
 }
 
 @media (max-width: 520px) {

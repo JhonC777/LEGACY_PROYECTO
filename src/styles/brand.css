@@ -43,7 +43,7 @@
 
 .legacy-name {
   font-family: var(--font-brand);
-  font-weight: 600;
+  font-weight: 700;
   font-style: normal;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -52,7 +52,7 @@
 .legacy-wordmark {
   margin: 0;
   font-family: var(--font-brand);
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 0.86;
   color: #f4efe4;

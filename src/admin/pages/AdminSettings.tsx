@@ -196,7 +196,7 @@ export function AdminSettings() {
 
             <div className="grid gap-5 md:grid-cols-[160px_minmax(0,1fr)]">
               <div>
-                <p className="mb-2 text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">Logo</p>
+                <p className="mb-2 text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">Logo</p>
                 <label className={cn('admin-dropzone aspect-square', form.logoUrl && 'has-media')}>
                   <input type="file" accept="image/*" className="sr-only" onChange={onLogo} />
                   {form.logoUrl ? (
@@ -222,7 +222,7 @@ export function AdminSettings() {
 
               <div className="space-y-4">
                 <label className="block">
-                  <span className="mb-2 block text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                  <span className="mb-2 block text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                     Nombre <span className="text-legacy-gold">*</span>
                   </span>
                   <input
@@ -234,7 +234,7 @@ export function AdminSettings() {
                 </label>
                 <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
                   <label className="block">
-                    <span className="mb-2 block text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                    <span className="mb-2 block text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                       Nombre corto <span className="text-legacy-gold">*</span>
                     </span>
                     <input
@@ -246,7 +246,7 @@ export function AdminSettings() {
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-2 block text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                    <span className="mb-2 block text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                       Color de acento
                     </span>
                     <span className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export function AdminSettings() {
                   </label>
                 </div>
                 <label className="block">
-                  <span className="mb-2 flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                  <span className="mb-2 flex items-center justify-between text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                     Descripción
                     <span className="font-medium normal-case tracking-normal">{form.description.length}/240</span>
                   </span>
@@ -356,7 +356,7 @@ export function AdminSettings() {
 
         <aside className="space-y-4 xl:sticky xl:top-0 xl:self-start">
           <section className="admin-card p-5" aria-label="Vista previa de identidad">
-            <p className="mb-3 text-[11px] font-bold tracking-[0.14em] text-legacy-gold uppercase">
+            <p className="mb-3 text-xs font-bold tracking-[0.14em] text-legacy-gold uppercase">
               Vista previa
             </p>
             <div className="admin-identity-preview" style={{ '--preview-accent': form.accent } as CSSProperties}>
@@ -374,14 +374,14 @@ export function AdminSettings() {
                   <p className="truncate font-brand text-lg font-semibold text-legacy-white">
                     {form.name || 'Nombre de la institución'}
                   </p>
-                  <p className="text-[11px] text-legacy-muted">Espacio institucional</p>
+                  <p className="text-xs text-legacy-muted">Espacio institucional</p>
                 </div>
               </div>
               <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-legacy-muted">
                 {form.description || 'Descripción de la institución.'}
               </p>
             </div>
-            <p className="mt-4 text-[11px] leading-relaxed text-legacy-muted">
+            <p className="mt-4 text-xs leading-relaxed text-legacy-muted">
               El nombre y la descripción identifican esta institución en el panel.
             </p>
           </section>

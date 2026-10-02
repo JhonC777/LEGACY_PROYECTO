@@ -114,7 +114,7 @@ body:has(.admin-shell) {
   padding: 0.65rem 0.8rem;
   border: 1px solid transparent;
   border-radius: 0.8rem;
-  font-size: 0.85rem;
+  font-size: var(--legacy-text-sm);
   font-weight: 500;
   color: var(--color-legacy-muted);
   text-decoration: none;
@@ -147,7 +147,7 @@ body:has(.admin-shell) {
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
   background: rgb(214 184 120 / 0.16);
-  font-size: 0.65rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -168,7 +168,7 @@ body:has(.admin-shell) {
   padding: 0.65rem 0.75rem;
   border: 1px dashed rgb(214 184 120 / 0.25);
   border-radius: 0.8rem;
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.5;
   color: var(--color-legacy-muted);
 }
@@ -255,7 +255,7 @@ body:has(.admin-shell) {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -297,7 +297,7 @@ body:has(.admin-shell) {
   justify-content: center;
   border-radius: 999px;
   background: linear-gradient(150deg, rgb(214 184 120 / 0.45), rgb(118 98 201 / 0.45));
-  font-size: 0.75rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   color: var(--color-legacy-white);
 }
@@ -387,7 +387,7 @@ body:has(.admin-shell) {
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.05);
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-legacy-white);
@@ -423,7 +423,7 @@ body:has(.admin-shell) {
   flex-shrink: 0;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: var(--color-legacy-gold);
   transition: gap 0.25s ease;
@@ -459,7 +459,7 @@ body:has(.admin-shell) {
   padding: 0.7rem 0.85rem;
   border: 1px solid rgb(255 255 255 / 0.08);
   border-radius: 0.85rem;
-  font-size: 0.85rem;
+  font-size: var(--legacy-text-sm);
   color: var(--color-legacy-white);
   text-decoration: none;
   transition:
@@ -483,7 +483,7 @@ body:has(.admin-shell) {
   padding: 0.2rem 0.6rem 0.2rem 0.5rem;
   border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 999px;
-  font-size: 0.66rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -522,7 +522,7 @@ body:has(.admin-shell) {
   border: 1px solid rgb(252 211 77 / 0.3);
   border-radius: 999px;
   background: rgb(252 211 77 / 0.08);
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: #fcd34d;
 }
@@ -532,7 +532,7 @@ body:has(.admin-shell) {
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.04);
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   color: var(--color-legacy-muted);
 }
 
@@ -566,7 +566,7 @@ body:has(.admin-shell) {
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  font-size: 0.78rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 500;
   color: var(--color-legacy-muted);
   cursor: pointer;
@@ -590,7 +590,7 @@ body:has(.admin-shell) {
   padding: 0 0.4rem;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.07);
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -637,7 +637,7 @@ body:has(.admin-shell) {
   border-bottom: 1px solid rgb(255 255 255 / 0.08);
   border-radius: 1.1rem 1.1rem 0 0;
   background: rgb(255 255 255 / 0.03);
-  font-size: 0.64rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -686,7 +686,7 @@ body:has(.admin-shell) {
   border: 0;
   border-radius: 0.6rem;
   background: transparent;
-  font-size: 0.82rem;
+  font-size: var(--legacy-text-sm);
   text-align: left;
   color: var(--color-legacy-white);
   text-decoration: none;
@@ -841,7 +841,7 @@ body:has(.admin-shell) {
   padding: 0.35rem 0.6rem;
   border-radius: 0.6rem;
   background: rgb(8 9 12 / 0.75);
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: var(--color-legacy-white);
   opacity: 0;
@@ -865,7 +865,7 @@ body:has(.admin-shell) {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #c4a35a, #f0d9a0);
+  background: linear-gradient(90deg, var(--legacy-gold), var(--legacy-gold));
   transition: width 0.2s ease;
 }
 
@@ -903,7 +903,7 @@ body:has(.admin-shell) {
   justify-content: center;
   gap: 0.35rem;
   background: rgb(8 9 12 / 0.7);
-  font-size: 0.75rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: var(--color-legacy-gold-soft);
 }
@@ -1057,7 +1057,7 @@ body:has(.admin-shell) {
   border: 1px solid rgb(214 184 120 / 0.22);
   border-radius: 1rem;
   background: rgb(214 184 120 / 0.06);
-  font-size: 0.8rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.55;
   color: var(--color-legacy-muted);
 }
@@ -1084,7 +1084,7 @@ body:has(.admin-shell) {
   background: rgb(255 255 255 / 0.04);
   color: var(--color-legacy-white);
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: var(--legacy-text-xs);
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
@@ -1112,7 +1112,7 @@ body:has(.admin-shell) {
 }
 
 .admin-complete {
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
   color: rgb(134 239 172);
 }
@@ -1180,7 +1180,7 @@ body:has(.admin-shell) {
 
 .admin-auth-kicker {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1191,7 +1191,7 @@ body:has(.admin-shell) {
   margin: 0.7rem 0 0;
   font-family: var(--font-brand, inherit);
   font-size: 2.35rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 0.95;
   color: var(--color-legacy-white);
 }
@@ -1199,7 +1199,7 @@ body:has(.admin-shell) {
 .admin-auth-slogan {
   max-width: 16rem;
   margin: 1rem 0 0;
-  font-size: 0.92rem;
+  font-size: var(--legacy-text-sm);
   line-height: 1.55;
   color: var(--color-legacy-muted);
 }
@@ -1254,7 +1254,7 @@ body:has(.admin-shell) {
 .admin-auth-field .glass-input {
   border-radius: 1rem;
   padding: 0.9rem 2.8rem 0.9rem 2.7rem;
-  font-size: 0.95rem;
+  font-size: var(--legacy-text-md);
 }
 
 .admin-auth-reveal {
@@ -1294,7 +1294,7 @@ body:has(.admin-shell) {
 
 .admin-auth-switch-title {
   display: block;
-  font-size: 0.82rem;
+  font-size: var(--legacy-text-sm);
   font-weight: 600;
   color: var(--color-legacy-white);
 }
@@ -1302,7 +1302,7 @@ body:has(.admin-shell) {
 .admin-auth-switch-hint {
   display: block;
   margin-top: 0.12rem;
-  font-size: 0.7rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.35;
   color: var(--color-legacy-muted);
 }
@@ -1370,7 +1370,7 @@ body:has(.admin-shell) {
   border-radius: 1rem;
   background: rgb(214 184 120 / 0.07);
   padding: 0.7rem 0.8rem;
-  font-size: 0.72rem;
+  font-size: var(--legacy-text-xs);
   line-height: 1.45;
   color: var(--color-legacy-gold-soft);
 }

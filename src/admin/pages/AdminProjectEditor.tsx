@@ -603,7 +603,7 @@ export function AdminProjectEditor() {
           <Section id="medios" icon={Images} title="Portada y galería" description="Imágenes que representan el proyecto. Hasta 15 MB por archivo.">
             <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
               <div>
-                <p className="mb-2 text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                <p className="mb-2 text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                   Portada <span className="text-legacy-gold">*</span>
                 </p>
                 <label className={cn('admin-dropzone aspect-[4/3]', form.coverImage && 'has-media')}>
@@ -646,7 +646,7 @@ export function AdminProjectEditor() {
 
               <div>
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                  <p className="text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                     Galería <span className="font-medium normal-case tracking-normal">· {form.gallery.length} imágenes</span>
                   </p>
                   <label className="btn btn-secondary btn-sm cursor-pointer">
@@ -681,7 +681,7 @@ export function AdminProjectEditor() {
                     {uploadingAssets.map((asset) => (
                       <li key={asset.id} className="relative flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg border border-legacy-gold/25 bg-legacy-gold/[0.05] p-2 text-center">
                         <Loader2 className="h-4 w-4 animate-spin text-legacy-gold" aria-hidden />
-                        <span className="text-[10px] text-legacy-muted">{asset.progress}%</span>
+                        <span className="text-xs text-legacy-muted">{asset.progress}%</span>
                         <span className="admin-progress absolute inset-x-2 bottom-2">
                           <span style={{ width: `${asset.progress}%` }} />
                         </span>
@@ -800,7 +800,7 @@ export function AdminProjectEditor() {
             )}
             {issues.warnings.length > 0 ? (
               <>
-                <p className="mt-4 text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+                <p className="mt-4 text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
                   Recomendado
                 </p>
                 <ul className="mt-1.5 space-y-1 text-xs text-legacy-muted">
@@ -903,10 +903,10 @@ function Field({
   return (
     <label className="block">
       <span className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold tracking-[0.14em] text-legacy-muted uppercase">
+        <span className="text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
           {label} {required ? <span className="text-legacy-gold">*</span> : null}
         </span>
-        {hint ? <span className="text-[11px] text-legacy-muted/80">{hint}</span> : null}
+        {hint ? <span className="text-xs text-legacy-muted/80">{hint}</span> : null}
       </span>
       {children}
     </label>
