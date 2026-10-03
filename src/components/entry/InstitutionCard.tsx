@@ -1,124 +1,173 @@
 import { ArrowRight } from 'lucide-react'
+import { riseStyle } from '@/lib/rise'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import type { Institution } from '@/data/mockInstitutions'
-
-export type InstitutionFacts = {
-  projects: number
-  participants: number
-  categories: number
-  years: string | null
-}
+import { cn } from '@/lib/cn'
 
 type InstitutionCardProps = {
   institution: Institution
   index: number
   onSelect: (institution: Institution) => void
+  compact?: boolean
+  awakened?: boolean
   projectCount?: number
-  facts?: InstitutionFacts
 }
 
-function initials(name: string) {
-  return name
+function InstitutionMark({
+  name,
+  logoUrl,
+  active,
+  compact,
+}: {
+  name: string
+  logoUrl?: string
+  active: boolean
+  compact?: boolean
+}) {
+  const initials = name
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0])
     .join('')
     .toUpperCase()
+
+  return (
+    <InstitutionLogo
+      name={name}
+      logoUrl={logoUrl}
+      fallback={initials}
+      decorative
+      className={cn(
+        'relative flex shrink-0 items-center justify-center rounded-full border',
+        compact ? 'h-11 w-11' : 'h-12 w-12',
+        compact ? 'text-sm' : 'text-base',
+        active
+          ? 'border-legacy-gold/35 bg-legacy-black/55 text-legacy-gold-soft shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]'
+          : 'border-legacy-border/50 bg-legacy-black/30 text-legacy-muted',
+      )}
+      imageClassName="rounded-full bg-white/95 p-1.5"
+    />
+  )
 }
 
-/**
- * Ficha de casa del archivo. Nombres y descripciones completos (sin recortes);
- * en móvil el contenido se apila para que nada quede apretado.
- */
-export function InstitutionCard({ institution, index, onSelect, projectCount, facts }: InstitutionCardProps) {
-  const number = String(index + 1).padStart(2, '0')
+/** Tarjeta tipo ficha de archivo */
+export function InstitutionCard({
+  institution,
+  index,
+  onSelect,
+  compact = false,
+  awakened = true,
+  projectCount,
+}: InstitutionCardProps) {
+  const disabled = !institution.isActive
 
-  if (!institution.isActive) {
-    return (
-      <div className="home-house is-soon home-reveal" aria-label={`${institution.name}, próximamente`}>
-        <div className="home-house-top">
-          <span className="home-house-num" aria-hidden>
-            {number}
-          </span>
-          <span className="home-badge">Próximamente</span>
-        </div>
-        <div className="home-house-id">
-          <span className="home-house-seal is-empty" aria-hidden />
-          <div className="min-w-0">
-            <h3 className="home-house-name is-soon">{institution.name}</h3>
-            <p className="home-house-sub">{institution.description}</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const count = facts?.projects ?? projectCount
   return (
     <button
       type="button"
-      className="home-house is-open home-reveal"
-      aria-haspopup="dialog"
-      onClick={() => onSelect(institution)}
+      disabled={disabled}
+      aria-disabled={disabled}
+      aria-haspopup={disabled ? undefined : 'dialog'}
+      title={disabled ? `${institution.name} — próximamente` : undefined}
+      onClick={() => {
+        if (disabled) return
+        onSelect(institution)
+      }}
+      style={riseStyle(awakened ? 0.88 + index * 0.1 : 0, 0.5, 12)}
+      className={cn(
+        'legacy-rise',
+        !awakened && 'is-dormant',
+        'archive-file-card group relative w-full overflow-hidden rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-legacy-gold',
+        compact
+          ? 'flex min-h-[8.5rem] flex-col gap-2.5 px-3.5 py-3.5'
+          : 'flex items-start gap-3.5 px-3.5 py-3.5 sm:items-center sm:px-4 sm:py-4',
+        disabled && 'is-upcoming cursor-not-allowed',
+        !disabled && institution.isPilot && 'is-pilot',
+      )}
     >
-      <span className="home-house-top">
-        <span className="home-house-num" aria-hidden>
-          {number}
-        </span>
-        <span className="home-badge is-live">
-          <span className="home-dot" aria-hidden />
-          Disponible
-        </span>
-      </span>
-      <span className="home-house-id">
-        <InstitutionLogo
+      {!disabled ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-2.5 left-0 w-[2.5px] rounded-full bg-legacy-gold/75 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        />
+      ) : null}
+
+      <div className={cn(compact ? 'flex items-start justify-between gap-2' : 'self-center')}>
+        <InstitutionMark
           name={institution.name}
           logoUrl={institution.logoUrl}
-          fallback={initials(institution.name)}
-          decorative
-          className="home-house-seal"
-          imageClassName="home-house-logo"
+          active={!disabled}
+          compact={compact}
         />
-        <span className="min-w-0">
-          <span className="home-house-name">{institution.name}</span>
-          <span className="home-house-sub">{institution.description}</span>
-        </span>
-      </span>
-      {facts && facts.projects > 0 ? (
-        <span className="home-house-facts">
-          <span>
-            <span className="home-house-fact-label">Proyectos</span>
-            <span className="home-house-fact-value">{facts.projects}</span>
+        {compact ? (
+          !disabled ? (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-legacy-gold/25 text-legacy-gold">
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full border border-legacy-border/50 px-2 py-0.5 text-xs tracking-[0.12em] text-legacy-muted uppercase">
+              Próximamente
+            </span>
+          )
+        ) : null}
+      </div>
+
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="archive-file-index" aria-hidden>
+            {String(index + 1).padStart(2, '0')}
           </span>
-          {facts.participants > 0 ? (
-            <span>
-              <span className="home-house-fact-label">Participantes</span>
-              <span className="home-house-fact-value">{facts.participants}</span>
-            </span>
-          ) : null}
-          {facts.categories > 0 ? (
-            <span>
-              <span className="home-house-fact-label">Categorías</span>
-              <span className="home-house-fact-value">{facts.categories}</span>
-            </span>
-          ) : null}
-          {facts.years ? (
-            <span>
-              <span className="home-house-fact-label">Periodo</span>
-              <span className="home-house-fact-value">{facts.years}</span>
-            </span>
-          ) : null}
+          <span
+            className={cn(
+              'font-medium tracking-tight text-legacy-white',
+              compact ? 'line-clamp-2 text-sm' : 'line-clamp-2 text-[0.95rem] leading-snug',
+            )}
+          >
+            {institution.name}
+          </span>
         </span>
-      ) : typeof count === 'number' && count > 0 ? (
-        <span className="home-house-sub">
-          {count} proyecto{count === 1 ? '' : 's'}
+        <span
+          className={cn(
+            'mt-0.5 block text-legacy-muted',
+            compact ? 'line-clamp-2 text-xs leading-snug' : 'truncate text-[0.8rem]',
+          )}
+        >
+          {institution.description}
         </span>
-      ) : null}
-      <span className="home-house-cta">
-        Entrar al archivo
-        <ArrowRight className="home-btn-icon" aria-hidden />
+        {!compact && !disabled ? (
+          <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+            {typeof projectCount === 'number' && projectCount > 0 ? (
+              <span className="text-xs tracking-[0.12em] text-legacy-muted/85 uppercase">
+                {projectCount} proyecto{projectCount === 1 ? '' : 's'}
+              </span>
+            ) : null}
+            <span className="inline-flex items-center gap-1 text-xs font-semibold tracking-[0.16em] text-legacy-gold/80 uppercase transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
+              Entrar al archivo
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </span>
+          </span>
+        ) : (
+          <span className="mt-1 block text-xs tracking-[0.14em] text-legacy-muted/75 uppercase">
+            {disabled
+              ? 'Próxima incorporación'
+              : typeof projectCount === 'number' && projectCount > 0
+                ? `${projectCount} proyecto${projectCount === 1 ? '' : 's'}`
+                : institution.location}
+          </span>
+        )}
       </span>
+
+      {!compact ? (
+        !disabled ? (
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full border border-legacy-gold/30 bg-legacy-gold/5 text-legacy-gold transition-transform group-hover:translate-x-0.5">
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          </span>
+        ) : (
+          <span className="self-center shrink-0 rounded-full border border-dashed border-legacy-border/60 px-2.5 py-1 text-xs tracking-[0.12em] text-legacy-muted uppercase">
+            Próximamente
+          </span>
+        )
+      ) : null}
     </button>
   )
 }
