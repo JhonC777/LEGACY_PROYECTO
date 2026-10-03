@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
-  ArrowUpDown,
   ChevronDown,
+  LayoutGrid,
+  List,
   Search,
   SlidersHorizontal,
   X,
@@ -10,10 +11,12 @@ import {
 import {
   Link,
   Navigate,
+  useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router-dom'
 import { ProjectCard } from '@/components/projects/ProjectCard'
+import { ProjectListRow } from '@/components/projects/ProjectListRow'
 import {
   ProjectsEmpty,
   ProjectsError,
@@ -36,11 +39,12 @@ import {
 } from '@/data/demoData'
 import { ArchiveSelect } from '@/components/ui/ArchiveSelect'
 import { cn } from '@/lib/cn'
-import { LEGACY_SLOGAN } from '@/lib/brand'
 import { useDeferredAction } from '@/lib/useDeferredAction'
+import { resourceKindsOf, type ResourceKind } from '@/lib/projectResources'
+import '@/styles/info.css'
 
 type LoadState = 'loading' | 'ready' | 'error'
-type FilterName = 'institution' | 'area' | 'category' | 'year' | 'collection'
+type FilterName = 'institution' | 'area' | 'category' | 'year' | 'collection' | 'resource'
 
 type CatalogFilters = {
   query: string
@@ -49,6 +53,22 @@ type CatalogFilters = {
   category: string
   year: string
   collection: string
+  resource: string
+}
+
+/** Filtro «Recurso» (?resource=): agrupa los tipos de archivo de cada ficha. */
+const RESOURCE_FILTERS: Array<{ value: string; label: string; kinds: ResourceKind[] }> = [
+  { value: 'pdf', label: 'PDF', kinds: ['pdf'] },
+  { value: 'video', label: 'Video', kinds: ['video'] },
+  { value: 'documento', label: 'Documento o presentación', kinds: ['document', 'presentation'] },
+  { value: 'imagenes', label: 'Imágenes', kinds: ['image'] },
+]
+
+function hasResource(project: DemoProject, value: string) {
+  const filter = RESOURCE_FILTERS.find((item) => item.value === value)
+  if (!filter) return true
+  const kinds = resourceKindsOf(project)
+  return filter.kinds.some((kind) => kinds.has(kind))
 }
 
 function projectMatches(
@@ -81,7 +101,8 @@ function projectMatches(
       project.collection === filters.collection) &&
     (omitted === 'institution' ||
       !filters.institution ||
-      project.institutionId === filters.institution)
+      project.institutionId === filters.institution) &&
+    (omitted === 'resource' || !filters.resource || hasResource(project, filters.resource))
   )
 }
 
@@ -103,6 +124,11 @@ export function ProjectsPage() {
   const collection = params.get('collection') ?? ''
   const institutionFilter = institution?.id ?? params.get('institution') ?? ''
   const sort = params.get('sort') ?? 'recent'
+  const resource = RESOURCE_FILTERS.some((item) => item.value === params.get('resource'))
+    ? (params.get('resource') ?? '')
+    : ''
+  const view = params.get('view') === 'list' ? 'list' : 'grid'
+  const navigate = useNavigate()
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoadState('ready'), 280)
@@ -137,8 +163,9 @@ export function ProjectsPage() {
       category,
       year,
       collection,
+      resource,
     }),
-    [area, category, collection, institutionFilter, query, year],
+    [area, category, collection, institutionFilter, query, resource, year],
   )
 
   const available = useMemo(() => {
@@ -183,6 +210,13 @@ export function ProjectsPage() {
         'collection',
         (project, value) => project.collection === value,
       ),
+      resources: RESOURCE_FILTERS.map((item) => ({
+        value: item.value,
+        label: item.label,
+        count: source.filter(
+          (project) => projectMatches(project, filters, 'resource') && hasResource(project, item.value),
+        ).length,
+      })),
     }
   }, [filters, source])
 
@@ -223,13 +257,26 @@ export function ProjectsPage() {
   const clearFilters = () => {
     const next = new URLSearchParams()
     if (sort !== 'recent') next.set('sort', sort)
+    if (view !== 'grid') next.set('view', view)
     setParams(next)
+  }
+
+  /** La institución define la casa: elegir otra lleva a su catálogo con los mismos filtros. */
+  const changeInstitution = (value: string) => {
+    const target = DEMO_INSTITUTIONS.find((item) => item.id === value)
+    if (!target || !target.isActive) return
+    if (institution && target.id === institution.id) return
+    const next = new URLSearchParams(params)
+    next.delete('institution')
+    const search = next.toString()
+    navigate(`/instituciones/${target.slug}/proyectos${search ? `?${search}` : ''}`)
   }
 
   const exploreArea = (value: string) => {
     const next = new URLSearchParams()
     next.set('area', value)
     if (sort !== 'recent') next.set('sort', sort)
+    if (view !== 'grid') next.set('view', view)
     setParams(next)
   }
   const hasFilters = Boolean(
@@ -238,6 +285,7 @@ export function ProjectsPage() {
       category ||
       year ||
       collection ||
+      resource ||
       (!institution && institutionFilter),
   )
   const activeFilterCount = [
@@ -246,6 +294,7 @@ export function ProjectsPage() {
     category,
     year,
     collection,
+    resource,
     !institution ? institutionFilter : '',
   ].filter(Boolean).length
 
@@ -271,6 +320,13 @@ export function ProjectsPage() {
     collection
       ? { key: 'collection', label: `Colección: ${collection}`, value: collection }
       : null,
+    resource
+      ? {
+          key: 'resource',
+          label: `Recurso: ${RESOURCE_FILTERS.find((item) => item.value === resource)?.label ?? resource}`,
+          value: resource,
+        }
+      : null,
   ].filter(
     (item): item is { key: string; label: string; value: string } => Boolean(item),
   )
@@ -291,21 +347,52 @@ export function ProjectsPage() {
     return <Navigate to="/" replace />
   }
 
-  const filterPanel = (
+  const institutionSelectOptions = DEMO_INSTITUTIONS.map((item) => {
+    const resolved = resolveInstitution(item)
+    return {
+      value: item.id,
+      label: resolved.shortName || resolved.name,
+      count: institutionOptions.find((option) => option.value === item.id)?.count ?? 0,
+      disabled: !item.isActive,
+    }
+  })
+
+  const filterControls = (
     <>
-      {!institution ? (
+      <FilterSelect
+        label="Año"
+        value={year}
+        onChange={(value) => updateParam('year', value)}
+        options={available.years}
+      />
+      <FilterSelect
+        label="Área"
+        value={area}
+        onChange={(value) => updateParam('area', value)}
+        options={available.areas}
+      />
+      {institution ? (
+        <FilterSelect
+          label="Institución"
+          value={institution.id}
+          onChange={changeInstitution}
+          options={institutionSelectOptions}
+          allLabel={null}
+        />
+      ) : (
         <FilterSelect
           label="Institución"
           value={institutionFilter}
           onChange={(value) => updateParam('institution', value)}
           options={institutionOptions}
         />
-      ) : null}
+      )}
       <FilterSelect
-        label="Área"
-        value={area}
-        onChange={(value) => updateParam('area', value)}
-        options={available.areas}
+        label="Recurso"
+        value={resource}
+        onChange={(value) => updateParam('resource', value)}
+        options={available.resources}
+        allLabel="Cualquiera"
       />
       <FilterSelect
         label="Categoría"
@@ -314,227 +401,192 @@ export function ProjectsPage() {
         options={available.categories}
       />
       <FilterSelect
-        label="Año"
-        value={year}
-        onChange={(value) => updateParam('year', value)}
-        options={available.years}
-      />
-      <FilterSelect
         label="Colección"
         value={collection}
         onChange={(value) => updateParam('collection', value)}
         options={available.collections}
       />
-      {hasFilters ? (
-        <button
-          type="button"
-          onClick={clearFilters}
-          className="btn btn-ghost btn-sm mt-1"
-        >
-          <X className="h-4 w-4" aria-hidden />
-          Limpiar filtros
-        </button>
-      ) : null}
     </>
+  )
+
+  const sortSelect = (
+    <ArchiveSelect
+      className="catalog-sort"
+      aria-label="Ordenar proyectos"
+      value={sort}
+      onChange={(value) => updateParam('sort', value)}
+      options={[
+        { value: 'recent', label: 'Más recientes' },
+        { value: 'oldest', label: 'Más antiguos' },
+        { value: 'title', label: 'Título A–Z' },
+        { value: 'featured', label: 'Destacados primero' },
+      ]}
+    />
+  )
+
+  const viewToggle = (
+    <div className="catalog-view" role="group" aria-label="Vista de resultados">
+      <button
+        type="button"
+        aria-pressed={view === 'grid'}
+        aria-label="Ver en cuadrícula"
+        title="Cuadrícula"
+        onClick={() => updateParam('view', '')}
+      >
+        <LayoutGrid className="h-4 w-4" aria-hidden />
+      </button>
+      <button
+        type="button"
+        aria-pressed={view === 'list'}
+        aria-label="Ver en lista"
+        title="Lista"
+        onClick={() => updateParam('view', 'list')}
+      >
+        <List className="h-4 w-4" aria-hidden />
+      </button>
+    </div>
   )
 
   return (
     <ExploreShell className={institution ? 'is-institution' : undefined}>
       <PublicHeader institution={institution} />
 
-      <main
-        id="contenido"
-        className="mx-auto grid max-w-[1400px] grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)]"
-      >
-        <aside className="hidden border-r border-white/8 px-5 py-7 lg:sticky lg:top-[var(--legacy-header-h,68px)] lg:block lg:self-start">
-          <div className="mb-6 flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4 text-legacy-gold" aria-hidden />
-            <h2 className="text-xs font-bold tracking-[0.14em] text-legacy-gold uppercase">
-              Filtrar archivo
-            </h2>
+      <main id="contenido" className="catalog-page mx-auto max-w-[1240px] px-4 py-6 sm:px-6 lg:px-8 lg:py-7">
+        <Link
+          to={institution ? `/instituciones/${institution.slug}` : '/explorar'}
+          className="btn btn-ghost btn-sm catalog-back"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {institution ? `Volver a ${institution.name}` : 'Volver a explorar'}
+        </Link>
+
+        <div className="catalog-top">
+          <div className="min-w-0">
+            <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
+              Archivo académico
+            </p>
+            <h1 className="catalog-title font-brand font-semibold text-legacy-white">
+              {institution ? `Proyectos de ${institution.shortName}` : 'Catálogo de proyectos'}
+            </h1>
+            <p className="mt-1 text-sm leading-relaxed text-legacy-muted">
+              {institution ? institution.name : 'Busca, filtra y abre fichas académicas completas.'}
+            </p>
           </div>
-          {filterPanel}
-          <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-relaxed text-legacy-muted">
-            <span className="block font-medium text-legacy-gold/90">
-              {LEGACY_SLOGAN}
-            </span>
-          </div>
-        </aside>
-
-        <div className="min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-7">
-          <div className="mx-auto max-w-[1120px]">
-            <Link
-              to={institution ? `/instituciones/${institution.slug}` : '/explorar'}
-              className="btn btn-ghost btn-sm mb-5"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              {institution ? `Volver a ${institution.name}` : 'Volver a explorar'}
-            </Link>
-
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0">
-                <p className="text-xs font-bold tracking-[0.16em] text-legacy-gold uppercase">
-                  Archivo académico
-                </p>
-                <h1 className="mt-1 font-brand text-[clamp(1.85rem,4vw,2.5rem)] font-semibold text-legacy-white">
-                  {institution
-                    ? `Proyectos de ${institution.name}`
-                    : 'Catálogo de proyectos'}
-                </h1>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-legacy-muted">
-                  Busca, filtra y abre fichas académicas completas.
-                </p>
-              </div>
-              <label className="relative block w-full lg:max-w-sm">
-                <span className="sr-only">Buscar en el catálogo</span>
-                <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-legacy-muted" />
-                <input
-                  ref={searchRef}
-                  type="search"
-                  value={query}
-                  onChange={(event) => updateParam('q', event.target.value, true)}
-                  placeholder="Buscar por título, autor, área o tema..."
-                  className="glass-input liquid-field w-full rounded-full py-3 pr-16 pl-10 text-sm"
-                  autoComplete="off"
-                />
-                {query ? (
-                  <button
-                    type="button"
-                    onClick={() => updateParam('q', '', true)}
-                    className="absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted transition-colors hover:bg-white/[0.06] hover:text-legacy-white"
-                    aria-label="Limpiar búsqueda"
-                  >
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                ) : (
-                  <kbd className="header-kbd pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
-                    Ctrl K
-                  </kbd>
-                )}
-              </label>
-            </div>
-
-            {/* Filtros colapsables en móvil / tablet */}
-            <div className="mt-5 lg:hidden">
+          <label className="catalog-search">
+            <span className="sr-only">Buscar en el catálogo</span>
+            <Search className="catalog-search-icon h-4 w-4" aria-hidden />
+            <input
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={(event) => updateParam('q', event.target.value, true)}
+              placeholder="Buscar por título, autor, área o tema…"
+              className="glass-input liquid-field"
+              autoComplete="off"
+            />
+            {query ? (
               <button
                 type="button"
-                className="btn btn-secondary btn-sm w-full justify-between"
-                aria-expanded={filtersOpen}
-                aria-controls="mobile-catalog-filters"
-                onClick={() => setFiltersOpen((open) => !open)}
+                onClick={() => updateParam('q', '', true)}
+                className="catalog-search-clear"
+                aria-label="Limpiar búsqueda"
               >
-                <span className="inline-flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden />
-                  Filtros
-                  {hasFilters ? (
-                    <span className="rounded-full bg-legacy-gold/15 px-2 py-0.5 text-xs font-bold text-legacy-gold">
-                      {activeFilterCount}
-                    </span>
-                  ) : null}
-                </span>
-                <ChevronDown
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    filtersOpen && 'rotate-180',
-                  )}
-                  aria-hidden
-                />
+                <X className="h-4 w-4" aria-hidden />
               </button>
-              {filtersOpen ? (
-                <div
-                  id="mobile-catalog-filters"
-                  className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+            ) : (
+              <kbd className="header-kbd catalog-search-kbd">Ctrl K</kbd>
+            )}
+          </label>
+        </div>
+
+        <section className="catalog-filterbar" aria-label="Filtros del archivo">
+          <div className="catalog-mobile-row">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm catalog-filters-toggle"
+              aria-expanded={filtersOpen}
+              aria-controls="catalog-filters"
+              onClick={() => setFiltersOpen((open) => !open)}
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden />
+              Filtros
+              {hasFilters ? <span className="catalog-filter-badge">{activeFilterCount}</span> : null}
+              <ChevronDown className={cn('h-4 w-4 transition-transform', filtersOpen && 'rotate-180')} aria-hidden />
+            </button>
+            {sortSelect}
+            {viewToggle}
+          </div>
+          <div id="catalog-filters" className={cn('catalog-filters', filtersOpen && 'is-open')}>
+            {filterControls}
+          </div>
+        </section>
+
+        <div className="catalog-status">
+          {activeFilters.length > 0 ? (
+            <div className="catalog-chips">
+              <span className="catalog-chips-label">Filtros activos</span>
+              {activeFilters.map((filter) => (
+                <button
+                  key={filter.key}
+                  type="button"
+                  className="catalog-chip"
+                  onClick={() => updateParam(filter.key, '')}
+                  aria-label={`Quitar ${filter.label}`}
                 >
-                  {filterPanel}
-                </div>
-              ) : null}
+                  {filter.label}
+                  <span className="catalog-chip-x" aria-hidden>
+                    <X className="h-3.5 w-3.5" />
+                  </span>
+                </button>
+              ))}
+              <button type="button" onClick={clearFilters} className="catalog-clear">
+                Limpiar todo
+              </button>
             </div>
-
-            {activeFilters.length > 0 ? (
-              <div className="mt-5 rounded-2xl border border-legacy-gold/15 bg-legacy-gold/[0.035] p-3.5">
-                <div className="mb-2.5 flex items-center justify-between gap-3">
-                  <p className="text-xs font-bold tracking-[0.12em] text-legacy-muted uppercase">
-                    Selección activa · {activeFilterCount}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft"
-                  >
-                    Limpiar todo
-                  </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {activeFilters.map((filter) => (
-                    <button
-                      key={filter.key}
-                      type="button"
-                      className="chip-liquid is-active"
-                      onClick={() => updateParam(filter.key, '')}
-                      aria-label={`Quitar ${filter.label}`}
-                    >
-                      {filter.label}
-                      <X className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3.5 py-3">
-              <p className="text-sm text-legacy-muted" aria-live="polite">
-                <strong className="text-legacy-white">{projects.length}</strong>{' '}
-                {projects.length === 1 ? 'proyecto visible' : 'proyectos visibles'}
-                {hasFilters ? (
-                  <span className="text-legacy-muted/80"> de {source.length}</span>
-                ) : null}
-              </p>
-              <div className="flex items-center gap-2 text-sm text-legacy-muted">
-                <ArrowUpDown className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-                <span className="hidden sm:inline">Clasificar por</span>
-                <span className="sm:hidden">Orden</span>
-                <ArchiveSelect
-                  className="w-auto min-w-[10.5rem]"
-                  aria-label="Clasificar proyectos"
-                  value={sort}
-                  onChange={(value) => updateParam('sort', value)}
-                  options={[
-                    { value: 'recent', label: 'Más recientes' },
-                    { value: 'oldest', label: 'Más antiguos' },
-                    { value: 'title', label: 'Título A–Z' },
-                    { value: 'featured', label: 'Destacados primero' },
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 pb-12">
-              {visibleState === 'loading' ? <ProjectsLoading /> : null}
-              {visibleState === 'error' ? <ProjectsError onRetry={retry} /> : null}
-              {visibleState === 'empty' ? <ProjectsEmpty /> : null}
-              {visibleState === 'ready' && projects.length === 0 ? (
-                <ProjectsNoResults
-                  onClear={clearFilters}
-                  suggestions={available.areas
-                    .filter((option) => option.count > 0 && option.value !== area)
-                    .slice(0, 3)
-                    .map((option) => option.label)}
-                  onSuggestion={exploreArea}
-                />
-              ) : null}
-              {visibleState === 'ready' && projects.length > 0 ? (
-                <div className="knowledge-catalog">
-                  {projects.map((project: DemoProject, index: number) => (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      folio={index + 1}
-                    />
-                  ))}
-                </div>
-              ) : null}
+          ) : (
+            <p className="catalog-chips-label">Sin filtros: todo el archivo</p>
+          )}
+          <div className="catalog-result-tools">
+            <p className="catalog-count" aria-live="polite">
+              <strong>{projects.length}</strong>{' '}
+              {projects.length === 1 ? 'proyecto' : 'proyectos'}
+              {hasFilters ? <span> de {source.length}</span> : null}
+            </p>
+            <div className="catalog-tools">
+              {sortSelect}
+              {viewToggle}
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 pb-12">
+          {visibleState === 'loading' ? <ProjectsLoading /> : null}
+          {visibleState === 'error' ? <ProjectsError onRetry={retry} /> : null}
+          {visibleState === 'empty' ? <ProjectsEmpty /> : null}
+          {visibleState === 'ready' && projects.length === 0 ? (
+            <ProjectsNoResults
+              onClear={clearFilters}
+              suggestions={available.areas
+                .filter((option) => option.count > 0 && option.value !== area)
+                .slice(0, 3)
+                .map((option) => option.label)}
+              onSuggestion={exploreArea}
+            />
+          ) : null}
+          {visibleState === 'ready' && projects.length > 0 && view === 'grid' ? (
+            <div className="knowledge-catalog">
+              {projects.map((project: DemoProject, index: number) => (
+                <ProjectCard key={project.id} project={project} folio={index + 1} />
+              ))}
+            </div>
+          ) : null}
+          {visibleState === 'ready' && projects.length > 0 && view === 'list' ? (
+            <ul className="catalog-list" aria-label="Proyectos">
+              {projects.map((project: DemoProject) => (
+                <ProjectListRow key={project.id} project={project} />
+              ))}
+            </ul>
+          ) : null}
         </div>
       </main>
       <ExploreFooter />
@@ -547,30 +599,31 @@ function FilterSelect({
   value,
   onChange,
   options,
+  allLabel = 'Todos',
 }: {
   label: string
   value: string
   onChange: (value: string) => void
-  options: Array<{ value: string; label: string; count: number }>
+  options: Array<{ value: string; label: string; count: number; disabled?: boolean }>
+  /** null: sin opción «Todos» (la institución siempre tiene una casa elegida). */
+  allLabel?: string | null
 }) {
   return (
-    <div className="mb-4">
-      <span className="mb-2 block text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
-        {label}
-      </span>
+    <div className={cn('catalog-field', value && 'is-set')}>
+      <span className="catalog-field-label">{label}</span>
       <ArchiveSelect
         className="w-full"
         aria-label={label}
         value={value}
         onChange={onChange}
-        placeholder="Todos"
+        placeholder={allLabel ?? 'Todos'}
         options={[
-          { value: '', label: 'Todos' },
+          ...(allLabel === null ? [] : [{ value: '', label: allLabel }]),
           ...options.map((option) => ({
             value: option.value,
             label: option.label,
             hint: String(option.count),
-            disabled: option.count === 0 && option.value !== value,
+            disabled: option.disabled || (option.count === 0 && option.value !== value),
           })),
         ]}
       />

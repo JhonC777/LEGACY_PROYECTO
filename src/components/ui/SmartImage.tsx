@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { ImageOff } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { safeMediaSrc } from '@/lib/resources'
@@ -11,6 +11,8 @@ type SmartImageProps = {
   fallbackLabel?: string
   /** Para portadas visibles al entrar: evita el retraso de la carga diferida */
   priority?: boolean
+  /** Reemplazo completo cuando no hay imagen usable (p. ej. la portada generada). */
+  fallback?: ReactNode
 }
 
 /**
@@ -23,6 +25,7 @@ export function SmartImage({
   className,
   fallbackLabel = 'Imagen no disponible',
   priority = false,
+  fallback,
 }: SmartImageProps) {
   const usable = safeMediaSrc(src)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -36,6 +39,7 @@ export function SmartImage({
   }
 
   if (!usable || status === 'error') {
+    if (fallback) return <>{fallback}</>
     return (
       <span
         role="img"
