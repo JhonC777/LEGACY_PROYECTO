@@ -38,7 +38,7 @@ export function ProjectGallery({ title, images, onOpen }: ProjectGalleryProps) {
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {images.map((image, index) => (
             <motion.button
-              key={image}
+              key={`${index}-${image}`}
               type="button"
               onClick={() => onOpen(index)}
               className={cn(

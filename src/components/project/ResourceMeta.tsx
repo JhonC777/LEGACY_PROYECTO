@@ -11,13 +11,20 @@ import {
  * (metadatos del video). Si no hay dato, la lista queda vacía y la interfaz
  * muestra solo la etiqueta de tipo. Nunca se inventan páginas ni pesos.
  */
-export function useResourceMeta(resource: ProjectResource, knownDuration?: number | null) {
-  const probeFile = resource.kind !== 'image' && !resource.youtubeId
-  const size = useResourceSize(probeFile && !resource.directVideo ? resource.href : null)
-  const probed = useVideoDuration(resource.directVideo && knownDuration == null ? resource.href : null)
+export function useResourceMeta(
+  resource: ProjectResource | null | undefined,
+  knownDuration?: number | null,
+) {
+  // Los hooks se llaman siempre, en el mismo orden, aunque no haya recurso.
+  const probeFile = Boolean(resource) && resource?.kind !== 'image' && !resource?.youtubeId
+  const size = useResourceSize(probeFile && !resource?.directVideo ? resource?.href : null)
+  const probed = useVideoDuration(
+    resource?.directVideo && knownDuration == null ? resource.href : null,
+  )
   const duration = knownDuration ?? probed
 
   const parts: string[] = []
+  if (!resource) return parts
   if (resource.images) {
     parts.push(`${resource.images.length} ${resource.images.length === 1 ? 'imagen' : 'imágenes'}`)
   }

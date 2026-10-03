@@ -168,9 +168,13 @@ export function resourceKindsOf(project: DemoProject): Set<ResourceKind> {
 const sizeCache = new Map<string, number | null>()
 const pending = new Map<string, Promise<number | null>>()
 
+/** Único host de Supabase Storage cuyo peso se consulta (el proyecto de Legacy). */
+const STORAGE_PROBE_HOST = 'padsyhitxmbxjifpvzhj.supabase.co'
+
 /**
- * Solo se consulta el peso de archivos que la CSP deja leer (connect-src):
- * el propio origen y Supabase Storage. Lo externo queda sin peso.
+ * Solo se consulta el peso de archivos del propio origen (rutas relativas) y
+ * del Storage del proyecto de Legacy. Cualquier otro host, aunque sea de
+ * Supabase, queda sin peso: no se hacen peticiones a terceros.
  */
 function canProbeSize(href: string) {
   if (href.startsWith('/') && !href.startsWith('//')) return true
@@ -178,8 +182,9 @@ function canProbeSize(href: string) {
     const url = new URL(href)
     return (
       url.protocol === 'https:' &&
-      /\.supabase\.(co|in)$/i.test(url.hostname) &&
-      url.pathname.includes('/storage/v1/object/')
+      url.hostname.toLowerCase() === STORAGE_PROBE_HOST &&
+      url.port === '' &&
+      url.pathname.startsWith('/storage/v1/object/')
     )
   } catch {
     return false
