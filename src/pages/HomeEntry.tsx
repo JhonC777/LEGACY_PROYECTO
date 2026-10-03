@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -43,6 +44,7 @@ function factsOf(projects: DemoProject[]): InstitutionFacts {
 }
 
 export function HomeEntry() {
+  usePageMeta({})
   const navigate = useNavigate()
   const [selected, setSelected] = useState<Institution | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)

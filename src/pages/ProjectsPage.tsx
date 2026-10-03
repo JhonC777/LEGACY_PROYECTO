@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
@@ -116,6 +117,12 @@ export function ProjectsPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
   const defer = useDeferredAction()
+  usePageMeta({
+    title: institution?.isActive ? `Proyectos y colecciones · ${institution.name}` : 'Proyectos',
+    description: institution?.isActive
+      ? `Catálogo de proyectos y colecciones del archivo académico de ${institution.name}.`
+      : undefined,
+  })
 
   const query = params.get('q') ?? ''
   const area = params.get('area') ?? ''

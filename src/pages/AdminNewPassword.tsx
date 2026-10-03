@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { useEffect, useState, type FormEvent } from 'react'
 import { KeyRound, LockKeyhole } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -12,6 +13,7 @@ import { setKeepAdminSignedIn, supabase } from '@/lib/supabase'
 export function AdminNewPassword() {
   const navigate = useNavigate()
   const { signIn } = useAdminSession()
+  usePageMeta({ title: 'Nueva contraseña', noindex: true })
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [ready, setReady] = useState(false)

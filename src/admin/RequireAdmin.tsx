@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { RouteFallback } from '@/components/navigation/RouteFallback'
@@ -29,6 +30,7 @@ export function RequireAdmin() {
   const [params] = useSearchParams()
   const { session, signOut } = useAdminSession()
   const institution = getInstitutionBySlug(institutionSlug)
+  usePageMeta({ title: 'Panel institucional', noindex: true })
   const [gate, setGate] = useState<AdminGate>(supabaseConfigured ? 'checking' : 'skip')
   const [attempt, setAttempt] = useState(0)
 
