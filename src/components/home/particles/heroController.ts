@@ -1,5 +1,5 @@
 /*
-  LEGACY · Orquestador del hero: partículas + figuras, fondo, máquina de escribir,
+  LEGACY · Orquestador del hero: partículas + figuras, fondo, final rotativo del eslogan,
   leyenda de la figura, secuencia de entrada y paralaje de scroll.
   Solo escribe estilos vía CSSOM (element.style), compatible con CSP 'self'.
 */
@@ -16,7 +16,6 @@ export type HeroElements = {
   bloom: HTMLCanvasElement
   backdrop: HTMLCanvasElement
   texture: HTMLCanvasElement
-  typeline: HTMLElement
   typeText: HTMLElement
   caret: HTMLElement
   caption: HTMLElement
@@ -26,12 +25,14 @@ export type HeroElements = {
   scrollRoot: HTMLElement | null
 }
 
-export const HERO_WORDS = ['Legacy', 'Legado', 'Conocimiento', 'Memoria', 'Talento', 'Futuro'] as const
-const BALLET = 'Legacy' // Ballet solo para «Legacy»
+/*
+  «Donde el conocimiento …» queda fijo; solo el final se escribe y se borra.
+  El primero es el eslogan oficial (estado inicial, sin JS y con movimiento reducido).
+*/
+export const SLOGAN_ENDINGS = ['deja legado.', 'trasciende.', 'inspira.', 'perdura.', 'construye futuro.'] as const
 const MODES: Record<ShapeName, ShapeMode> = {
   escudo: 'center',
   libro: 'btt',
-  firma: 'ltr',
   birrete: 'btt',
   constelacion: 'center',
 }
@@ -62,25 +63,61 @@ export function createHero(el: HeroElements): () => void {
   let dead = false
   const introEls = Array.from(el.hero.querySelectorAll<HTMLElement>('[data-intro]'))
 
-  /* ---------------- Máquina de escribir ---------------- */
-  const tw = { wi: 0, len: 0, phase: 'intro' as 'intro' | 'gap' | 'typing' | 'hold' | 'deleting' | 'static', timer: 2.1, busy: false, since: 0, cycle: 0 }
+  /* ---------------- Final rotativo del eslogan ---------------- */
+  // Arranca con «deja legado.» ya escrito: se lee el eslogan oficial y luego rota.
+  const tw = { wi: 0, len: SLOGAN_ENDINGS[0].length, phase: 'hold' as 'gap' | 'typing' | 'hold' | 'deleting' | 'static', timer: 3.2, busy: false, since: 0, cycle: 0 }
   let caretOp = -1
 
+  // Ritmo humano: variación pseudoaleatoria estable, pausa tras espacio y antes del punto.
   const typeDelay = () => {
-    const word = HERO_WORDS[tw.wi]
+    const word = SLOGAN_ENDINGS[tw.wi]
     const k = tw.len + tw.cycle * 13
-    let d = (word === BALLET ? 0.112 : 0.082) + (hash(tw.wi + 1, k) - 0.5) * 0.06
-    if (tw.len === 0) d += 0.04 // el primer trazo se piensa
-    if (hash(k + 3, tw.wi * 7 + 1) > 0.86) d += 0.075 // micro-pausa ocasional
+    let d = 0.078 + (hash(tw.wi + 1, k) - 0.5) * 0.05
+    if (tw.len === 0) d += 0.05 // el primer trazo se piensa
+    if (word[tw.len - 1] === ' ') d += 0.06
+    if (word[tw.len] === '.') d += 0.09
+    if (hash(k + 3, tw.wi * 7 + 1) > 0.88) d += 0.06 // micro-pausa ocasional
     return d
   }
   const deleteDelay = () => {
-    const pr = 1 - tw.len / HERO_WORDS[tw.wi].length
-    return 0.06 - 0.028 * pr + (hash(tw.len, tw.wi + 9) - 0.5) * 0.012
+    const pr = 1 - tw.len / SLOGAN_ENDINGS[tw.wi].length
+    return 0.05 - 0.022 * pr + (hash(tw.len, tw.wi + 9) - 0.5) * 0.01
   }
-  const setWordStyle = () => el.typeline.classList.toggle('is-ballet', HERO_WORDS[tw.wi] === BALLET)
+  // El cursor sigue al texto con transform: escribir no mueve nada del layout.
+  // En diseños centrados (el final en su propia línea) el texto se centra también con transform.
+  const endBox = el.typeText.closest<HTMLElement>('.home-slogan-end')
+  const live = el.typeText.parentElement
+  let centered = false
+  const readLayout = () => {
+    centered = Boolean(endBox) && getComputedStyle(endBox as HTMLElement).display === 'grid'
+    if (!centered && live) live.style.transform = ''
+  }
+  let caretX = -1
+  let liveX = -1
+  const placeCaret = () => {
+    const w = el.typeText.offsetWidth
+    const x = w + (tw.len ? 2 : 0)
+    if (x !== caretX) {
+      caretX = x
+      el.caret.style.transform = `translate3d(${x}px,0,0)`
+    }
+    if (centered && endBox && live) {
+      const off = Math.round((endBox.clientWidth - w - 4) / 2)
+      if (off !== liveX) {
+        liveX = off
+        live.style.transform = `translate3d(${off}px,0,0)`
+      }
+    }
+  }
+  const relayout = () => {
+    readLayout()
+    caretX = -1
+    liveX = -1
+    placeCaret()
+  }
   const paint = () => {
-    el.typeText.textContent = HERO_WORDS[tw.wi].slice(0, tw.len)
+    el.typeText.textContent = SLOGAN_ENDINGS[tw.wi].slice(0, tw.len)
+    placeCaret()
   }
 
   const onWordComplete = () => {
@@ -97,9 +134,8 @@ export function createHero(el: HeroElements): () => void {
     tw.timer -= dt
     let guard = 0
     while (tw.timer <= 0 && guard++ < 8) {
-      const word = HERO_WORDS[tw.wi]
+      const word = SLOGAN_ENDINGS[tw.wi]
       switch (tw.phase) {
-        case 'intro':
         case 'gap':
           tw.phase = 'typing'
           tw.busy = true
@@ -112,26 +148,25 @@ export function createHero(el: HeroElements): () => void {
             tw.phase = 'hold'
             tw.busy = false
             tw.since = now
-            tw.timer += word === BALLET ? 3.0 : 2.2
+            tw.timer += tw.wi === 0 ? 3.0 : 2.4
             onWordComplete()
           } else tw.timer += typeDelay()
           break
         case 'hold':
           tw.phase = 'deleting'
           tw.busy = true
-          tw.timer += 0.12
+          tw.timer += 0.1
           break
         case 'deleting':
           tw.len--
           paint()
           if (tw.len <= 0) {
-            tw.wi = (tw.wi + 1) % HERO_WORDS.length
+            tw.wi = (tw.wi + 1) % SLOGAN_ENDINGS.length
             if (!tw.wi) tw.cycle++
             tw.phase = 'gap'
             tw.busy = false
             tw.since = now
-            setWordStyle()
-            tw.timer += 0.5
+            tw.timer += 0.42
           } else tw.timer += deleteDelay()
           break
         default:
@@ -154,40 +189,14 @@ export function createHero(el: HeroElements): () => void {
   const typeReset = (staticWord: boolean) => {
     tw.wi = 0
     tw.cycle = 0
-    tw.phase = staticWord ? 'static' : 'intro'
-    tw.timer = staticWord ? 1e9 : introPlayed ? 0.6 : 2.1
-    tw.len = staticWord ? HERO_WORDS[0].length : 0
+    tw.phase = staticWord ? 'static' : 'hold'
+    tw.timer = staticWord ? 1e9 : introPlayed ? 2.6 : 4.4
+    tw.len = SLOGAN_ENDINGS[0].length
     tw.busy = false
     tw.since = 0
-    setWordStyle()
     paint()
+    caretOp = -1
     if (staticWord) el.caret.style.opacity = ''
-  }
-
-  /* La palabra más ancha nunca desborda su columna (alto y ancho reservados). */
-  const fitType = () => {
-    el.typeline.style.removeProperty('--type-size')
-    const base = parseFloat(getComputedStyle(el.typeline).fontSize)
-    const avail = el.typeline.clientWidth * 0.95
-    const probe = el.typeline.cloneNode(true) as HTMLElement
-    probe.removeAttribute('id')
-    probe.style.position = 'absolute'
-    probe.style.visibility = 'hidden'
-    probe.style.left = '-9999px'
-    probe.style.top = '0'
-    probe.style.width = 'auto'
-    document.body.appendChild(probe)
-    const t = probe.querySelector<HTMLElement>('.home-type-text')
-    let widest = 0
-    if (t) {
-      for (const word of HERO_WORDS) {
-        probe.classList.toggle('is-ballet', word === BALLET)
-        t.textContent = word
-        widest = Math.max(widest, probe.getBoundingClientRect().width)
-      }
-    }
-    probe.remove()
-    if (widest > avail && widest > 0) el.typeline.style.setProperty('--type-size', `${Math.floor((base * avail) / widest)}px`)
   }
 
   /* ---------------- Partículas + figuras ---------------- */
@@ -201,7 +210,7 @@ export function createHero(el: HeroElements): () => void {
     backdrop = null
   }
   const built: Partial<Record<ShapeName, Shape>> = {}
-  const order = SHAPE_ORDER.slice()
+  const order = SHAPE_ORDER
   const sched = { next: 1, wait: 3.4, current: null as ShapeName | null }
   const intro = { t0: -1, done: false, formed: false }
   const bg = { fade: 0, frame: 0 }
@@ -263,14 +272,7 @@ export function createHero(el: HeroElements): () => void {
       }
       sched.wait -= dt
       if (sched.wait <= 0) {
-        let name = order[sched.next % order.length]
-        // la firma nunca coincide con «Legacy» escrito
-        if (name === 'firma' && (tw.wi === 0 || tw.wi >= HERO_WORDS.length - 2)) {
-          const ia = sched.next % order.length
-          const ib = (ia + 1) % order.length
-          ;[order[ia], order[ib]] = [order[ib], order[ia]]
-          name = order[ia]
-        }
+        const name = order[sched.next % order.length]
         if (startShape(name)) sched.next++
         else sched.wait = 0.5
       }
@@ -443,7 +445,7 @@ export function createHero(el: HeroElements): () => void {
     window.clearTimeout(resizeTimer)
     resizeTimer = window.setTimeout(() => {
       if (dead) return
-      fitType()
+      relayout()
       sizeCanvas(false)
     }, 120)
   }
@@ -475,7 +477,7 @@ export function createHero(el: HeroElements): () => void {
 
   /* ---------------- Arranque ---------------- */
   el.hero.classList.toggle('is-reduced', reduced)
-  fitType()
+  readLayout()
   typeReset(reduced)
   if (field) {
     if (!reduced && !introPlayed) field.fade = 0
@@ -506,7 +508,7 @@ export function createHero(el: HeroElements): () => void {
   document.fonts.ready
     .then(() => {
       if (dead) return
-      fitType()
+      relayout() // la fuente final cambia el ancho del texto
       sizeCanvas()
       return Promise.all(
         order.map((name) =>

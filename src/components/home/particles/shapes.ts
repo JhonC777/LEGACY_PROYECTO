@@ -5,7 +5,7 @@
 */
 import { mulberry32, type Box, type Targets } from './field'
 
-export type ShapeName = 'escudo' | 'libro' | 'firma' | 'birrete' | 'constelacion'
+export type ShapeName = 'escudo' | 'libro' | 'birrete' | 'constelacion'
 
 export type Shape = {
   edge: Float32Array
@@ -17,14 +17,13 @@ export type Shape = {
 
 type Sampled = { edge: number[]; strong: number[]; weak: number[] }
 
-export const SHAPE_ORDER: ShapeName[] = ['escudo', 'libro', 'firma', 'birrete', 'constelacion']
+export const SHAPE_ORDER: ShapeName[] = ['escudo', 'libro', 'birrete', 'constelacion']
 
 export const SHAPE_CAPTIONS: Record<ShapeName, { num: string; name: string }> = {
   escudo: { num: 'I', name: 'El escudo' },
   libro: { num: 'II', name: 'El libro abierto' },
-  firma: { num: 'III', name: 'La firma' },
-  birrete: { num: 'IV', name: 'El birrete' },
-  constelacion: { num: 'V', name: 'La constelación' },
+  birrete: { num: 'III', name: 'El birrete' },
+  constelacion: { num: 'IV', name: 'La constelación' },
 }
 
 /** Emblema servido desde el mismo origen (public/). */
@@ -150,28 +149,7 @@ function emblem(): Promise<Shape> {
   })
 }
 
-/* 2. Firma «Legacy» en Ballet. */
-async function wordmark(): Promise<Shape> {
-  try {
-    await document.fonts.load('400 200px Ballet', 'Legacy')
-  } catch {
-    /* sin la fuente se usa la de respaldo */
-  }
-  const W = 900, H = 400
-  const ctx = offscreen(W, H)
-  ctx.font = '400 230px Ballet, serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'alphabetic'
-  ctx.fillStyle = '#fff'
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 2
-  ctx.lineJoin = 'round'
-  ctx.fillText('Legacy', W / 2 + 10, 250)
-  ctx.strokeText('Legacy', W / 2 + 10, 250)
-  return pack(sampleField(alphaOf(ctx, W, H), W, H, 1.5, 110, 40, 0.5, 21), W, H, [0.5, 0.5])
-}
-
-/* 3. Libro abierto. */
+/* 2. Libro abierto. */
 function book(): Shape {
   const W = 600, H = 460
   const ctx = offscreen(W, H)
@@ -225,7 +203,7 @@ function book(): Shape {
   return pack(sampleField(alphaOf(ctx, W, H), W, H, 2.1, 150, 40, 0.4, 31), W, H, [0.6, 0.3])
 }
 
-/* 4. Birrete de grado. */
+/* 3. Birrete de grado. */
 function cap(): Shape {
   const W = 600, H = 470
   const ctx = offscreen(W, H)
@@ -263,7 +241,7 @@ function cap(): Shape {
   return pack(sampleField(alphaOf(ctx, W, H), W, H, 2.1, 150, 40, 0.4, 41), W, H, [0.6, 0.3])
 }
 
-/* 5. Constelación con estrella central. */
+/* 4. Constelación con estrella central. */
 function constellation(): Shape {
   const W = 560, H = 520
   const ctx = offscreen(W, H)
@@ -294,7 +272,6 @@ function constellation(): Shape {
 const BUILDERS: Record<ShapeName, () => Shape | Promise<Shape>> = {
   escudo: emblem,
   libro: book,
-  firma: wordmark,
   birrete: cap,
   constelacion: constellation,
 }

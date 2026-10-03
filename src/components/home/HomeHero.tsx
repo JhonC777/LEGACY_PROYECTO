@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useLayoutEffect, useRef } from 'react'
-import { createHero } from '@/components/home/particles/heroController'
+import { createHero, SLOGAN_ENDINGS } from '@/components/home/particles/heroController'
 import { LEGACY_SLOGAN } from '@/lib/brand'
 
 export type HomeHeroStats = {
@@ -20,9 +20,9 @@ type HomeHeroProps = {
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
 
 /**
- * Hero del Home: partículas oro/plata que componen figuras (escudo, libro, firma,
- * birrete, constelación), máquina de escribir y cifras reales del archivo.
- * Todo el movimiento vive en canvas; con movimiento reducido queda estático.
+ * Hero del Home: «Legacy» fijo en Ballet, eslogan con final rotativo («deja legado.»,
+ * «trasciende.»…), partículas oro/plata que componen figuras (escudo, libro, birrete,
+ * constelación) y cifras reales del archivo. Con movimiento reducido todo queda estático.
  */
 export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHeroProps) {
   const heroRef = useRef<HTMLElement>(null)
@@ -33,8 +33,7 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
   const bloomRef = useRef<HTMLCanvasElement>(null)
   const backdropRef = useRef<HTMLCanvasElement>(null)
   const textureRef = useRef<HTMLCanvasElement>(null)
-  const typelineRef = useRef<HTMLDivElement>(null)
-  const typeTextRef = useRef<HTMLSpanElement>(null)
+  const typeTextRef = useRef<HTMLElement>(null)
   const caretRef = useRef<HTMLSpanElement>(null)
   const captionRef = useRef<HTMLParagraphElement>(null)
   const capNumRef = useRef<HTMLSpanElement>(null)
@@ -50,7 +49,6 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
     const bloom = bloomRef.current
     const backdrop = backdropRef.current
     const texture = textureRef.current
-    const typeline = typelineRef.current
     const typeText = typeTextRef.current
     const caret = caretRef.current
     const caption = captionRef.current
@@ -59,12 +57,12 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
     const capFill = capFillRef.current
     if (
       !hero || !inner || !content || !stage || !canvas || !bloom || !backdrop || !texture ||
-      !typeline || !typeText || !caret || !caption || !capNum || !capName || !capFill
+      !typeText || !caret || !caption || !capNum || !capName || !capFill
     )
       return
     return createHero({
       hero, inner, content, stage, canvas, bloom, backdrop, texture,
-      typeline, typeText, caret, caption, capNum, capName, capFill,
+      typeText, caret, caption, capNum, capName, capFill,
       scrollRoot: hero.closest<HTMLElement>('.home-entry-stage'),
     })
   }, [])
@@ -78,27 +76,33 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
 
       <div ref={innerRef} className="home-hero-inner">
         <div ref={contentRef} className="home-hero-content">
-          <h1 id="home-hero-title" className="sr-only">
-            LEGACY. {LEGACY_SLOGAN}
-          </h1>
-
           <p className="home-hero-kicker" data-intro="1">
             <span className="home-hero-kicker-line" aria-hidden />
             Archivo académico institucional
           </p>
 
-          <div ref={typelineRef} className="home-typeline is-ballet" data-intro="2" aria-hidden>
-            <span className="home-type-word">
-              <span ref={typeTextRef} className="home-type-text">
-                Legacy
+          {/* El lector de pantalla oye el eslogan completo; lo que se escribe es decorativo. */}
+          <h1 id="home-hero-title" className="home-hero-heading" aria-label={`LEGACY. ${LEGACY_SLOGAN}`}>
+            <span className="home-hero-wordmark" data-intro="2" aria-hidden>
+              <span className="home-hero-wordmark-text">Legacy</span>
+            </span>
+            <span className="home-hero-slogan" data-intro="3" aria-hidden>
+              <span className="home-slogan-fixed">Donde el conocimiento </span>
+              <span className="home-slogan-end">
+                {SLOGAN_ENDINGS.map((ending) => (
+                  <span key={ending} className="home-slogan-ghost">
+                    {ending}
+                  </span>
+                ))}
+                <span className="home-slogan-live">
+                  <em ref={typeTextRef} className="home-slogan-typed">
+                    {SLOGAN_ENDINGS[0]}
+                  </em>
+                  <span ref={caretRef} className="home-caret" />
+                </span>
               </span>
             </span>
-            <span ref={caretRef} className="home-caret" />
-          </div>
-
-          <p className="home-hero-slogan" data-intro="3">
-            Donde el conocimiento <em>deja legado.</em>
-          </p>
+          </h1>
           <p className="home-hero-lede" data-intro="4">
             La plataforma donde cada institución preserva, organiza y exhibe los proyectos de grado de
             sus estudiantes.
@@ -144,7 +148,7 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
           <p ref={captionRef} className="home-stage-caption">
             <span className="home-cap-num">
               <span ref={capNumRef}>I</span>
-              <span className="home-cap-of">&thinsp;/&thinsp;V</span>
+              <span className="home-cap-of">&thinsp;/&thinsp;IV</span>
             </span>
             <span className="home-cap-track">
               <i ref={capFillRef} />

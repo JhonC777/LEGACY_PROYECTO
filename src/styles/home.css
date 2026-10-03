@@ -303,50 +303,29 @@
   background: linear-gradient(90deg, rgb(214 184 120 / 0), rgb(214 184 120 / 0.85));
 }
 
-/* Máquina de escribir: alto y ancho reservados, el texto de abajo nunca salta. */
-.home-typeline {
+/* Titular fijo: «Legacy» en Ballet (firma aprobada), alto reservado. */
+.home-hero-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+  font: inherit;
+}
+
+.home-hero-wordmark {
   --type-size: clamp(72px, min(9.6vw, 17vh), 150px);
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  width: 100%;
   height: calc(var(--type-size) * 1.52);
-  margin: 8px 0 0;
+  margin: 8px 0 calc(var(--type-size) * 0.08); /* la cola de la «y» no roza el eslogan */
+  padding-left: 0.2em;
   font-size: var(--type-size);
   line-height: 1;
   white-space: nowrap;
-  color: var(--home-white);
-  contain: layout style;
-  will-change: transform;
 }
 
-.home-type-word {
+.home-hero-wordmark-text {
   display: inline-block;
-  line-height: 1;
-}
-
-.home-type-text {
-  display: inline-block;
-  min-width: 0.01em;
-  padding: 0.24em 0.2em 0.3em 0.16em;
-  margin: -0.24em -0.2em -0.3em -0.16em;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 0.86em;
-  letter-spacing: -0.005em;
-  background-image: linear-gradient(100deg, #f7f5ef 0%, #f7f5ef 34%, #e6e8ee 52%, #f0d9a0 76%, #d6b878 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.home-typeline.is-ballet .home-type-word {
-  padding-left: 0.2em;
-}
-
-.home-typeline.is-ballet .home-type-text {
   padding: 0.34em 0.36em 0.62em 0.3em;
   margin: -0.34em -0.36em -0.62em -0.3em;
   font-family: var(--font-wordmark);
@@ -354,38 +333,64 @@
   font-weight: 400;
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 48;
-  font-size: 1em;
   letter-spacing: 0.02em;
   background-image: linear-gradient(100deg, #d6b878 0%, #f0d9a0 40%, #f7f5ef 56%, #f0d9a0 70%, #d6b878 100%);
-  transform: translateY(-0.12em);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transform: translateY(0);
 }
 
-.home-caret {
-  display: inline-block;
-  flex: none;
-  width: 2px;
-  height: 0.64em;
-  margin-left: 0.07em;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #f7f5ef, #d6b878);
-  box-shadow: 0 0 10px rgb(214 184 120 / 0.65), 0 0 2px rgb(240 217 160 / 0.9);
-  will-change: opacity;
-}
-
-.home-typeline.is-ballet .home-caret {
-  height: 0.58em;
-  margin-left: 0.04em;
-  transform: translateY(-0.1em);
-}
-
+/*
+  Eslogan: «Donde el conocimiento» fijo y un final que se escribe.
+  El final vive en una celda que mide lo que el final más largo (variantes fantasma
+  invisibles en la misma celda): ni el ancho ni el alto cambian al escribir o borrar.
+*/
 .home-hero-slogan {
+  display: block;
   font: italic 500 clamp(24px, 2.4vw, 36px)/1.2 var(--font-display);
   color: var(--home-white);
 }
 
-.home-hero-slogan em {
+.home-slogan-end {
+  display: inline-grid;
+  grid-template-areas: 'end';
+  justify-items: start;
+  padding-right: 0.2em; /* sitio para el cursor tras el final más largo */
+  text-align: left;
+  white-space: nowrap;
+}
+
+.home-slogan-ghost,
+.home-slogan-live {
+  grid-area: end;
+}
+
+.home-slogan-ghost {
+  visibility: hidden;
+  user-select: none;
+}
+
+.home-slogan-typed {
   font-style: italic;
   color: var(--home-gold-soft);
+}
+
+/* El final escrito y su cursor; el cursor se desplaza con transform (sin cambios de layout). */
+.home-slogan-live {
+  position: relative;
+}
+
+.home-caret {
+  position: absolute;
+  top: 0.16em;
+  left: 0;
+  width: 2px;
+  height: 0.92em;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #f7f5ef, #d6b878);
+  box-shadow: 0 0 8px rgb(214 184 120 / 0.6), 0 0 2px rgb(240 217 160 / 0.9);
+  will-change: opacity, transform;
 }
 
 .home-hero-lede {
@@ -488,7 +493,7 @@
 
 /* Escritorio con poca altura */
 @media (min-width: 900px) and (max-height: 840px) {
-  .home-typeline { --type-size: clamp(64px, min(9.6vw, 15.5vh), 140px); }
+  .home-hero-wordmark { --type-size: clamp(64px, min(9.6vw, 15.5vh), 140px); }
   .home-hero-cta { margin-top: 24px; }
   .home-hero-lede { margin-top: 8px; }
   .home-hero-facts { margin-top: 24px; padding-top: 16px; }
@@ -515,8 +520,10 @@
   .home-stage-caption { display: none; }
   .home-hero-content { align-items: center; max-width: 640px; text-align: center; }
   .home-hero-kicker-line { display: none; }
-  .home-typeline { --type-size: clamp(60px, 12vw, 104px); justify-content: center; }
-  .home-typeline.is-ballet .home-type-word { padding-left: 0; }
+  .home-hero-heading { align-items: center; }
+  /* Centrado: el final va siempre en su propia línea; JS lo centra con transform. */
+  .home-slogan-end { display: grid; width: max-content; max-width: 100%; margin: 0 auto; padding-right: 0; }
+  .home-hero-wordmark { --type-size: clamp(60px, 12vw, 104px); justify-content: center; padding-left: 0; }
   .home-hero-cta { justify-content: center; }
   .home-hero-facts { justify-content: center; }
 }
@@ -531,7 +538,7 @@
     letter-spacing: 0.22em;
     text-wrap: balance;
   }
-  .home-typeline { --type-size: clamp(54px, 18vw, 80px); height: calc(var(--type-size) * 1.55); }
+  .home-hero-wordmark { --type-size: clamp(54px, 18vw, 80px); height: calc(var(--type-size) * 1.55); }
   .home-hero-slogan { font-size: 25px; }
   .home-hero-lede { margin-top: 8px; font-size: 16px; }
   .home-hero-cta { flex-direction: column; align-items: stretch; width: 100%; max-width: 360px; gap: 12px; margin-top: 24px; }
