@@ -1,19 +1,40 @@
-import { Instagram, Linkedin, Youtube, type LucideIcon } from 'lucide-react'
+import { Facebook, Globe, Instagram, Linkedin, Youtube, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { withLegacyName } from '@/components/brand/LegacyName'
 
 type SocialLink = { label: string; href: string; icon: LucideIcon }
 
 /** Iconos disponibles para redes; se usan solo cuando haya un perfil real. */
-export const SOCIAL_ICONS = { Instagram, LinkedIn: Linkedin, YouTube: Youtube } as const
+export const SOCIAL_ICONS = {
+  Instagram,
+  Facebook,
+  Web: Globe,
+  LinkedIn: Linkedin,
+  YouTube: Youtube,
+} as const
 
 /**
- * Redes oficiales de Legacy. Vacío a propósito: no se muestran enlaces
- * genéricos (visión: nada de relleno ni enlaces sociales genéricos).
- * Para reactivarlas, agrega los perfiles reales, por ejemplo:
+ * Redes reales que John confirmó (nada de enlaces genéricos).
+ * Para agregar otra, sigue el mismo formato, por ejemplo:
  * { label: 'Instagram', href: 'https://www.instagram.com/<cuenta>', icon: SOCIAL_ICONS.Instagram }
  */
-const SOCIAL_LINKS: readonly SocialLink[] = []
+const SOCIAL_LINKS: readonly SocialLink[] = [
+  {
+    label: 'Instagram de Fe y Alegría Colombia',
+    href: 'https://www.instagram.com/feyalegriacolombia/',
+    icon: SOCIAL_ICONS.Instagram,
+  },
+  {
+    label: 'Facebook de la IED Germán Vargas Cantillo',
+    href: 'https://www.facebook.com/IEDGermanVargasCantilloFyA/',
+    icon: SOCIAL_ICONS.Facebook,
+  },
+  {
+    label: 'Blog de la IED Germán Vargas Cantillo',
+    href: 'https://iedgermanvargascantillo.blogspot.com/',
+    icon: SOCIAL_ICONS.Web,
+  },
+]
 
 export function ExploreFooter() {
   return (
@@ -33,6 +54,7 @@ export function ExploreFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label={label}
+              title={label}
               className="hover:text-legacy-gold"
             >
               <Icon className="h-4 w-4" aria-hidden />
