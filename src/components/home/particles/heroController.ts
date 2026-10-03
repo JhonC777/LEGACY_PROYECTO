@@ -4,8 +4,8 @@
   Solo escribe estilos vía CSSOM (element.style), compatible con CSP 'self'.
 */
 import { Backdrop, drawTexture } from './backdrop'
-import { ParticleField, type FormOptions, type ShapeMode } from './field'
-import { getShape, SHAPE_CAPTIONS, SHAPE_ORDER, shapeTargets, type Shape, type ShapeName } from './shapes'
+import { ParticleField, type FormOptions } from './field'
+import { getShape, SHAPE_CAPTIONS, SHAPE_MODES, SHAPE_ORDER, shapeTargets, type Shape, type ShapeName } from './shapes'
 
 export type HeroElements = {
   hero: HTMLElement
@@ -30,12 +30,7 @@ export type HeroElements = {
   El primero es el eslogan oficial (estado inicial, sin JS y con movimiento reducido).
 */
 export const SLOGAN_ENDINGS = ['deja legado.', 'trasciende.', 'inspira.', 'perdura.', 'construye futuro.'] as const
-const MODES: Record<ShapeName, ShapeMode> = {
-  escudo: 'center',
-  libro: 'btt',
-  birrete: 'btt',
-  constelacion: 'center',
-}
+const MODES = SHAPE_MODES
 
 /* La entrada larga se ve una vez por visita (memoria de la SPA). */
 let introPlayed = false
