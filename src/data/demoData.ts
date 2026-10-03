@@ -241,7 +241,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
     id: 'demo-p02',
     slug: 'huerta-escolar-sustentable',
     institutionId: 'inst-demo-fya',
-    title: 'Huerta escolar sustentable y aprendizaje comunitario',
+    title: 'Huerta escolar sustentable',
     subtitle: 'Ciencias naturales aplicadas al cuidado del entorno',
     area: 'Ciencias Naturales',
     category: 'Medio Ambiente',
