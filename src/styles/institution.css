@@ -145,6 +145,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  min-height: 44px;
   padding: 0.35rem 0.2rem;
   color: rgb(166 168 178 / 0.9);
   font-size: var(--legacy-text-xs);

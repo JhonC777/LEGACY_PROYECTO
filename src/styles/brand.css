@@ -49,46 +49,72 @@
   text-transform: uppercase;
 }
 
+/* Filete entre el emblema y la firma (variante C). */
+.legacy-brand-rule {
+  width: 1px;
+  height: 1.85rem;
+  flex-shrink: 0;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(214 184 120 / 0.55),
+    transparent
+  );
+}
+
+/*
+  Ballet solo para el wordmark.
+  El padding (y el margen negativo equivalente) evita que el lazo de la L
+  y la cauda de la y se recorten con background-clip: text.
+  opsz se fija a mano: el header usa 16 aunque el cuerpo sea 38px.
+*/
 .legacy-wordmark {
   margin: 0;
-  font-family: var(--font-brand);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  line-height: 0.86;
-  color: #f4efe4;
+  display: inline-block;
+  font-family: var(--font-wordmark);
+  font-style: normal;
+  font-weight: 400;
+  font-optical-sizing: none;
+  line-height: 1;
+  white-space: nowrap;
+  color: transparent;
+}
+
+.legacy-wordmark-script {
+  display: inline-block;
+  background-image: linear-gradient(
+    100deg,
+    #d6b878 0%,
+    #f0d9a0 46%,
+    #d6b878 78%,
+    #d6b878 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding: 0.32em 0.34em 0.62em 0.14em;
+  margin: -0.32em -0.34em -0.62em -0.14em;
 }
 
 .legacy-wordmark.is-nav {
-  font-size: 1.22rem;
-  letter-spacing: 0.16em;
+  font-size: 38px;
+  font-variation-settings: 'opsz' 16;
+  letter-spacing: 0.02em;
+}
+
+.legacy-wordmark.is-nav .legacy-wordmark-script {
+  -webkit-text-stroke: 0.006em rgb(240 217 160 / 0.55);
+}
+
+@media (max-width: 319px) {
+  .legacy-wordmark.is-nav {
+    font-size: 32px;
+  }
 }
 
 .legacy-wordmark.is-display {
-  font-size: clamp(2.35rem, min(8.4vw, 9.2vh), 5.15rem);
-  letter-spacing: 0.22em;
-  color: #efe8dc;
-  filter: drop-shadow(0 0 46px rgb(214 184 120 / 0.16));
-}
-
-.legacy-wordmark-glyphs {
-  display: inline-flex;
-  align-items: flex-end;
-}
-
-.legacy-wordmark-a {
-  display: inline-flex;
-  width: 0.72em;
-  height: 1em;
-  align-items: flex-end;
-}
-
-.legacy-wordmark-a-svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.legacy-wordmark.is-display .legacy-wordmark-a {
-  filter: drop-shadow(0 0 18px rgb(214 184 120 / 0.2));
+  font-size: 1em;
+  font-variation-settings: 'opsz' 48;
+  letter-spacing: 0.02em;
+  filter: drop-shadow(0 0 40px rgb(214 184 120 / 0.18));
 }
