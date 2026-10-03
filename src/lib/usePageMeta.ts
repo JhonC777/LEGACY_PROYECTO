@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 /**
  * Título y metadatos por ruta, sin dependencias: actualiza document.title,
@@ -56,10 +57,11 @@ function setCanonical(href: string) {
 }
 
 export function usePageMeta({ title, description, noindex = false }: PageMeta) {
+  const { pathname } = useLocation()
   useEffect(() => {
     const fullTitle = title ? `${title} · ${SITE_NAME}` : DEFAULT_TITLE
     const fullDescription = clip(description || DEFAULT_DESCRIPTION)
-    const url = `${SITE_URL}${window.location.pathname}`
+    const url = `${SITE_URL}${pathname}`
 
     document.title = fullTitle
     setMeta('name', 'description', fullDescription)
@@ -70,5 +72,5 @@ export function usePageMeta({ title, description, noindex = false }: PageMeta) {
     setCanonical(url)
     setMeta('name', 'twitter:title', fullTitle)
     setMeta('name', 'twitter:description', fullDescription)
-  }, [title, description, noindex])
+  }, [title, description, noindex, pathname])
 }
