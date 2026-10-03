@@ -1,6 +1,19 @@
-import { Instagram, Linkedin, Youtube } from 'lucide-react'
+import { Instagram, Linkedin, Youtube, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { withLegacyName } from '@/components/brand/LegacyName'
+
+type SocialLink = { label: string; href: string; icon: LucideIcon }
+
+/** Iconos disponibles para redes; se usan solo cuando haya un perfil real. */
+export const SOCIAL_ICONS = { Instagram, LinkedIn: Linkedin, YouTube: Youtube } as const
+
+/**
+ * Redes oficiales de Legacy. Vacío a propósito: no se muestran enlaces
+ * genéricos (visión: nada de relleno ni enlaces sociales genéricos).
+ * Para reactivarlas, agrega los perfiles reales, por ejemplo:
+ * { label: 'Instagram', href: 'https://www.instagram.com/<cuenta>', icon: SOCIAL_ICONS.Instagram }
+ */
+const SOCIAL_LINKS: readonly SocialLink[] = []
 
 export function ExploreFooter() {
   return (
@@ -13,27 +26,18 @@ export function ExploreFooter() {
           <Link to="/" className="text-sm hover:text-legacy-gold">
             Inicio
           </Link>
-          <a
-            href="https://instagram.com"
-            aria-label="Instagram"
-            className="hover:text-legacy-gold"
-          >
-            <Instagram className="h-4 w-4" />
-          </a>
-          <a
-            href="https://linkedin.com"
-            aria-label="LinkedIn"
-            className="hover:text-legacy-gold"
-          >
-            <Linkedin className="h-4 w-4" />
-          </a>
-          <a
-            href="https://youtube.com"
-            aria-label="YouTube"
-            className="hover:text-legacy-gold"
-          >
-            <Youtube className="h-4 w-4" />
-          </a>
+          {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={label}
+              className="hover:text-legacy-gold"
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+            </a>
+          ))}
         </div>
       </div>
     </footer>
