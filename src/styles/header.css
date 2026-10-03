@@ -1144,25 +1144,16 @@
 
 /*
   Escritorio: el chip de institución muestra el nombre completo en dos líneas.
-  Con el piso de lectura (14 px) kicker + dos líneas necesitan 50 px, así que
-  el chip pasa de 44 a 50 px y el relleno vertical de esa barra baja lo mismo:
-  la cabecera conserva su alto (68 px + borde).
+  El nombre completo ya incluye la sigla, así que el rótulo corto sobra: se
+  oculta y el chip conserva sus 44 px con aire arriba y abajo (2 × 14 px × 1.2
+  ≈ 34 px). La cabecera mantiene su alto (68 px + borde).
 */
 @media (min-width: 1024px) {
-  .legacy-header .header-chip {
-    height: 3.125rem;
-  }
-
   .legacy-header .header-chip-kicker {
-    line-height: 1.1;
+    display: none;
   }
 
   .legacy-header .header-chip-name {
-    line-height: 1.15;
-  }
-
-  .header-main:has(.header-chip) {
-    padding-top: 0.5625rem;
-    padding-bottom: 0.5625rem;
+    line-height: 1.2;
   }
 }
