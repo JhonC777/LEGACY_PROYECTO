@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { useLayoutEffect, useRef } from 'react'
 import { createHero, SLOGAN_ENDINGS } from '@/components/home/particles/heroController'
+import { SHAPE_TOTAL } from '@/components/home/particles/shapes'
 import { LEGACY_SLOGAN } from '@/lib/brand'
 
 export type HomeHeroStats = {
@@ -21,7 +22,7 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
 
 /**
  * Hero del Home: «Legacy» fijo en Ballet, eslogan con final rotativo («deja legado.»,
- * «trasciende.»…), partículas oro/plata que componen figuras (escudo, libro, birrete,
+ * «trasciende.»…), partículas oro/plata que componen figuras (escudo, libro, árbol, bombilla, birrete,
  * constelación) y cifras reales del archivo. Con movimiento reducido todo queda estático.
  */
 export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHeroProps) {
@@ -148,7 +149,7 @@ export function HomeHero({ stats, onExplore, onFragments, onScrollCue }: HomeHer
           <p ref={captionRef} className="home-stage-caption">
             <span className="home-cap-num">
               <span ref={capNumRef}>I</span>
-              <span className="home-cap-of">&thinsp;/&thinsp;IV</span>
+              <span className="home-cap-of">&thinsp;/&thinsp;{SHAPE_TOTAL}</span>
             </span>
             <span className="home-cap-track">
               <i ref={capFillRef} />

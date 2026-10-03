@@ -7,8 +7,8 @@
   Solo escribe estilos vía CSSOM/clases, compatible con CSP 'self'.
 */
 import { Backdrop } from '@/components/home/particles/backdrop'
-import { ParticleField, type ShapeMode } from '@/components/home/particles/field'
-import { getShape, shapeTargets, type Shape, type ShapeName } from '@/components/home/particles/shapes'
+import { ParticleField } from '@/components/home/particles/field'
+import { getShape, SHAPE_MODES, shapeTargets, type Shape, type ShapeName } from '@/components/home/particles/shapes'
 
 export type SkyElements = {
   root: HTMLElement
@@ -24,22 +24,21 @@ export type SkyController = {
 
 type Box = { x: number; y: number; w: number; h: number }
 
-const MODES: Record<ShapeName, ShapeMode> = {
-  escudo: 'center',
-  libro: 'btt',
-  birrete: 'btt',
-  constelacion: 'center',
-}
+const MODES = SHAPE_MODES
 
-/** Figura según la página: birrete en la ficha, libro en el archivo, emblema en la institución… */
+/**
+ * Figuras con sentido según la página (se alternan en este orden):
+ * explorar → brújula + libro · archivo → llave + libro · ficha → birrete + bombilla + pluma ·
+ * institución → escudo + árbol · resto → constelación + reloj de arena.
+ */
 export function shapesForRoute(path: string, hash: string): ShapeName[] {
-  if (/^\/instituciones\/[^/]+\/proyectos\/[^/]+/.test(path)) return ['birrete']
-  if (/^\/instituciones\/[^/]+\/proyectos\/?$/.test(path)) return ['libro']
-  if (/^\/instituciones\/[^/]+\/?$/.test(path)) return ['escudo']
+  if (/^\/instituciones\/[^/]+\/proyectos\/[^/]+/.test(path)) return ['birrete', 'bombilla', 'pluma']
+  if (/^\/instituciones\/[^/]+\/proyectos\/?$/.test(path)) return ['llave', 'libro']
+  if (/^\/instituciones\/[^/]+\/?$/.test(path)) return ['escudo', 'arbol']
   if (path === '/explorar' || path === '/instituciones') {
-    return hash === '#categorias' ? ['constelacion', 'libro'] : ['libro', 'constelacion']
+    return hash === '#categorias' ? ['constelacion', 'brujula'] : ['brujula', 'libro']
   }
-  return ['constelacion']
+  return ['constelacion', 'reloj']
 }
 
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
@@ -203,7 +202,15 @@ export function createSky(el: SkyElements): SkyController {
       backdrop = null
       return false
     }
-    for (const name of ['escudo', 'libro', 'birrete', 'constelacion'] as ShapeName[]) {
+    preload(route.shapes)
+    size()
+    return true
+  }
+
+  /* Solo se construyen las figuras de la página actual (cada una cuesta unos ms una vez). */
+  function preload(names: ShapeName[]) {
+    for (const name of names) {
+      if (built[name]) continue
       getShape(name).then(
         (s) => {
           built[name] = s
@@ -211,8 +218,6 @@ export function createSky(el: SkyElements): SkyController {
         () => undefined,
       )
     }
-    size()
-    return true
   }
 
   const renderStatic = () => {
@@ -277,7 +282,9 @@ export function createSky(el: SkyElements): SkyController {
       sched.wait = 1
       return
     }
-    sched.wait = tryForm() ? 16 + Math.random() * 4 + 9.8 : 3.5 // 9.8 s ≈ duración de la figura
+    // la cuenta solo corre en deriva (sin figura): restar la duración de la figura (~9,8 s)
+    // deja ~16–20 s de inicio a inicio entre figuras
+    sched.wait = tryForm() ? Math.max(5, 16 + Math.random() * 4 - 9.8) : 3.5
   }
 
   const surface = () => {
@@ -376,6 +383,7 @@ export function createSky(el: SkyElements): SkyController {
       if (path === route.path && hash === route.hash) return
       const samePage = path === route.path
       route = { path, hash, shapes: shapesForRoute(path, hash), visit: route.visit + 1 }
+      if (field) preload(route.shapes)
       if (!samePage) {
         field?.dissolveNow()
         sched.wait = 4.5

@@ -96,3 +96,21 @@
   ) {
   background-color: rgb(11 12 17 / 0.62);
 }
+
+/*
+  Rendimiento (opcional): con el cielo animado detrás, cada botón de vidrio con
+  backdrop-filter obliga a recomponer su fondo en cada cuadro; en la ficha se pierden
+  cuadros. Sobre un cielo casi negro el desenfoque apenas se ve, así que los botones
+  conservan tinte, aro y brillo, pero sin desenfoque mientras el cielo está activo.
+*/
+:root.has-legacy-sky :is(
+    .btn,
+    .home-btn,
+    .home-cta,
+    .header-action,
+    .header-admin-icon,
+    .nav-menu-toggle
+  ) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
