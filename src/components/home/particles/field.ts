@@ -489,6 +489,18 @@ export class ParticleField {
     this.shape = null
   }
 
+  /** Suelta la figura antes de tiempo (p. ej. al hacer scroll o cambiar de página). */
+  dissolveNow() {
+    const S = this.shape
+    if (!S || S.phase === 'dissolve') return
+    S.phase = 'dissolve'
+    S.t = 0
+    for (let k = 0; k < S.K; k++) {
+      const pi = S.idx[k]
+      this.life[pi] = this.age[pi] + 1.2 + this.rand() * 2.0
+    }
+  }
+
   /** Movimiento reducido: la figura queda compuesta, sin animación. */
   placeStatic(targets: Targets) {
     const n = this.n

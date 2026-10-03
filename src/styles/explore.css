@@ -7,10 +7,8 @@
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
-  background:
-    radial-gradient(ellipse 65% 40% at 82% 0%, rgb(214 184 120 / 0.08), transparent 55%),
-    radial-gradient(ellipse 50% 35% at 8% 88%, rgb(214 184 120 / 0.05), transparent 50%),
-    linear-gradient(180deg, rgb(8 9 12 / 0.82) 0%, rgb(10 14 22 / 0.86) 42%, rgb(8 9 12 / 0.92) 100%);
+  /* El fondo lo pinta el cielo de partículas compartido (ParticleSky). */
+  background: transparent;
   color: var(--color-legacy-white);
   font-family: var(--font-sans);
 }
@@ -44,14 +42,7 @@
 }
 
 .explore-shell.is-institution-archive {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 100%, rgb(214 184 120 / 0.05), transparent 60%),
-    #08090c;
-}
-
-.explore-shell.is-institution-archive > .living-field {
-  opacity: 0.35;
-  filter: grayscale(1) sepia(0.4);
+  background: transparent;
 }
 
 .explore-shell.is-institution-cover .legacy-header,
@@ -146,7 +137,7 @@
 .explore-hero-glow {
   background: radial-gradient(
     circle at 80% 20%,
-    rgb(118 98 201 / 0.2),
+    rgb(214 184 120 / 0.07),
     transparent 55%
   );
 }
