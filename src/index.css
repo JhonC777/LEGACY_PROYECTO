@@ -5,6 +5,7 @@
 @import "./styles/cosmic.css";
 @import "./styles/glass.css";
 @import "./styles/readable.css";
+@import "./styles/buttons-glass.css";
 
 @theme {
   --color-legacy-black: #08090c;
