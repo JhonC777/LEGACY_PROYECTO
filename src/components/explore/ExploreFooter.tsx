@@ -43,7 +43,7 @@ export function ExploreFooter() {
         <p className="text-sm text-legacy-muted">
           © 2026 {withLegacyName('LEGACY')}. Todos los derechos reservados.
         </p>
-        <div className="flex items-center gap-4 text-legacy-muted">
+        <div className="flex items-center gap-2 text-legacy-muted sm:gap-3">
           <Link to="/" className="text-sm hover:text-legacy-gold">
             Inicio
           </Link>
@@ -55,9 +55,9 @@ export function ExploreFooter() {
               rel="noreferrer"
               aria-label={label}
               title={label}
-              className="hover:text-legacy-gold"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:text-legacy-gold focus-visible:text-legacy-gold sm:h-9 sm:w-9"
             >
-              <Icon className="h-4 w-4" aria-hidden />
+              <Icon className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden />
             </a>
           ))}
         </div>
