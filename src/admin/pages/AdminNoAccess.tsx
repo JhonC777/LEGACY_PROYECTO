@@ -17,7 +17,7 @@ export function AdminNoAccess({ requested }: { requested: DemoInstitution }) {
   }
 
   return (
-    <main className="app-shell relative">
+    <main className="app-shell admin-no-access relative">
       <CosmicBackground />
       <div className="relative z-10 flex h-full items-center justify-center px-6">
         <GlassSurface variant="strong" className="w-full max-w-md rounded-[1.75rem] p-7 text-center">
