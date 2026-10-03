@@ -1,3 +1,5 @@
+import { usePageMeta } from '@/lib/usePageMeta'
+import { useLocation } from 'react-router-dom'
 import { ExploreShell } from '@/components/layout/ExploreShell'
 import { CategorySidebar } from '@/components/explore/CategorySidebar'
 import { ExploreFooter } from '@/components/explore/ExploreFooter'
@@ -11,6 +13,14 @@ import { StatsBar } from '@/components/explore/StatsBar'
 
 /** Vista pública post-Home — archivo de LEGACY. */
 export function ExploreHome() {
+  const { pathname } = useLocation()
+  const isInstitutions = pathname.startsWith('/instituciones')
+  usePageMeta({
+    title: isInstitutions ? 'Instituciones' : 'Explorar el archivo',
+    description: isInstitutions
+      ? 'Instituciones que preservan en Legacy el legado académico de sus estudiantes.'
+      : 'Explora el archivo público de Legacy: proyectos académicos destacados, instituciones y colecciones.',
+  })
   return (
     <ExploreShell>
       <ExploreHeader />

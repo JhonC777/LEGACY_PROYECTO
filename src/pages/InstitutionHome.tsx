@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { ArrowRight } from 'lucide-react'
 import '@/styles/institution.css'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -29,6 +30,10 @@ export function InstitutionHome() {
   const institution = base ? resolveInstitution(base) : undefined
   const reduceMotion = useReducedMotion()
   const showArchive = searchParams.get('vista') === 'archivo'
+  usePageMeta({
+    title: institution?.isActive ? institution.name : undefined,
+    description: institution?.isActive ? institution.description : undefined,
+  })
 
   if (!institution || !institution.isActive) {
     return <Navigate to="/" replace />

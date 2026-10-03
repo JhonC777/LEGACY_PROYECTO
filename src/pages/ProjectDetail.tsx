@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import {
   useCallback,
   useEffect,
@@ -96,6 +97,10 @@ export function ProjectDetail() {
   const institution = base ? resolveInstitution(base) : undefined
   const project = institution ? resolveProjectBySlug(institution, projectSlug) : undefined
   void revision
+  usePageMeta({
+    title: project && institution ? `${project.title} · ${institution.name}` : undefined,
+    description: project ? project.subtitle || project.description : undefined,
+  })
 
   useLayoutEffect(() => {
     scrollRootRef.current = document.querySelector('.explore-scroll')

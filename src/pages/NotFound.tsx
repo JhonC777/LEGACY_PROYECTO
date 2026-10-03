@@ -1,6 +1,8 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { Link } from 'react-router-dom'
 
 export function NotFound() {
+  usePageMeta({ title: 'Página no encontrada', noindex: true })
   return (
     <main
       id="contenido"

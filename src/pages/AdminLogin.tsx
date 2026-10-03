@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/lib/usePageMeta'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Building2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
@@ -99,6 +100,7 @@ export function AdminLogin() {
   const requestedSlug = params.get('institution') ?? ''
   const next = safeAdminNext(params.get('next'))
   const institution = getInstitutionBySlug(requestedSlug)
+  usePageMeta({ title: 'Acceso de administradores', noindex: true })
 
   const remembered = readRemembered()
   const [email, setEmail] = useState(remembered.email)
