@@ -299,7 +299,6 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
               aria-label="Volver al inicio de LEGACY"
             >
               <LegacyMark size="sm" />
-              <span className="legacy-brand-rule" aria-hidden />
               <span className="min-w-0 leading-tight">
                 <LegacyWordmark className="block" />
                 <span className="header-brand-sub hidden truncate text-xs text-legacy-muted sm:block">
@@ -470,12 +469,12 @@ export function PublicHeader({ institution: incoming }: PublicHeaderProps) {
 
             <Link
               to={`/admin/login${institution ? `?institution=${institution.slug}` : ''}`}
-              className="header-action header-action-quiet header-action-compact header-admin-compact"
+              className="header-action header-action-quiet header-action-compact"
               title="Panel de administración institucional"
               aria-label="Administrador"
             >
               <UserRound className="h-4 w-4" aria-hidden />
-              <span className="header-action-label">Administrador</span>
+              <span className="header-action-label hidden sm:inline">Administrador</span>
             </Link>
 
             <button

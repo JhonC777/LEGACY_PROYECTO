@@ -1,82 +1,86 @@
 import { Compass } from 'lucide-react'
 import type { Institution } from '@/data/mockInstitutions'
-import { InstitutionCard, type InstitutionFacts } from './InstitutionCard'
+import { cn } from '@/lib/cn'
+import { riseStyle } from '@/lib/rise'
+import { HomeIsland } from './HomeIsland'
+import { InstitutionCard } from './InstitutionCard'
 
 type InstitutionSelectorProps = {
   institutions: Institution[]
   onSelect: (institution: Institution) => void
   onExploreAll: () => void
+  awakened?: boolean
   projectCounts?: Record<string, number>
-  facts?: Record<string, InstitutionFacts>
 }
 
 const VISIBLE_COUNT = 3
 
-/** Casas del archivo: la abierta en grande; las próximas, en fichas discretas. */
 export function InstitutionSelector({
   institutions,
   onSelect,
   onExploreAll,
+  awakened = true,
   projectCounts,
-  facts,
 }: InstitutionSelectorProps) {
   const visible = institutions.slice(0, VISIBLE_COUNT)
-  const open = visible.filter((institution) => institution.isActive)
-  const soon = visible.filter((institution) => !institution.isActive)
+  const openCount = visible.filter((institution) => institution.isActive).length
+  const soonCount = visible.length - openCount
   const empty = visible.length === 0
 
   return (
-    <div className="home-houses">
-      <header className="home-section-head home-reveal">
-        <p className="home-eyebrow">Casas del archivo</p>
-        <h2 className="home-section-title">Instituciones</h2>
-        <p className="home-section-sub">
-          Cada institución conserva su propio archivo académico. Hoy está abierta Fe y Alegría; las
-          demás casas siguen en preparación.
-        </p>
-        {!empty ? (
-          <p className="home-pill-note">
-            <span className="home-dot" aria-hidden />
-            {open.length} disponible
-            {soon.length > 0 ? ` · ${soon.length} próxima${soon.length === 1 ? '' : 's'}` : null}
-          </p>
-        ) : null}
-      </header>
+    <div className="home-threshold-stack mx-auto flex min-h-0 w-full max-w-md flex-col lg:mx-0 lg:max-w-none">
+      <div
+        className={cn('legacy-rise home-threshold-island-wrap', !awakened && 'is-dormant')}
+        style={riseStyle(awakened ? 0.7 : 0, 0.75, 18)}
+      >
+        <HomeIsland
+          className="home-threshold-island"
+          panelClassName="home-threshold-panel flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-5 sm:py-5"
+        >
+          <div className="home-threshold-head">
+            <p className="home-threshold-kicker">Casas del archivo</p>
+            <p className="home-threshold-title">Instituciones</p>
+            <p className="home-threshold-copy">
+              Cada institución conserva su propio archivo académico. Hoy está
+              abierta Fe y Alegría; las demás casas siguen en preparación.
+            </p>
+            {!empty ? (
+              <p className="home-threshold-ledger">
+                {openCount} disponible
+                {soonCount > 0
+                  ? ` · ${soonCount} próxima${soonCount === 1 ? '' : 's'}`
+                  : null}
+              </p>
+            ) : null}
+          </div>
 
-      {empty ? (
-        <p className="home-section-sub" role="status">
-          Aún no hay casas publicadas en el archivo.
-        </p>
-      ) : (
-        <div className={soon.length ? 'home-houses-grid' : 'home-houses-grid is-single'}>
-          {open.map((institution) => (
-            <InstitutionCard
-              key={institution.id}
-              institution={institution}
-              index={visible.indexOf(institution)}
-              onSelect={onSelect}
-              projectCount={projectCounts?.[institution.slug]}
-              facts={facts?.[institution.slug]}
-            />
-          ))}
-          {soon.length ? (
-            <div className="home-houses-soon">
-              {soon.map((institution) => (
+          {empty ? (
+            <p className="home-threshold-copy" role="status">
+              Aún no hay casas publicadas en este umbral.
+            </p>
+          ) : (
+            <div className="legacy-hidden-scroll relative flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
+              {visible.map((institution, index) => (
                 <InstitutionCard
                   key={institution.id}
                   institution={institution}
-                  index={visible.indexOf(institution)}
+                  index={index}
                   onSelect={onSelect}
+                  awakened={awakened}
+                  projectCount={projectCounts?.[institution.slug]}
                 />
               ))}
             </div>
-          ) : null}
-        </div>
-      )}
+          )}
+        </HomeIsland>
+      </div>
 
-      <div className="home-houses-more home-reveal">
-        <button type="button" className="home-text-link" onClick={onExploreAll}>
-          <Compass className="home-text-link-icon" aria-hidden />
+      <div
+        className={cn('legacy-rise mt-3 shrink-0 lg:mt-[0.65rem]', !awakened && 'is-dormant')}
+        style={riseStyle(awakened ? 1.05 : 0, 0.55, 10)}
+      >
+        <button type="button" className="home-explore-link" onClick={onExploreAll}>
+          <Compass className="h-3.5 w-3.5" aria-hidden />
           Explorar el archivo público
         </button>
       </div>
