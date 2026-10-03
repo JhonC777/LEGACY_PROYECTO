@@ -45,10 +45,10 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
       text: project.results,
       icon: Target,
     },
-  ]
+  ].filter((step) => step.text?.trim())
 
   return (
-    <section id="proceso" className="project-block" aria-labelledby="proceso-title">
+    <section className="project-block" aria-labelledby="proceso-title">
       <motion.div
         {...(reduceMotion
           ? {}

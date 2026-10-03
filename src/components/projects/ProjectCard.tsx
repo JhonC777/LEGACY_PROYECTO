@@ -3,6 +3,7 @@ import '@/styles/project.css'
 import { Link, useLocation } from 'react-router-dom'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { SmartImage } from '@/components/ui/SmartImage'
+import { GeneratedCover } from '@/components/projects/GeneratedCover'
 import {
   DEMO_INSTITUTIONS,
   getProjectHref,
@@ -49,7 +50,7 @@ export function ProjectCard({
 
   const resources = (
     [
-      { key: 'doc', label: 'Doc', url: project.docUrl, Icon: FileText, fallback: 'documento-del-proyecto' },
+      { key: 'doc', label: 'Documento', url: project.docUrl, Icon: FileText, fallback: 'documento-del-proyecto' },
       { key: 'video', label: 'Video', url: project.videoUrl, Icon: Play, fallback: 'video-del-proyecto' },
       { key: 'pdf', label: 'PDF', url: project.pdfUrl, Icon: FileType2, fallback: 'informe-del-proyecto.pdf' },
     ] as const
@@ -112,7 +113,7 @@ export function ProjectCard({
   const stamps = (
     <div className="knowledge-fragment-stamps" aria-label="Recursos disponibles">
       {resources.map(({ key, label, href: resourceHref, Icon, external, download }) => {
-        const className = 'knowledge-fragment-stamp'
+        const className = cn('knowledge-fragment-stamp ftag', key === 'video' ? 'ftag-video' : 'ftag-pdf')
         const inner = (
           <>
             <Icon className="h-3.5 w-3.5" aria-hidden />
@@ -177,6 +178,16 @@ export function ProjectCard({
           src={project.coverImage}
           alt={`Portada de ${project.title}`}
           className="knowledge-fragment-image"
+          fallback={
+            <GeneratedCover
+              area={project.area}
+              title={project.title}
+              year={project.year}
+              seed={project.slug}
+              institution={institution?.shortName}
+              showText={!hero}
+            />
+          }
         />
         <span aria-hidden className="knowledge-fragment-grain" />
         <span aria-hidden className="knowledge-fragment-scrim" />
