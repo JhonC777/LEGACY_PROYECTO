@@ -1,5 +1,25 @@
 /* Portada institucional — umbral de un núcleo de conocimiento */
 
+/*
+  La foto de portada queda por debajo del cielo de partículas compartido: ni el shell,
+  ni el scroll, ni la portada crean contexto de apilamiento, y la foto baja a z-index -1.
+*/
+.explore-shell.is-institution-cover,
+.explore-shell.is-institution-cover > .explore-scroll,
+.explore-shell.is-institution-cover .institution-cover {
+  isolation: auto;
+  z-index: auto;
+}
+
+.explore-shell.is-institution-cover .institution-cover-photo {
+  z-index: -1;
+}
+
+/* Las nebulosas propias (con violeta) las reemplaza el cielo compartido. */
+.explore-shell .institution-cover-sky {
+  display: none;
+}
+
 .institution-cover {
   position: relative;
   isolation: isolate;

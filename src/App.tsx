@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RouteScrollManager } from '@/components/navigation/RouteScrollManager'
 import { RouteFallback } from '@/components/navigation/RouteFallback'
 import { GlassButtonEffects } from '@/components/ui/GlassButtonEffects'
+import { ParticleSky } from '@/components/atmosphere/sky/ParticleSky'
 import { AdminSessionProvider } from '@/admin/session'
 import { PILOT_CATALOG_PATH, PILOT_COLLECTIONS_PATH } from '@/data/demoData'
 import { HomeEntry } from '@/pages/HomeEntry'
@@ -58,6 +59,7 @@ export default function App() {
       <AdminSessionProvider>
         <RouteScrollManager />
         <GlassButtonEffects />
+        <ParticleSky />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<HomeEntry />} />

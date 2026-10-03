@@ -1,0 +1,98 @@
+/*
+  LEGACY · Cielo de partículas de las páginas internas (variante serena del Home).
+  Oro, negro y plata; sin violeta. Un velo baja el brillo detrás de la columna de lectura.
+*/
+
+.legacy-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #08090c;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.6s ease,
+    visibility 0s linear 0.6s;
+}
+
+.legacy-sky.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+
+.legacy-sky-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Velo de lectura: más oscuro en la columna central, libre en los márgenes. */
+.legacy-sky-layer.is-veil {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(8 9 12 / 0.06) 0%,
+      rgb(8 9 12 / 0.46) 24%,
+      rgb(8 9 12 / 0.5) 50%,
+      rgb(8 9 12 / 0.46) 76%,
+      rgb(8 9 12 / 0.06) 100%
+    );
+}
+
+/* Sobre la foto de portada institucional: el cielo se vuelve transparente y la foto queda debajo. */
+.legacy-sky.is-photo {
+  background: transparent;
+}
+
+.legacy-sky.is-photo .is-backdrop,
+.legacy-sky.is-photo .is-veil {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .legacy-sky-layer.is-veil {
+    background: linear-gradient(
+      180deg,
+      rgb(8 9 12 / 0.04) 0%,
+      rgb(8 9 12 / 0.1) 26%,
+      rgb(8 9 12 / 0.44) 48%,
+      rgb(8 9 12 / 0.5) 100%
+    );
+  }
+}
+
+/*
+  Rendimiento: un backdrop-filter sobre un lienzo animado se recalcula en cada cuadro.
+  Con el cielo activo, las superficies grandes cambian el desenfoque por un fondo
+  más sólido (mismo tono); los controles pequeños conservan su vidrio.
+*/
+.has-legacy-sky :is(
+    .knowledge-fragment,
+    .explore-card,
+    .explore-stat-bar,
+    .project-sheet,
+    .project-subnav,
+    .process-card,
+    .resource-card,
+    .glass-surface-strong
+  ) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Las que eran vidrio transparente reciben una base oscura bajo su degradado. */
+.has-legacy-sky :is(
+    .explore-card,
+    .explore-stat-bar,
+    .project-sheet,
+    .process-card,
+    .resource-card,
+    .glass-surface-strong
+  ) {
+  background-color: rgb(11 12 17 / 0.62);
+}

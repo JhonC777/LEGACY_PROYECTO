@@ -33,7 +33,7 @@ export function InstitutionCover({
   return (
     <main id="contenido" className="institution-cover">
       {institution.coverImage ? (
-        <div className="institution-cover-photo" aria-hidden>
+        <div className="institution-cover-photo" data-sky-photo aria-hidden>
           <img src={institution.coverImage} alt="" />
           <span className="institution-cover-veil" />
         </div>
