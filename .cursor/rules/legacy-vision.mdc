@@ -44,27 +44,44 @@ Tokens reales en `src/index.css` (`@theme`):
 - `--color-legacy-surface` `#11131a` (también `--color-legacy-surface-soft` `#171923`)
 - `--color-legacy-gold` `#d6b878`, acento principal (también `--color-legacy-gold-soft` `#f0d9a0`)
 - `--color-legacy-white` `#f7f5ef`
-- `--color-legacy-muted` `#c8cad3`
-- `--color-legacy-violet` `#7662c9`, sutil
+- `--color-legacy-muted` `#c8cad3` (plata; con `#e6e8ee` como plata clara)
+- `--color-legacy-grey` `#a6a8b2`, texto secundario
+- `--color-legacy-violet` `#7662c9`: no se usa en fondos ni partículas
 - `--color-legacy-border`
 
-`#a6a8b2` no es un token de tema. No usarlo como paleta. Los tokens `--color-explore-*` no son la identidad de marca.
+Los tokens `--color-explore-*` no son la identidad de marca.
 
-Home cósmico elegante (CSS + Motion), no videojuego ni partículas excesivas.  
 Iconos Lucide, sin emojis de UI. Respetar `prefers-reduced-motion`.
+
+**Partículas oro/plata** (motor propio en canvas, `src/components/home/particles/`; sin librerías):
+
+- Home: hero de partículas con figuras y leyenda I–VI.
+- Páginas internas: un solo cielo compartido, más sereno (`ParticleSky` en `App.tsx`, `src/components/atmosphere/sky/`): menos partículas, sin bloom, no se reinicia al navegar. Apagado en `/` (tiene su hero), `/admin` y login.
+- Figuras solo en espacio libre (nunca bajo texto ni tarjetas), se disuelven al hacer scroll, ~16–20 s entre figuras en el cielo.
+- Figuras: escudo, libro, birrete, constelación, bombilla, árbol con raíces, pluma, reloj de arena, brújula, llave. Mapa: explorar → brújula + libro; archivo de la institución → llave + libro; ficha → birrete + bombilla + pluma; institución → escudo + árbol; resto → constelación + reloj de arena. Home: escudo, libro, árbol, bombilla, birrete, constelación.
+- Movimiento reducido: cielo estrellado estático. Equipos modestos (≤4 núcleos o ≤4 GB): menos partículas. Pausa con la pestaña oculta. 60 fps; superficies grandes sin `backdrop-filter` sobre el cielo animado.
+
+**Botones Liquid Glass** (`src/styles/buttons-glass.css`, sobre las clases existentes):
+
+- `.home-btn.is-gold`, `.btn-primary`, `.home-cta.is-primary` → vidrio dorado con texto oscuro `#14110c`.
+- `.home-btn.is-ghost`, `.btn-secondary`, `.home-cta.is-ghost` → vidrio claro con texto blanco.
+- `.header-action-gold`, `.header-action-quiet`, `.header-admin-icon`, `.nav-menu-toggle` → vidrio de cabecera.
+- Objetivos de 44 px. Respaldo sólido sin `backdrop-filter`, con `prefers-reduced-transparency` o alto contraste; sin movimiento con `prefers-reduced-motion`.
+- El panel `/admin`, el login y «Sin permisos» quedan fuera (`.admin-shell`, `.admin-drawer`, `.admin-auth-stage`, `.admin-no-access`).
 
 **Tipografía** autoalojada. `@font-face` en `src/styles/fonts.css` (woff2 en `src/assets/fonts`), importada desde `src/index.css`. Nada de fuentes externas.
 
 - `--font-brand`: Cinzel — marca y titulares
 - `--font-display`: Cormorant Garamond — editorial
 - `--font-sans`: Manrope — UI (cuerpo)
+- `--font-wordmark`: Ballet — solo el wordmark «Legacy» y el lema. En nada más.
 
 **Móvil** (estándar de `cursor/mobile-nav-school-colors-9baa`, aunque ese PR no esté fusionado): drawer en todas las rutas, cierre con Escape, bloqueo de scroll, controles de 44×44, tap targets de mínimo 44 px y ningún texto menor de 12 px. Espaciado, radios y tipo unificados. Esa rama no autoriza colores del colegio.
 
 ## Stack (conservar)
 
 React + Vite, Tailwind, Framer Motion, Lucide, Supabase (Auth solo admins, DB, Storage, RLS) y monitoreo de errores en el navegador.  
-No instalar Three.js / R3F / GSAP / Lenis / partículas salvo necesidad justificada.
+No instalar Three.js / R3F / GSAP / Lenis / librerías de partículas salvo necesidad justificada (las partículas son el motor propio).
 
 ## Datos y seguridad
 
