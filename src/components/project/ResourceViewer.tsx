@@ -9,17 +9,25 @@ import { cn } from '@/lib/cn'
 import '@/styles/info.css'
 
 /**
- * Orígenes desde los que la CSP de producción (vercel.json → frame-src) deja
- * incrustar un PDF. Hoy frame-src solo admite youtube-nocookie y object-src es
- * 'none', así que la lista está vacía: los PDF se abren en una pestaña nueva
- * con el visor nativo del navegador. Si algún día se amplía frame-src, basta con
- * agregar el origen aquí.
+ * Único prefijo que la CSP de producción (vercel.json → frame-src) deja
+ * incrustar: los enlaces firmados del bucket privado `archive` del Storage de
+ * Legacy. Solo esos PDF se ven dentro de la página; cualquier otro PDF (otro
+ * bucket, otro host o el propio origen) se abre en una pestaña nueva con el
+ * visor nativo del navegador. Si se cambia aquí, hay que cambiar frame-src.
  */
-const PDF_FRAME_ORIGINS: readonly string[] = []
+const PDF_FRAME_ORIGINS: readonly string[] = [
+  'https://padsyhitxmbxjifpvzhj.supabase.co/storage/v1/object/sign/archive/',
+]
 
 function canFramePdf(href: string) {
   try {
-    return PDF_FRAME_ORIGINS.includes(new URL(href, window.location.href).origin)
+    const url = new URL(href)
+    if (url.username || url.password || url.port) return false
+    // Se compara la URL normalizada (sin `..`, ni mayúsculas en el host).
+    const normalized = `${url.origin}${url.pathname}`
+    return PDF_FRAME_ORIGINS.some(
+      (prefix) => href.startsWith(prefix) && normalized.startsWith(prefix),
+    )
   } catch {
     return false
   }
@@ -52,15 +60,17 @@ function ViewerDialog({
   const [duration, setDuration] = useState<number | null>(null)
   useDialog(true, panelRef, onClose, closeRef)
 
-  const resource = resources.find((item) => item.id === target.id) ?? resources[0]
+  const resource: ProjectResource | undefined =
+    resources.find((item) => item.id === target.id) ?? resources[0]
   const images = resource?.images ?? []
   const index = Math.min(Math.max(target.index, 0), Math.max(images.length - 1, 0))
-  const parts = useResourceMeta(resource, duration)
+  // Admite recurso vacío: el hook corre siempre y el guard de abajo cierra el visor.
+  const parts = useResourceMeta(resource ?? null, duration)
 
   useEffect(() => setDuration(null), [resource?.id])
 
   useEffect(() => {
-    if (images.length < 2) return
+    if (!resource || images.length < 2) return
     const onKey = (event: KeyboardEvent) => {
       const tag = (event.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
@@ -70,7 +80,7 @@ function ViewerDialog({
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [images.length, index, onChange, resource?.id])
+  }, [images.length, index, onChange, resource])
 
   if (!resource) return null
 
@@ -180,7 +190,7 @@ function ViewerDialog({
             <div className="viewer-thumbs" role="group" aria-label="Miniaturas">
               {images.map((image, imageIndex) => (
                 <button
-                  key={image}
+                  key={`${imageIndex}-${image}`}
                   type="button"
                   className={cn('viewer-thumb', imageIndex === index && 'is-active')}
                   aria-label={`Ver imagen ${imageIndex + 1}`}
