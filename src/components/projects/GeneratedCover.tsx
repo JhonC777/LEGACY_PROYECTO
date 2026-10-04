@@ -1,3 +1,4 @@
+import { LegacyName } from '@/components/brand/LegacyName'
 import { useId, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import '@/styles/info.css'
@@ -183,7 +184,7 @@ export function GeneratedCover({
       <span className="generated-cover-veil" aria-hidden />
       <span className="generated-cover-frame" aria-hidden />
       <span className="generated-cover-mark" aria-hidden>
-        Legacy
+        <LegacyName />
       </span>
       {withText ? (
         <span className="generated-cover-text" aria-hidden>

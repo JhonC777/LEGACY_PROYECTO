@@ -1,3 +1,4 @@
+import { withLegacyName } from '@/components/brand/LegacyName'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from 'lucide-react'
@@ -250,7 +251,7 @@ function ViewerDialog({
               </>
             ) : null}
           </span>
-          <span>Se abre dentro de la ficha, sin salir de Legacy</span>
+          <span>{withLegacyName('Se abre dentro de la ficha, sin salir de Legacy')}</span>
         </footer>
       </section>
     </div>
@@ -322,7 +323,7 @@ function Stage({
         {isPdf
           ? 'El PDF se abre con el visor de tu navegador, en una pestaña nueva.'
           : isVideo
-            ? 'Este video está alojado fuera de Legacy y se abre en una pestaña nueva.'
+            ? withLegacyName('Este video está alojado fuera de Legacy y se abre en una pestaña nueva.')
             : 'Este archivo se descarga para abrirlo con tu programa habitual.'}
       </p>
       <div className="viewer-paper-actions">

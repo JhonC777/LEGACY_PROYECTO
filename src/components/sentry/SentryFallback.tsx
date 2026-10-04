@@ -1,3 +1,4 @@
+import { LegacyName } from '@/components/brand/LegacyName'
 import { AlertCircle } from 'lucide-react'
 
 function reloadPage() {
@@ -26,7 +27,7 @@ export function SentryFallback() {
           <AlertCircle className="h-6 w-6" aria-hidden />
         </span>
         <p className="font-brand text-sm font-semibold tracking-[0.22em] text-[#F7F5EF] uppercase">
-          LEGACY
+          <LegacyName />
         </p>
         <h1 className="mt-4 font-brand text-[1.75rem] leading-tight font-semibold text-[#F7F5EF] sm:text-[2rem]">
           Algo salió mal
