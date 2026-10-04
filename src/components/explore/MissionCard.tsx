@@ -1,4 +1,5 @@
 import { Archive, Rocket, Star } from 'lucide-react'
+import '@/styles/celestial-cards.css'
 
 const VALUES = [
   {
@@ -20,7 +21,7 @@ const VALUES = [
 
 export function MissionCard() {
   return (
-    <section id="mision" className="explore-card mt-4 rounded-2xl p-5 lg:p-6">
+    <section id="mision" className="explore-card celestial-card mt-4 rounded-2xl p-5 lg:p-6">
       <h2 className="font-brand text-xl font-semibold text-explore-ink lg:text-2xl">
         Preservamos lo que merece ser recordado.
       </h2>

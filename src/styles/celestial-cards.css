@@ -1,0 +1,125 @@
+/*
+  LEGACY · Tarjetas informativas celestiales (proceso de la ficha, «En 30 segundos», misión).
+  Vidrio oscuro + polvo de estrellas oro/plata + motivo de constelación + brillo de nebulosa.
+  Solo CSS y SVG estáticos de /public/celestial (CSP 'self'). Sin violeta.
+*/
+
+:is(.process-card, .project-summary-item, .explore-card).celestial-card {
+  --celestial-constellation: url('/celestial/constellation-a.svg');
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgb(214 184 120 / 0.16);
+  background:
+    linear-gradient(125deg, rgb(240 217 160 / 0.07) 0%, transparent 34%),
+    radial-gradient(ellipse 75% 60% at 100% 0%, rgb(214 184 120 / 0.11), transparent 70%),
+    radial-gradient(ellipse 65% 55% at 0% 100%, rgb(200 202 211 / 0.06), transparent 72%),
+    linear-gradient(170deg, rgb(20 22 30 / 0.86), rgb(10 11 15 / 0.9) 55%, rgb(8 9 12 / 0.92));
+  box-shadow:
+    inset 0 1px 0 rgb(247 245 239 / 0.07),
+    inset 0 0 0 1px rgb(8 9 12 / 0.3),
+    0 18px 44px -26px rgb(0 0 0 / 0.85);
+}
+
+/* con el cielo animado detrás, la base queda más sólida (legibilidad) */
+:root.has-legacy-sky :is(.process-card, .project-summary-item, .explore-card).celestial-card {
+  background-color: rgb(10 11 15 / 0.82);
+}
+
+/* polvo de estrellas + constelación en la esquina, más tenue bajo el texto */
+:is(.process-card, .project-summary-item, .explore-card).celestial-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    var(--celestial-constellation) right -0.6rem bottom -0.4rem / 9.5rem auto no-repeat,
+    url('/celestial/stardust.svg') 0 0 / 240px 240px repeat;
+  opacity: 0.42;
+  mask-image: radial-gradient(ellipse 120% 110% at 100% 100%, #000 0%, rgb(0 0 0 / 0.6) 45%, rgb(0 0 0 / 0.28) 100%);
+  -webkit-mask-image: radial-gradient(ellipse 120% 110% at 100% 100%, #000 0%, rgb(0 0 0 / 0.6) 45%, rgb(0 0 0 / 0.28) 100%);
+  pointer-events: none;
+  animation: celestial-card-twinkle 7s ease-in-out infinite;
+}
+
+/* filo de luz oro → plata arriba (vidrio pulido) */
+:is(.process-card, .project-summary-item, .explore-card).celestial-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  z-index: -1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(240 217 160 / 0.55), rgb(230 232 238 / 0.35), transparent);
+  pointer-events: none;
+}
+
+/* variedad: cada tarjeta tiene su constelación (sin que el motivo se repita al lado) */
+:is(li:nth-child(3n + 2) > .celestial-card, .celestial-card:nth-child(3n + 2)) {
+  --celestial-constellation: url('/celestial/constellation-b.svg');
+}
+
+:is(li:nth-child(3n + 3) > .celestial-card, .celestial-card:nth-child(3n + 3)) {
+  --celestial-constellation: url('/celestial/constellation-c.svg');
+}
+
+:is(li:nth-child(3n + 2) > .celestial-card, .celestial-card:nth-child(3n + 2))::before {
+  animation-delay: -2.3s;
+}
+
+:is(li:nth-child(3n + 3) > .celestial-card, .celestial-card:nth-child(3n + 3))::before {
+  animation-delay: -4.6s;
+}
+
+.process-card.celestial-card:hover {
+  border-color: rgb(214 184 120 / 0.38);
+}
+
+.process-card.celestial-card:hover::before {
+  opacity: 0.6;
+}
+
+/* el icono de la tarjeta, como un pequeño sello de vidrio con aro de oro */
+.celestial-card .process-card-icon {
+  border-color: rgb(214 184 120 / 0.38);
+  background:
+    radial-gradient(ellipse 80% 70% at 30% 20%, rgb(240 217 160 / 0.22), transparent 70%),
+    rgb(17 19 26 / 0.7);
+  box-shadow: 0 0 18px -6px rgb(214 184 120 / 0.55);
+}
+
+.celestial-card .project-summary-numeral {
+  background: radial-gradient(ellipse 80% 70% at 30% 20%, rgb(240 217 160 / 0.2), rgb(17 19 26 / 0.6) 75%);
+  box-shadow: 0 0 16px -6px rgb(214 184 120 / 0.6);
+}
+
+/* la misión es una tarjeta ancha: constelación más grande */
+.explore-card.celestial-card::before {
+  background-size: 12rem auto, 240px 240px;
+}
+
+@keyframes celestial-card-twinkle {
+  0%,
+  100% {
+    opacity: 0.36;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.process-card, .project-summary-item, .explore-card).celestial-card::before {
+    animation: none;
+  }
+}
+
+/* «En 30 segundos»: la esquina libre es la superior derecha (el título va a la izquierda) */
+.project-summary-item.celestial-card::before {
+  background-position: right -0.8rem top -0.6rem, 0 0;
+  background-size: 8.5rem auto, 240px 240px;
+  mask-image: radial-gradient(ellipse 120% 110% at 100% 0%, #000 0%, rgb(0 0 0 / 0.55) 45%, rgb(0 0 0 / 0.25) 100%);
+  -webkit-mask-image: radial-gradient(ellipse 120% 110% at 100% 0%, #000 0%, rgb(0 0 0 / 0.55) 45%, rgb(0 0 0 / 0.25) 100%);
+}

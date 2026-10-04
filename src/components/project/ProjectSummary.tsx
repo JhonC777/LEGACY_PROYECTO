@@ -1,5 +1,6 @@
 import type { DemoProject } from '@/data/demoData'
 import '@/styles/info.css'
+import '@/styles/celestial-cards.css'
 
 /**
  * Resume un campo largo a su primera oración (o dos, si la primera es muy corta),
@@ -45,7 +46,7 @@ export function ProjectSummary({ project }: { project: DemoProject }) {
       </div>
       <div className={`project-summary-grid is-${items.length}`}>
         {items.map((item) => (
-          <article key={item.key} className="project-summary-item">
+          <article key={item.key} className="project-summary-item celestial-card">
             <h3>
               <span className="project-summary-numeral" aria-hidden>
                 {item.numeral}

@@ -17,6 +17,7 @@ export function ParticleSky() {
   const rootRef = useRef<HTMLDivElement>(null)
   const backdropRef = useRef<HTMLCanvasElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const bloomRef = useRef<HTMLCanvasElement>(null)
   const ctrl = useRef<SkyController | null>(null)
   const active = isSkyRoute(pathname)
 
@@ -25,7 +26,7 @@ export function ParticleSky() {
     const backdrop = backdropRef.current
     const canvas = canvasRef.current
     if (!root || !backdrop || !canvas) return
-    const sky = createSky({ root, backdrop, canvas })
+    const sky = createSky({ root, backdrop, canvas, bloom: bloomRef.current })
     ctrl.current = sky
     return () => {
       sky.destroy()
@@ -41,6 +42,7 @@ export function ParticleSky() {
   return (
     <div ref={rootRef} className="legacy-sky" aria-hidden>
       <canvas ref={backdropRef} className="legacy-sky-layer is-backdrop" />
+      <canvas ref={bloomRef} className="legacy-sky-layer is-bloom" />
       <canvas ref={canvasRef} className="legacy-sky-layer is-particles" />
       <span className="legacy-sky-layer is-veil" />
     </div>

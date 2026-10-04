@@ -1,7 +1,7 @@
 import { usePageMeta } from '@/lib/usePageMeta'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Building2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Building2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { AdminAuthFrame } from '@/admin/components/AdminAuthFrame'
 import { displayNameFromEmail, useAdminSession } from '@/admin/session'
@@ -43,7 +43,7 @@ function AuthField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold tracking-wide text-legacy-muted uppercase">{label}</span>
+      <span className="auth-celestial-label">{label}</span>
       <span className="admin-auth-field block">
         <span className="admin-auth-field-icon" aria-hidden>
           {icon}
@@ -107,7 +107,8 @@ export function AdminLogin() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(remembered.remember)
-  const [keepSession, setKeepSession] = useState(true)
+  // Apagado por defecto: el acceso suele hacerse en equipos compartidos (eventos, salas).
+  const [keepSession, setKeepSession] = useState(false)
   const [forgot, setForgot] = useState(false)
   const [notice, setNotice] = useState<string | null>(
     params.get('restablecida') === '1' ? 'Contraseña actualizada. Ya puedes entrar.' : null,
@@ -191,39 +192,44 @@ export function AdminLogin() {
     ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } }
     : { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 } }
 
-  const institutionCard = institution ? (
-    <div className="admin-auth-institution">
-      <InstitutionLogo
-        name={institution.name}
-        logoUrl={institution.logoUrl}
-        fallback={institution.shortName}
-        accent={institution.accent}
-        decorative
-        className="h-11 w-11 rounded-xl text-xs font-bold text-white"
-        imageClassName="rounded-lg bg-white/95 p-1"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-sm leading-snug font-semibold text-legacy-white">{institution.name}</p>
-        <p className="text-xs text-legacy-muted">Solo esta institución</p>
-      </div>
-      <Link to="/admin/login" className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
-        Cambiar
-      </Link>
+  // Medallón: el logo de la institución encabeza la tarjeta (celular y escritorio).
+  const institutionLead = institution ? (
+    <div className="auth-medallion-block">
+      <span className="auth-medallion">
+        <span className="auth-medallion-glass">
+          <InstitutionLogo
+            name={institution.name}
+            logoUrl={institution.logoUrl}
+            fallback={institution.shortName}
+            accent={institution.accent}
+            className="auth-medallion-logo font-bold"
+          />
+        </span>
+      </span>
+      <p className="auth-medallion-name">{institution.name}</p>
+      <p className="auth-medallion-meta">
+        <span>Solo esta institución</span>
+        <Link to="/admin/login" className="btn btn-ghost btn-sm auth-tap44" aria-label="Cambiar de institución">
+          <ArrowLeftRight className="h-4 w-4" aria-hidden />
+          Cambiar
+        </Link>
+      </p>
     </div>
   ) : null
+
+  // El selector solo lista instituciones activas (oculta los marcadores de demostración).
+  const selectable = DEMO_INSTITUTIONS.filter((item) => item.isActive)
 
   return (
     <AdminAuthFrame
       kicker="Acceso administrador"
       title="Panel institucional"
-      asideFooter={institutionCard}
+      lead={institutionLead}
     >
       {institution ? (
         <>
-          <div className="md:hidden">{institutionCard}</div>
-
           {session && session.institutionSlug !== institution.slug ? (
-            <p className="mt-3 rounded-2xl border border-amber-300/25 bg-amber-300/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100">
+            <p className="mb-3 rounded-2xl border border-legacy-gold/30 bg-legacy-gold/10 px-3 py-2.5 text-sm leading-relaxed text-legacy-gold-soft">
               Tienes una sesión activa en otra institución. Al entrar aquí se reemplazará.
             </p>
           ) : null}
@@ -234,7 +240,7 @@ export function AdminLogin() {
                 key="forgot"
                 {...fade}
                 transition={{ duration: 0.22 }}
-                className="mt-5 space-y-4"
+                className="space-y-4"
                 onSubmit={sendReset}
                 noValidate
               >
@@ -262,7 +268,7 @@ export function AdminLogin() {
                 </Button>
                 <button
                   type="button"
-                  className="w-full text-center text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft"
+                  className="btn btn-ghost btn-sm auth-tap44 w-full"
                   onClick={() => {
                     setForgot(false)
                     setError(null)
@@ -276,7 +282,7 @@ export function AdminLogin() {
                 key="login"
                 {...fade}
                 transition={{ duration: 0.22 }}
-                className="mt-5 space-y-4"
+                className="space-y-4"
                 onSubmit={handleSubmit}
                 noValidate
               >
@@ -293,14 +299,12 @@ export function AdminLogin() {
                   />
                 </AuthField>
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold tracking-wide text-legacy-muted uppercase">
-                      Contraseña
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="auth-celestial-label">Contraseña</span>
                     {supabaseConfigured ? (
                       <button
                         type="button"
-                        className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft"
+                        className="btn btn-ghost btn-sm auth-tap44 -mt-2"
                         onClick={() => {
                           setForgot(true)
                           setError(null)
@@ -362,7 +366,7 @@ export function AdminLogin() {
           </AnimatePresence>
 
           <p className="admin-auth-note mt-4">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             {supabaseConfigured
               ? 'Usa el correo y la contraseña del administrador de esta institución.'
               : 'Modo demostración en este navegador: el archivo remoto no está conectado.'}
@@ -370,29 +374,30 @@ export function AdminLogin() {
         </>
       ) : (
         <>
-          <p className="text-sm leading-relaxed text-legacy-muted">Elige la institución que administras.</p>
-          <ul className="mt-4 space-y-2">
-            {DEMO_INSTITUTIONS.map((item) => (
-              <li key={item.id}>
+          <p className="auth-celestial-intro">Elige la institución que administras.</p>
+          <ul className="auth-celestial-list">
+            {selectable.map((item) => (
+              <li key={item.id} className="min-w-0">
                 <Link
                   to={`/admin/login?institution=${item.slug}${next ? `&next=${encodeURIComponent(next)}` : ''}`}
-                  className={cn(
-                    'admin-auth-institution transition-colors hover:border-legacy-gold/30',
-                  )}
+                  className="auth-celestial-option"
                 >
-                  <InstitutionLogo
-                    name={item.name}
-                    logoUrl={item.logoUrl}
-                    fallback={item.shortName}
-                    accent={item.accent}
-                    decorative
-                    className="h-10 w-10 rounded-xl text-xs font-bold text-white"
-                    imageClassName="rounded-lg bg-white/95 p-1"
-                  />
+                  <span className="auth-celestial-option-logo" aria-hidden>
+                    <span>
+                      <InstitutionLogo
+                        name={item.name}
+                        logoUrl={item.logoUrl}
+                        fallback={item.shortName}
+                        accent={item.accent}
+                        decorative
+                        className="text-sm font-bold"
+                      />
+                    </span>
+                  </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-legacy-white">{item.name}</span>
-                    <span className="flex items-center gap-1 text-xs text-legacy-muted">
-                      <Building2 className="h-3 w-3" aria-hidden />
+                    <span className="auth-celestial-option-name">{item.name}</span>
+                    <span className="auth-celestial-option-meta">
+                      <Building2 className="h-3.5 w-3.5" aria-hidden />
                       Espacio institucional
                     </span>
                   </span>
@@ -410,14 +415,14 @@ export function AdminLogin() {
 function Status({ notice, error }: { notice: string | null; error: string | null }) {
   if (notice) {
     return (
-      <p className="rounded-2xl border border-legacy-gold/30 bg-legacy-gold/10 px-3 py-2.5 text-xs text-legacy-gold-soft">
+      <p className="rounded-2xl border border-legacy-gold/30 bg-legacy-gold/10 px-3 py-2.5 text-sm text-legacy-gold-soft">
         {notice}
       </p>
     )
   }
   if (error) {
     return (
-      <p role="alert" className="rounded-2xl border border-red-400/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-200">
+      <p role="alert" className="rounded-2xl border border-red-400/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-200">
         {error}
       </p>
     )
