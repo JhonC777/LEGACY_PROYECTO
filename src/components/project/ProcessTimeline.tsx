@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { CircleAlert, Lightbulb, Route, Target } from 'lucide-react'
 import type { DemoProject } from '@/data/demoData'
+import '@/styles/celestial-cards.css'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -85,7 +86,7 @@ export function ProcessTimeline({ project }: { project: DemoProject }) {
                     transition: { duration: 0.55, delay: 0.06 * index, ease: EASE },
                   })}
             >
-              <article className="process-card">
+              <article className="process-card celestial-card">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="process-cell-index">{String(index + 1).padStart(2, '0')}</p>

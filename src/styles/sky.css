@@ -31,16 +31,21 @@
   height: 100%;
 }
 
+/* Brillo de las figuras: lienzo pequeño que el compositor amplía (desenfoque gratis). */
+.legacy-sky-layer.is-bloom {
+  opacity: 0.95;
+}
+
 /* Velo de lectura: más oscuro en la columna central, libre en los márgenes. */
 .legacy-sky-layer.is-veil {
   background:
     linear-gradient(
       90deg,
-      rgb(8 9 12 / 0.06) 0%,
-      rgb(8 9 12 / 0.46) 24%,
-      rgb(8 9 12 / 0.5) 50%,
-      rgb(8 9 12 / 0.46) 76%,
-      rgb(8 9 12 / 0.06) 100%
+      rgb(8 9 12 / 0.04) 0%,
+      rgb(8 9 12 / 0.4) 24%,
+      rgb(8 9 12 / 0.44) 50%,
+      rgb(8 9 12 / 0.4) 76%,
+      rgb(8 9 12 / 0.04) 100%
     );
 }
 
@@ -58,10 +63,10 @@
   .legacy-sky-layer.is-veil {
     background: linear-gradient(
       180deg,
-      rgb(8 9 12 / 0.04) 0%,
-      rgb(8 9 12 / 0.1) 26%,
-      rgb(8 9 12 / 0.44) 48%,
-      rgb(8 9 12 / 0.5) 100%
+      rgb(8 9 12 / 0.03) 0%,
+      rgb(8 9 12 / 0.08) 26%,
+      rgb(8 9 12 / 0.38) 48%,
+      rgb(8 9 12 / 0.44) 100%
     );
   }
 }

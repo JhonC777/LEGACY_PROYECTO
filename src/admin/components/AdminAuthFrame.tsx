@@ -1,55 +1,68 @@
 import type { ReactNode } from 'react'
 import '@/styles/admin.css'
+import '@/styles/admin-auth.css'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { CelestialSky } from '@/components/atmosphere/celestial/CelestialSky'
 import { LegacyMark } from '@/components/brand/LegacyMark'
-import { CosmicBackground } from '@/components/entry/CosmicBackground'
 import { LEGACY_SLOGAN } from '@/lib/brand'
+import { cn } from '@/lib/cn'
 
 type AdminAuthFrameProps = {
   kicker: string
   title: string
   backTo?: string
   backLabel?: string
+  /** Bloque principal arriba del título (p. ej. medallón con el logo de la institución). */
+  lead?: ReactNode
   asideFooter?: ReactNode
   children: ReactNode
 }
 
+/**
+ * Marco de las pantallas de acceso (selector, ingreso, nueva clave).
+ * Una sola columna en celulares y tabletas táctiles; dos columnas solo con puntero fino y
+ * pantalla ancha. La jerarquía es la misma en ambos: medallón → kicker → título → formulario.
+ */
 export function AdminAuthFrame({
   kicker,
   title,
   backTo = '/',
   backLabel = 'Volver al inicio',
+  lead,
   asideFooter,
   children,
 }: AdminAuthFrameProps) {
   return (
     <main className="app-shell relative">
-      <CosmicBackground />
-      <div className="legacy-hidden-scroll relative z-10 flex h-full items-center justify-center overflow-y-auto px-4 py-6 sm:px-6">
-        <section className="admin-auth-stage">
-          <aside className="admin-auth-aside">
-            <div className="admin-auth-aside-copy">
-              <LegacyMark size="md" />
-              <p className="admin-auth-kicker mt-8">{kicker}</p>
-              <h1 className="admin-auth-title">{title}</h1>
-              <div className="admin-auth-rule" aria-hidden>
+      <CelestialSky />
+      <div className="legacy-hidden-scroll auth-celestial-scroll">
+        <section className={cn('auth-celestial-card admin-auth-stage', lead != null && 'has-lead')}>
+          <header className="auth-celestial-aside">
+            <span className="auth-celestial-aside-stars" aria-hidden />
+            <div className="auth-celestial-head">
+              {lead ?? <LegacyMark size="md" className="auth-celestial-mark" />}
+              <p className="auth-celestial-kicker">{kicker}</p>
+              <h1 className="auth-celestial-title">{title}</h1>
+              <div className="admin-auth-rule auth-celestial-rule" aria-hidden>
                 <span />
                 <span />
                 <span />
               </div>
-              <p className="admin-auth-slogan">{LEGACY_SLOGAN}</p>
+              <p className="auth-celestial-slogan">{LEGACY_SLOGAN}</p>
             </div>
-            {asideFooter ? <div className="relative">{asideFooter}</div> : null}
-          </aside>
-          <div className="admin-auth-panel">
-            <div className="admin-auth-mobile-head">
-              <p className="admin-auth-kicker">{kicker}</p>
-              <h1 className="admin-auth-title text-[1.85rem]">{title}</h1>
-            </div>
+            {asideFooter ? <div className="auth-celestial-aside-footer">{asideFooter}</div> : null}
+            {lead ? (
+              <p className="auth-celestial-signature">
+                <LegacyMark size="sm" />
+                <span>Legacy · Archivo institucional</span>
+              </p>
+            ) : null}
+          </header>
+          <div className="auth-celestial-panel">
             {children}
-            <div className="mt-6 flex justify-center">
-              <Link to={backTo} className="btn btn-ghost btn-sm">
+            <div className="auth-celestial-back">
+              <Link to={backTo} className="btn btn-ghost btn-sm auth-tap44">
                 <ArrowLeft className="h-4 w-4" aria-hidden />
                 {backLabel}
               </Link>

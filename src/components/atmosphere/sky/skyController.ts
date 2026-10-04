@@ -14,6 +14,8 @@ export type SkyElements = {
   root: HTMLElement
   backdrop: HTMLCanvasElement
   canvas: HTMLCanvasElement
+  /** Lienzo pequeño de brillo (solo se pinta mientras hay figura). */
+  bloom?: HTMLCanvasElement | null
 }
 
 export type SkyController = {
@@ -183,19 +185,38 @@ export function createSky(el: SkyElements): SkyController {
   let frame = 0
   let lastScroll = -1e9
   const perf = { acc: 0, frames: 0 }
-  // variante serena: densidad y brillo por debajo del Home
+  // variante serena, pero visible: más polvo, algo más grande y luminoso que antes
   const lowEnd =
     (navigator.hardwareConcurrency || 8) <= 4 ||
     ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4
-  const density = () => (coarse ? 0.44 : 0.42) * (lowEnd ? 0.7 : 1)
+  const density = () => (coarse ? 0.58 : 0.5) * (lowEnd ? 0.7 : 1)
   const BRIGHT = 0.95
+  /*
+    Figuras más densas: durante la figura se suma «polvo latente» (hasta el tope del campo)
+    que se condensa en la figura y se apaga al disolverse. Fuera de la figura no cuesta nada.
+  */
+  const surge = { on: false, base: 0 }
+  // si la deriva ya iba justa de cuadros (slow), la figura suma la mitad de polvo latente
+  let slow = false
+  const figureBudget = () => (coarse ? (lowEnd ? 760 : 1250) : lowEnd ? 2000 : 3000) * (slow ? 0.6 : 1)
 
   const ensure = () => {
     if (field || dead) return Boolean(field)
     try {
       // sin capa de brillo (bloom): componerla a pantalla completa cuesta cuadros y aquí
       // la variante es serena; las figuras se leen bien solo con las partículas
-      field = new ParticleField(el.canvas, { coarse, seed: 23, bloom: null, autopilot: false })
+      // brillo solo de la figura (lienzo reducido); fuera de la figura no se dibuja
+      field = new ParticleField(el.canvas, {
+        coarse,
+        seed: 23,
+        bloom: el.bloom ?? null,
+        autopilot: false,
+        celebrate: true,
+        nearGlow: true,
+      })
+      field.driftGain = 1.45
+      field.bloomBlur = false
+      field.bloomStride = 2
       backdrop = new Backdrop(el.backdrop)
     } catch {
       field = null
@@ -223,6 +244,7 @@ export function createSky(el: SkyElements): SkyController {
   const renderStatic = () => {
     if (!field || !backdrop) return
     field.cancelShape()
+    endSurge()
     field.fade = BRIGHT
     backdrop.draw(0, field.par, 0.6)
     field.render(true)
@@ -239,6 +261,8 @@ export function createSky(el: SkyElements): SkyController {
     sized = key
     coarse = mqCoarse.matches || w < 700
     field.coarse = coarse
+    field.sizeScale = coarse ? 1.22 : 1.25
+    endSurge()
     let dpr = Math.min(window.devicePixelRatio || 1, 1.5)
     if (w * h * dpr * dpr > 2.6e6) dpr = Math.max(1, Math.sqrt(2.6e6 / (w * h)))
     if (field.shape) field.cancelShape()
@@ -250,6 +274,13 @@ export function createSky(el: SkyElements): SkyController {
     else field.render(false)
   }
 
+  function endSurge() {
+    if (!field || !surge.on) return
+    surge.on = false
+    field.n = surge.base
+    field.ghostFrom = 1e9
+  }
+
   /* ---------- Figuras: ocasionales, contextuales y en espacio libre ---------- */
   const scrollerNow = () => document.querySelector<HTMLElement>('.explore-scroll')
   const tryForm = () => {
@@ -259,9 +290,22 @@ export function createSky(el: SkyElements): SkyController {
     if (!shape) return false
     const box = findFreeStage(coarse, shape.aspect)
     if (!box) return false
-    const budget = Math.min(coarse ? 520 : 1500, Math.round(field.n * (coarse ? 0.62 : 0.58)))
+    // ~2,5× más partículas en la figura: se suma polvo latente hasta el tope del campo
+    const base = field.n
+    const total = Math.max(base, Math.min(field.maxN, base + figureBudget()))
+    const budget = Math.min(figureBudget(), Math.round(total * 0.68))
+    if (total > base) {
+      field.scatterGhosts(base, total, box)
+      field.ghostFrom = base
+      field.n = total
+      surge.on = true
+      surge.base = base
+    }
     const tg = shapeTargets(shape, box, budget, 31 + sched.next, 1.1)
-    if (!field.formShape(tg, { mode: MODES[name], gather: 3.2, hold: 3.6, everywhere: true })) return false
+    if (!field.formShape(tg, { mode: MODES[name], gather: 3.2, hold: 3.6, everywhere: true })) {
+      endSurge()
+      return false
+    }
     sched.next++
     sched.scroller = scrollerNow()
     sched.scrollTop = sched.scroller?.scrollTop ?? 0
@@ -270,6 +314,7 @@ export function createSky(el: SkyElements): SkyController {
 
   const schedule = (dt: number, now: number) => {
     if (!field) return
+    if (surge.on && field.shapePhase() === 'drift') endSurge()
     if (field.shapePhase() !== 'drift') {
       // la figura se suelta si la página se desplaza: nunca queda encima del contenido
       const s = sched.scroller
@@ -313,8 +358,9 @@ export function createSky(el: SkyElements): SkyController {
     perf.frames++
     if (perf.frames >= 90) {
       const avg = perf.acc / perf.frames
+      if (!surge.on) slow = avg > 0.019
       const minN = coarse ? 220 : 500
-      if (avg > 0.021 && field.n > minN && !field.shape) field.n = Math.max(minN, Math.round(field.n * 0.85))
+      if (avg > 0.021 && field.n > minN && !field.shape && !surge.on) field.n = Math.max(minN, Math.round(field.n * 0.85))
       perf.acc = 0
       perf.frames = 0
     }

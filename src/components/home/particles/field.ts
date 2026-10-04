@@ -118,6 +118,50 @@ const BL_STYLES: string[] = []
 for (const c of [[226, 196, 134], [214, 218, 228]]) for (const a of BL_A) BL_STYLES.push(`rgba(${c[0]},${c[1]},${c[2]},${a})`)
 
 const DEF = { gather: 2.6, hold: 2.8, dissolve: 2.1, maxDelay: 1.0 }
+
+/* Halo de la capa cercana: oro suave y platino, 4 intensidades. */
+const NEAR_STYLES: string[] = []
+for (const c of ['240,217,160', '230,232,238']) for (const a of [0.07, 0.11, 0.16, 0.22]) NEAR_STYLES.push(`rgba(${c},${a})`)
+
+/* Celebración (opcional): destellos de cuatro puntas y un resplandor al completarse la figura. */
+const FX_MAX = 96
+function fxSprite(kind: 'spark' | 'flash'): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  const S = kind === 'spark' ? 48 : 96
+  c.width = c.height = S
+  const g = c.getContext('2d')
+  if (!g) return null
+  const h = S / 2
+  const rg = g.createRadialGradient(h, h, 0, h, h, h)
+  if (kind === 'flash') {
+    rg.addColorStop(0, 'rgba(247,245,239,0.55)')
+    rg.addColorStop(0.18, 'rgba(240,217,160,0.32)')
+    rg.addColorStop(0.5, 'rgba(214,184,120,0.1)')
+    rg.addColorStop(1, 'rgba(214,184,120,0)')
+    g.fillStyle = rg
+    g.fillRect(0, 0, S, S)
+    return c
+  }
+  rg.addColorStop(0, 'rgba(255,255,255,1)')
+  rg.addColorStop(0.1, 'rgba(247,245,239,0.9)')
+  rg.addColorStop(0.28, 'rgba(240,217,160,0.28)')
+  rg.addColorStop(1, 'rgba(240,217,160,0)')
+  g.fillStyle = rg
+  g.fillRect(0, 0, S, S)
+  // rayos finos (estrella de cuatro puntas)
+  g.globalCompositeOperation = 'lighter'
+  for (const vertical of [false, true]) {
+    const lg = vertical ? g.createLinearGradient(h, 0, h, S) : g.createLinearGradient(0, h, S, h)
+    lg.addColorStop(0, 'rgba(240,217,160,0)')
+    lg.addColorStop(0.5, 'rgba(255,250,235,0.95)')
+    lg.addColorStop(1, 'rgba(240,217,160,0)')
+    g.fillStyle = lg
+    if (vertical) g.fillRect(h - 0.9, 0, 1.8, S)
+    else g.fillRect(0, h - 0.9, S, 1.8)
+  }
+  return c
+}
 const KS = 30 // rigidez del muelle (ω ≈ 5.5 rad/s), amortiguamiento crítico
 
 export type Box = { x: number; y: number; w: number; h: number }
@@ -183,6 +227,36 @@ export class ParticleField {
   private offs = new Uint16Array(NB)
   private bcount = new Uint16Array(2 * BL_N + 1)
   private boffs = new Uint16Array(2 * BL_N)
+  /** Pasada extra de desenfoque del brillo (copia del lienzo sobre sí mismo). */
+  bloomBlur = true
+  /** Solo 1 de cada N partículas de la figura alimenta el brillo (figuras muy densas). */
+  bloomStride = 1
+  /** Multiplicador de alfa del polvo libre (fuera de la figura). */
+  driftGain = 1
+  /** Escala del grosor de los puntos (todas las capas). */
+  sizeScale = 1
+  /**
+   * Índices ≥ ghostFrom son «polvo latente»: no se mueven ni se dibujan salvo cuando
+   * forman parte de una figura (aparecen al llegar y se apagan al disolverse).
+   */
+  ghostFrom = 1e9
+  private celebrate = false
+  private fxN = 0
+  private fxX = new Float32Array(FX_MAX)
+  private fxY = new Float32Array(FX_MAX)
+  private fxVX = new Float32Array(FX_MAX)
+  private fxVY = new Float32Array(FX_MAX)
+  private fxAge = new Float32Array(FX_MAX)
+  private fxLife = new Float32Array(FX_MAX)
+  private fxSize = new Float32Array(FX_MAX)
+  private fxSpawn = 0
+  private flash = { t: -1, x: 0, y: 0, r: 0 }
+  private spark: HTMLCanvasElement | null = null
+  private flashImg: HTMLCanvasElement | null = null
+  /** Capa cercana: el polvo más próximo (z alto) recibe un halo suave → profundidad. */
+  private nearGlow = false
+  private nearList = new Uint16Array(256)
+  private al = new Float32Array(0)
 
   // Datos por partícula (estructura de arreglos)
   private x = new Float32Array(0)
@@ -221,7 +295,16 @@ export class ParticleField {
 
   constructor(
     canvas: HTMLCanvasElement,
-    opts: { coarse?: boolean; seed?: number; bloom?: HTMLCanvasElement | null; autopilot?: boolean } = {},
+    opts: {
+      coarse?: boolean
+      seed?: number
+      bloom?: HTMLCanvasElement | null
+      autopilot?: boolean
+      /** Destello al completarse la figura y centelleo mientras se sostiene. */
+      celebrate?: boolean
+      /** Halo suave en el polvo más cercano (capa de profundidad). */
+      nearGlow?: boolean
+    } = {},
   ) {
     this.canvas = canvas
     const ctx = canvas.getContext('2d', { alpha: true })
@@ -237,6 +320,160 @@ export class ParticleField {
     this.rand = mulberry32(opts.seed ?? 7)
     this.coarse = Boolean(opts.coarse)
     this.autopilot = opts.autopilot !== false
+    this.nearGlow = Boolean(opts.nearGlow)
+    if (opts.celebrate) {
+      this.spark = fxSprite('spark')
+      this.flashImg = fxSprite('flash')
+      this.celebrate = Boolean(this.spark && this.flashImg)
+    }
+  }
+
+  /**
+   * Reparte el polvo latente [from, to) alrededor del escenario de la próxima figura
+   * (y algo por toda la pantalla) para que se condense desde el cielo.
+   */
+  scatterGhosts(from: number, to: number, box: Box) {
+    const r = this.rand
+    const cx = box.x + box.w / 2
+    const cy = box.y + box.h / 2
+    const R = Math.sqrt(box.w * box.w + box.h * box.h) / 2
+    for (let i = from; i < Math.min(to, this.cap); i++) {
+      if (r() < 0.72) {
+        const a = r() * Math.PI * 2
+        const d = R * (1.15 + 2.2 * Math.pow(r(), 1.4))
+        this.x[i] = Math.max(-8, Math.min(this.W + 8, cx + Math.cos(a) * d))
+        this.y[i] = Math.max(-8, Math.min(this.H + 8, cy + Math.sin(a) * d))
+      } else {
+        this.x[i] = r() * this.W
+        this.y[i] = r() * this.H
+      }
+      this.vx[i] = 0
+      this.vy[i] = 0
+      this.glow[i] = 0
+      this.role[i] = 0
+      this.wt[i] = 0
+      this.age[i] = 4
+      this.life[i] = 12 + r() * 6
+    }
+  }
+
+  /* ---------- celebración: destellos ---------- */
+  private addFx(x: number, y: number, vx: number, vy: number, life: number, size: number) {
+    if (this.fxN >= FX_MAX) return
+    const k = this.fxN++
+    this.fxX[k] = x; this.fxY[k] = y; this.fxVX[k] = vx; this.fxVY[k] = vy
+    this.fxAge[k] = 0; this.fxLife[k] = life; this.fxSize[k] = size
+  }
+
+  private burst(S: ShapeState) {
+    const r = this.rand
+    const count = this.coarse ? 24 : 36
+    const cx = S.cx, cy = S.cy
+    for (let k = 0; k < count && S.K; k++) {
+      const p = S.idx[(r() * S.K) | 0]
+      const x = this.x[p], y = this.y[p]
+      let dx = x - cx, dy = y - cy
+      const d = Math.sqrt(dx * dx + dy * dy) + 1
+      dx /= d; dy /= d
+      const sp = 30 + r() * (this.coarse ? 70 : 110)
+      this.addFx(x, y, dx * sp + (r() - 0.5) * 20, dy * sp + (r() - 0.5) * 20 - 8, 0.9 + r() * 0.8, (this.coarse ? 9 : 11) + r() * 9)
+    }
+    this.flash.t = 0
+    this.flash.x = cx
+    this.flash.y = cy
+    this.flash.r = Math.sqrt(S.box.w * S.box.w + S.box.h * S.box.h) * 0.85
+  }
+
+  private stepFx(dt: number, S: ShapeState | null) {
+    if (this.flash.t >= 0) {
+      this.flash.t += dt
+      if (this.flash.t > 1.6) this.flash.t = -1
+    }
+    // centelleo mientras la figura se sostiene: destellos breves sobre puntos de la figura
+    if (S && S.phase === 'hold' && S.K) {
+      this.fxSpawn -= dt
+      while (this.fxSpawn <= 0) {
+        this.fxSpawn += this.coarse ? 0.18 : 0.14
+        const p = S.idx[(this.rand() * S.K) | 0]
+        this.addFx(this.x[p], this.y[p], 0, -3, 0.7 + this.rand() * 0.6, (this.coarse ? 7 : 8) + this.rand() * 7)
+      }
+    } else this.fxSpawn = 0
+    let k = 0
+    const drag = Math.exp(-dt * 1.6)
+    while (k < this.fxN) {
+      this.fxAge[k] += dt
+      if (this.fxAge[k] >= this.fxLife[k]) {
+        const l = --this.fxN
+        this.fxX[k] = this.fxX[l]; this.fxY[k] = this.fxY[l]; this.fxVX[k] = this.fxVX[l]; this.fxVY[k] = this.fxVY[l]
+        this.fxAge[k] = this.fxAge[l]; this.fxLife[k] = this.fxLife[l]; this.fxSize[k] = this.fxSize[l]
+        continue
+      }
+      this.fxVX[k] *= drag
+      this.fxVY[k] *= drag
+      this.fxX[k] += this.fxVX[k] * dt
+      this.fxY[k] += this.fxVY[k] * dt
+      k++
+    }
+  }
+
+  /* Halo de la capa cercana: círculos suaves agrupados en 2 tonos × 4 intensidades
+     (8 rellenos por cuadro, sin drawImage). */
+  private renderNear(PX: number, PY: number) {
+    const ctx = this.ctx, n = this.n, ghost = this.ghostFrom, Z = this.z, R = this.role, AL = this.al
+    const X = this.x, Y = this.y, PK = this.pk, col = this.col
+    const list = this.nearList
+    let m = 0
+    const cap = this.coarse ? 70 : 170
+    for (let i = 0; i < n && m < cap; i++) {
+      if (Z[i] < 0.965 || R[i] || i >= ghost || AL[i] < 0.12) continue
+      list[m++] = i
+    }
+    if (!m) return
+    for (let tone = 0; tone < 2; tone++) {
+      for (let lv = 0; lv < 4; lv++) {
+        let any = false
+        ctx.beginPath()
+        for (let k = 0; k < m; k++) {
+          const i = list[k]
+          if ((col[i] >= 2 ? 1 : 0) !== tone) continue
+          const a = AL[i]
+          const l = a >= 0.8 ? 3 : a >= 0.55 ? 2 : a >= 0.3 ? 1 : 0
+          if (l !== lv) continue
+          const r = 2.2 + (Z[i] - 0.965) * 90 // 2,2 … 5,3 px
+          const x = X[i] + PX * PK[i], y = Y[i] + PY * PK[i]
+          ctx.moveTo(x + r, y)
+          ctx.arc(x, y, r, 0, Math.PI * 2)
+          any = true
+        }
+        if (!any) continue
+        ctx.fillStyle = NEAR_STYLES[tone * 4 + lv]
+        ctx.fill()
+      }
+    }
+  }
+
+  private renderFx() {
+    const ctx = this.ctx, spark = this.spark, fl = this.flashImg
+    if (!spark || !fl || (!this.fxN && this.flash.t < 0)) return
+    ctx.globalCompositeOperation = 'lighter'
+    const F = this.flash
+    if (F.t >= 0) {
+      // resplandor: sube rápido y se apaga despacio mientras se expande
+      const a = (F.t < 0.18 ? F.t / 0.18 : Math.max(0, 1 - (F.t - 0.18) / 1.4)) * 0.75 * this.fade
+      const rr = F.r * (0.75 + 0.35 * Math.min(1, F.t / 1.2))
+      ctx.globalAlpha = a
+      ctx.drawImage(fl, F.x - rr, F.y - rr, rr * 2, rr * 2)
+    }
+    for (let k = 0; k < this.fxN; k++) {
+      const u = this.fxAge[k] / this.fxLife[k]
+      const a = Math.sin(Math.PI * Math.min(1, u * 1.25)) * this.fade
+      if (a <= 0.01) continue
+      const s = this.fxSize[k] * (0.55 + 0.45 * Math.sin(Math.PI * u))
+      ctx.globalAlpha = a > 1 ? 1 : a
+      ctx.drawImage(spark, this.fxX[k] - s, this.fxY[k] - s, s * 2, s * 2)
+    }
+    ctx.globalAlpha = 1
+    ctx.globalCompositeOperation = 'source-over'
   }
 
   private targetCount() {
@@ -266,7 +503,7 @@ export class ParticleField {
     this.age = f32(this.age); this.life = f32(this.life); this.tx = f32(this.tx); this.ty = f32(this.ty)
     this.delay = f32(this.delay); this.sweep = f32(this.sweep); this.z = f32(this.z); this.pk = f32(this.pk); this.wt = f32(this.wt)
     this.col = u8(this.col); this.role = u8(this.role); this.cls = u8(this.cls); this.sz = u8(this.sz)
-    this.bucket = u8(this.bucket); this.bb = u8(this.bb)
+    this.bucket = u8(this.bucket); this.bb = u8(this.bb); this.al = f32(this.al)
     this.order = new Uint16Array(cap)
     this.border = new Uint16Array(cap)
     const first = !this.cap
@@ -540,7 +777,11 @@ export class ParticleField {
     let dissolveStart = false
     if (S) {
       S.t += dt
-      if (S.phase === 'gather' && S.t >= S.TG) { S.phase = 'hold'; S.t -= S.TG }
+      if (S.phase === 'gather' && S.t >= S.TG) {
+        S.phase = 'hold'
+        S.t -= S.TG
+        if (this.celebrate) this.burst(S)
+      }
       else if (S.phase === 'hold' && S.t >= S.TH) { S.phase = 'dissolve'; S.t -= S.TH; dissolveStart = true }
       else if (S.phase === 'dissolve' && S.t >= S.TD) {
         for (let k = 0; k < S.K; k++) { ROLE[S.idx[k]] = 0; WT[S.idx[k]] = 0 }
@@ -552,6 +793,7 @@ export class ParticleField {
       }
     }
     this.shapeEnv = sw
+    if (this.celebrate) this.stepFx(dt, S)
     if (dissolveStart && S) {
       // al liberarse, el polvo se evapora mientras se dispersa y renace en otro lugar
       for (let k = 0; k < S.K; k++) {
@@ -606,11 +848,13 @@ export class ParticleField {
     const scx = S ? S.cx : 0
     const scy = S ? S.cy : 0
     const push = phase === 'dissolve' && st < 1.0 ? Math.sin(Math.PI * st) : 0 // empuje en campana
+    const ghost = this.ghostFrom
 
     for (let i = 0; i < n; i++) {
+      const role = ROLE[i]
+      if (i >= ghost && !role) continue // polvo latente: quieto e invisible fuera de la figura
       let x = X[i], y = Y[i], ax = 0, ay = 0, g = GL[i] * glowDecay, vx = VX[i], vy = VY[i]
       const z = Z[i]
-      const role = ROLE[i]
 
       // flujo (bilineal sobre la rejilla)
       const fxg = x * invCell + 1, fyg = y * invCell + 1
@@ -751,6 +995,11 @@ export class ParticleField {
     const S = this.shape, env = this.shapeEnv, sp = this.sweepPos, dim = 1 - 0.38 * env, fade = this.fade
     const dissolving = Boolean(S && S.phase === 'dissolve')
     const useBloom = Boolean(this.bloom)
+    const cel = this.celebrate && !staticMode
+    const holding = Boolean(S && S.phase === 'hold')
+    const ghost = this.ghostFrom, gain = this.driftGain
+    // brillo con 1 de cada `stride` partículas (y un escalón más de intensidad para compensar)
+    const stride = this.bloomStride, boost = stride > 1 ? 1 : 0
     let nb = 0
     const FB = 1 / 110 // desvanecido inferior (transición a la sección siguiente)
     for (let i = 0; i < n; i++) {
@@ -759,6 +1008,7 @@ export class ParticleField {
       let szc = SZ[i]
       let pk = Z[i] - 0.55
       let bl = -1
+      let ci = col[i]
       if ((ROLE[i] && S) || (staticMode && WT[i] > 0)) {
         const w = staticMode ? 1 : WT[i]
         let free = base[i] * tws
@@ -775,7 +1025,25 @@ export class ParticleField {
           if (fqd < 1) a *= 1 - (1 - w * w) * (0.8 - 0.8 * fqd)
         }
         pk = pk * (1 - w) + 0.05 * w // la figura vive en un solo plano
-        if (useBloom && w > 0.25) bl = (col[i] >= 2 ? BL_N : 0) + Math.min(BL_N - 1, (w * (0.6 + glint) * BL_N) | 0)
+        let spike = 0
+        if (cel) {
+          // núcleo más luminoso y centelleo: algunas partículas destellan en blanco
+          a *= 1.18
+          if (holding || w > 0.9) {
+            const sv = Math.sin(t * tw[i] * 2.3 + ph[i] * 5.1)
+            spike = sv > 0.9 ? (sv - 0.9) * 10 : 0
+            spike *= spike
+            a += spike * 0.7
+            if (spike > 0.35) {
+              ci = 4
+              szc = 2
+            }
+          }
+        }
+        if (i >= ghost) a *= w // el polvo latente se enciende al llegar
+        if (useBloom && w > 0.25 && i % stride === 0) {
+          bl = (ci >= 2 ? BL_N : 0) + Math.min(BL_N - 1, (w * ((cel ? 0.85 : 0.6) + glint + spike) * BL_N + boost) | 0)
+        }
       } else {
         const e = staticMode ? 1 : Math.min(1, AGE[i] * 0.8, (LIFE[i] - AGE[i]) * 0.8)
         let qa = 1
@@ -783,16 +1051,17 @@ export class ParticleField {
           const qx = (X[i] - qcx) * qrx, qy = (Y[i] - qcy) * qry, qd = qx * qx + qy * qy
           if (qd < 1) qa = 0.26 + 0.74 * qd
         }
-        a = base[i] * tws * e * qa * dim + GL[i] * 0.7 * e
+        a = (base[i] * tws * e * qa * dim + GL[i] * 0.7 * e) * gain
       }
       const by = H - Y[i]
       if (by < 110) a *= by > 0 ? by * FB : 0
       a *= fade
+      this.al[i] = a
       PK[i] = pk
       let ai = (a * NA) | 0
       if (ai >= NA) ai = NA - 1
       if (ai < 0) ai = 0
-      const b = (szc * NC + col[i]) * NA + ai
+      const b = (szc * NC + ci) * NA + ai
       B[i] = b
       counts[b + 1]++
       if (bl >= 0 && a > 0.05) { BBk[i] = bl; bcount[bl + 1]++; nb++ } else BBk[i] = 255
@@ -811,11 +1080,12 @@ export class ParticleField {
     for (let bk = 0; bk < NB; bk++) {
       const s = counts[bk], en = counts[bk + 1]
       if (s === en) continue
-      const lwk = WIDTHS[(bk / (NC * NA)) | 0] * lw, hs = lwk * 0.5
+      const lwk = WIDTHS[(bk / (NC * NA)) | 0] * lw * this.sizeScale, hs = lwk * 0.5
       let streaks = 0
       ctx.fillStyle = STYLES[bk]
       for (let k = s; k < en; k++) {
         const j = O[k], vx = VX[j], vy = VY[j]
+        if (j >= ghost && !ROLE[j]) continue
         if (!staticMode && vx * vx + vy * vy > DOT2) { streaks++; continue }
         const o = PK[j]
         ctx.fillRect(X[j] + PX * o - hs, Y[j] + PY * o - hs, lwk, lwk)
@@ -826,7 +1096,7 @@ export class ParticleField {
         for (let k = s; k < en; k++) {
           const j = O[k], vx = VX[j], vy = VY[j]
           let spd = vx * vx + vy * vy
-          if (spd <= DOT2) continue
+          if (spd <= DOT2 || (j >= ghost && !ROLE[j])) continue
           const o = PK[j], x = X[j] + PX * o - hs, y = Y[j] + PY * o - hs
           spd = Math.sqrt(spd)
           const Lm = (Math.min(maxL, 0.2 + spd * kL) / spd) * 0.5, sx = vx * Lm, sy = vy * Lm
@@ -842,7 +1112,7 @@ export class ParticleField {
       for (let k = s; k < en; k++) {
         const j = O[k], vx = VX[j], vy = VY[j]
         let spd = vx * vx + vy * vy
-        if (spd <= DOT2) continue
+        if (spd <= DOT2 || (j >= ghost && !ROLE[j])) continue
         const o = PK[j], x = X[j] + PX * o, y = Y[j] + PY * o
         spd = Math.sqrt(spd)
         const inv = Math.min(maxL, 0.2 + spd * kL) / spd // estela proporcional a la velocidad
@@ -851,7 +1121,9 @@ export class ParticleField {
       }
       ctx.stroke()
     }
+    if (this.nearGlow) this.renderNear(PX, PY)
     if (useBloom) this.renderBloom(nb, PX, PY)
+    if (cel) this.renderFx()
   }
 
   /* Brillo sin shadowBlur ni filtros: se acumula ('lighter') a 1/BS, se reduce a la mitad
@@ -897,9 +1169,12 @@ export class ParticleField {
     bc.imageSmoothingEnabled = true
     bc.drawImage(scratch, 0, 0, bw, bh)
     // desenfoque extra casi gratis: dos copias desplazadas medio píxel
-    bc.globalAlpha = 0.5
-    bc.drawImage(bloom, 0.6, 0.6)
-    bc.drawImage(bloom, -0.6, -0.6)
-    bc.globalAlpha = 1
+    // (copiar el lienzo sobre sí mismo cuesta en GPU lentas; el cielo lo omite)
+    if (this.bloomBlur) {
+      bc.globalAlpha = 0.5
+      bc.drawImage(bloom, 0.6, 0.6)
+      bc.drawImage(bloom, -0.6, -0.6)
+      bc.globalAlpha = 1
+    }
   }
 }
