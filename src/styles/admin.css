@@ -1261,17 +1261,17 @@ body:has(.admin-shell) {
 
 .admin-auth-field .glass-input {
   border-radius: 1rem;
-  padding: 0.9rem 2.8rem 0.9rem 2.7rem;
+  padding: 0.9rem 3.15rem 0.9rem 2.7rem;
   font-size: var(--legacy-text-md);
 }
 
 .admin-auth-reveal {
   position: absolute;
   top: 50%;
-  right: 0.35rem;
+  right: 0.2rem;
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
   translate: 0 -50%;
   place-items: center;
   border-radius: 0.75rem;

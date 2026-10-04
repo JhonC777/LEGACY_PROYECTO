@@ -44,7 +44,7 @@ export function ExploreFooter() {
           © 2026 {withLegacyName('LEGACY')}. Todos los derechos reservados.
         </p>
         <div className="flex items-center gap-2 text-legacy-muted sm:gap-3">
-          <Link to="/" className="text-sm hover:text-legacy-gold">
+          <Link to="/" className="inline-flex min-h-11 items-center px-2 text-sm hover:text-legacy-gold">
             Inicio
           </Link>
           {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (

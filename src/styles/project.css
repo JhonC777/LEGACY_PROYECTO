@@ -121,6 +121,12 @@
 }
 
 .project-hero-meta a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.35rem;
   color: inherit;
   text-decoration: none;
 }
@@ -1039,6 +1045,13 @@
   color: var(--color-legacy-gold);
 }
 
+.project-sheet dd a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
 .project-sheet-row-icon {
   display: flex;
   height: 1.9rem;
@@ -1497,6 +1510,9 @@
 }
 
 .knowledge-fragment-kicker a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: inherit;
   text-decoration: none;
 }
@@ -1590,6 +1606,7 @@
   display: inline-flex;
   width: fit-content;
   align-items: center;
+  min-height: 44px;
   gap: 0.35rem;
   font-size: var(--legacy-text-xs);
   letter-spacing: 0.04em;
