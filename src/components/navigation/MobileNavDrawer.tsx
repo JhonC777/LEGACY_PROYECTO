@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
+import { useEffect, useRef, type ReactNode, type RefObject, type TouchEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { cn } from '@/lib/cn'
@@ -107,6 +107,28 @@ export function MobileNavDrawer({
     }
   }, [open])
 
+  // Deslizar hacia abajo cierra la hoja (sin seguimiento visual: la CSP no admite estilos en línea).
+  const swipeStart = useRef<{ y: number; x: number } | null>(null)
+  const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const panel = panelRef.current
+    if (!panel || panel.scrollTop > 0 || event.touches.length !== 1) {
+      swipeStart.current = null
+      return
+    }
+    const touch = event.touches[0]
+    swipeStart.current = { y: touch.clientY, x: touch.clientX }
+  }
+  const onTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const start = swipeStart.current
+    swipeStart.current = null
+    if (!start) return
+    const touch = event.changedTouches[0]
+    if (!touch) return
+    const dy = touch.clientY - start.y
+    const dx = Math.abs(touch.clientX - start.x)
+    if (dy > 80 && dy > dx * 1.5) onCloseRef.current()
+  }
+
   if (!open || typeof document === 'undefined') return null
 
   return createPortal(
@@ -120,6 +142,11 @@ export function MobileNavDrawer({
         aria-label={label}
         tabIndex={-1}
         className="nav-drawer-panel"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={() => {
+          swipeStart.current = null
+        }}
       >
         {children}
       </div>
