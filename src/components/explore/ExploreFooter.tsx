@@ -55,9 +55,9 @@ export function ExploreFooter() {
               rel="noreferrer"
               aria-label={label}
               title={label}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:text-legacy-gold focus-visible:text-legacy-gold sm:h-9 sm:w-9"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:text-legacy-gold focus-visible:text-legacy-gold"
             >
-              <Icon className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden />
+              <Icon className="h-5 w-5" aria-hidden />
             </a>
           ))}
         </div>

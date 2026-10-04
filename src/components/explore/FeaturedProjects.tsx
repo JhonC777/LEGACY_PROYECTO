@@ -106,7 +106,7 @@ export function FeaturedProjects() {
               onClick={() => nudge(-1)}
               disabled={atStart}
               aria-label="Proyectos anteriores"
-              className="liquid-icon liquid-touch flex h-8 w-8 items-center justify-center rounded-full text-legacy-muted disabled:pointer-events-none disabled:opacity-35"
+              className="liquid-icon liquid-touch flex h-11 w-11 items-center justify-center rounded-full text-legacy-muted disabled:pointer-events-none disabled:opacity-35"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </button>
@@ -116,7 +116,7 @@ export function FeaturedProjects() {
               onClick={() => nudge(1)}
               disabled={atEnd}
               aria-label="Proyectos siguientes"
-              className="liquid-icon liquid-touch flex h-8 w-8 items-center justify-center rounded-full text-legacy-muted disabled:pointer-events-none disabled:opacity-35"
+              className="liquid-icon liquid-touch flex h-11 w-11 items-center justify-center rounded-full text-legacy-muted disabled:pointer-events-none disabled:opacity-35"
             >
               <ChevronRight className="h-4 w-4" aria-hidden />
             </button>

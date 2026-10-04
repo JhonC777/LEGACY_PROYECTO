@@ -670,7 +670,7 @@ export function AdminProjectEditor() {
                         <img src={url} alt={`Imagen ${index + 1} de la galería`} className="h-full w-full object-cover" loading="lazy" />
                         <button
                           type="button"
-                          className="absolute top-1 right-1 inline-flex h-7 w-7 items-center justify-center rounded-md bg-legacy-black/70 text-legacy-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                          className="absolute top-1 right-1 inline-flex h-11 w-11 items-center justify-center rounded-md bg-legacy-black/70 text-legacy-white opacity-100 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
                           onClick={() => set('gallery', form.gallery.filter((_, i) => i !== index))}
                           aria-label={`Quitar imagen ${index + 1}`}
                         >

@@ -277,14 +277,14 @@ export function AdminProjects() {
               value={query}
               onChange={(event) => updateParam('q', event.target.value)}
               placeholder="Buscar por título, autor, área..."
-              className="glass-input liquid-field w-full rounded-full py-2.5 pr-9 pl-9 text-sm"
+              className="glass-input liquid-field min-h-11 w-full rounded-full py-2.5 pr-12 pl-9 text-sm"
               autoComplete="off"
             />
             {query ? (
               <button
                 type="button"
                 onClick={() => updateParam('q', '')}
-                className="absolute top-1/2 right-2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted hover:bg-white/[0.06] hover:text-legacy-white"
+                className="absolute top-1/2 right-0 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted hover:bg-white/[0.06] hover:text-legacy-white"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="h-3.5 w-3.5" aria-hidden />

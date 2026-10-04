@@ -108,13 +108,13 @@ export function AdminHistory() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por proyecto o acción..."
-            className="glass-input liquid-field w-full rounded-full py-2.5 pr-9 pl-9 text-sm"
+            className="glass-input liquid-field min-h-11 w-full rounded-full py-2.5 pr-12 pl-9 text-sm"
           />
           {query ? (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="absolute top-1/2 right-2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted hover:bg-white/[0.06] hover:text-legacy-white"
+              className="absolute top-1/2 right-0 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-legacy-muted hover:bg-white/[0.06] hover:text-legacy-white"
               aria-label="Limpiar búsqueda"
             >
               <X className="h-3.5 w-3.5" aria-hidden />

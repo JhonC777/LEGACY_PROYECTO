@@ -226,7 +226,8 @@
 }
 
 .btn-sm {
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   padding: var(--legacy-space-1) var(--legacy-space-2);
   font-size: var(--legacy-text-sm);
   gap: var(--legacy-space-1);
