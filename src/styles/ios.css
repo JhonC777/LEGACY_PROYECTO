@@ -147,6 +147,19 @@ html .pager-card:active {
     z-index: 35;
   }
 
+  /*
+    En /explorar el header vive dentro de .explore-scroll (z-index 1) y de
+    .explore-shell (isolation): con la hoja abierta se liberan esos contextos
+    para que el header (z-index 40) quede por encima del velo.
+  */
+  html.legacy-nav-open .explore-shell {
+    isolation: auto;
+  }
+
+  html.legacy-nav-open .explore-shell > .explore-scroll {
+    z-index: auto;
+  }
+
   html .nav-drawer-veil {
     background: rgb(8 9 12 / 0.55);
     -webkit-backdrop-filter: blur(6px);
