@@ -1,0 +1,310 @@
+/*
+  Sensación iOS — capa final de ajustes táctiles y visuales.
+  Solo CSS: vidrio esmerilado, esquinas continuas, respuesta al toque,
+  hoja inferior en el menú móvil y respeto por las áreas seguras.
+  Paleta intacta: dorado, negro, superficie y plata.
+*/
+
+:root {
+  --ios-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --ios-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --ios-radius-card: 22px;
+  --ios-radius-group: 20px;
+  --ios-hairline: rgb(230 232 238 / 0.12);
+  --ios-shadow:
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 8px 24px -8px rgb(0 0 0 / 0.55),
+    0 24px 48px -24px rgb(0 0 0 / 0.6);
+  --ios-safe-top: env(safe-area-inset-top, 0px);
+  --ios-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Paneles de scroll: inercia nativa y sin rebote encadenado. */
+html .home-entry-stage,
+html .explore-scroll,
+html .admin-content,
+html .nav-drawer-panel {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* 1. Barra superior de vidrio esmerilado con línea fina y área segura. */
+html .glass-header,
+html .legacy-header {
+  background: rgb(8 9 12 / 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--ios-hairline);
+  padding-top: var(--ios-safe-top);
+}
+
+html .legacy-header.is-condensed {
+  background: rgb(8 9 12 / 0.74);
+}
+
+/* Buscador del header en PC: el placeholder completo cabe a 1280 y 1440. */
+@media (min-width: 1024px) {
+  html .explore-header-tools > form {
+    flex: 0 1 16rem;
+    min-width: 11rem;
+  }
+
+  html .explore-header-tools > form input::placeholder {
+    text-overflow: ellipsis;
+  }
+}
+
+@media (min-width: 1280px) {
+  html .explore-header-tools > form {
+    flex: 0 0 17.5rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  html .explore-header-tools > form {
+    flex-basis: 19rem;
+  }
+}
+
+/* 3. Esquinas continuas y sombras suaves en tarjetas. */
+html .celestial-card,
+html .explore-card,
+html .liquid-card,
+html .resource-card,
+html .process-card,
+html .archive-file-card,
+html .pager-card,
+html .admin-card,
+html .legacy-intro-card,
+html .explore-quote-card {
+  border-radius: var(--ios-radius-card);
+  box-shadow: var(--ios-shadow);
+}
+
+/* Botones en píldora (Liquid Glass se conserva). */
+html .btn,
+html .home-btn,
+html .nav-menu-toggle,
+html .header-admin-icon {
+  border-radius: var(--legacy-radius-pill);
+}
+
+/* 4. Respuesta al toque con resorte. */
+html .btn,
+html .home-btn,
+html .nav-menu-toggle,
+html .header-admin-icon,
+html .nav-drawer-link,
+html .nav-liquid,
+html .celestial-card,
+html .explore-card,
+html .resource-card,
+html .pager-card {
+  transition-property: transform, background-color, border-color, box-shadow, color, opacity;
+  transition-duration: 0.35s;
+  transition-timing-function: var(--ios-spring);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html .btn:active:not(:disabled),
+html .home-btn:active,
+html .nav-menu-toggle:active,
+html .header-admin-icon:active,
+html .nav-drawer-link:active,
+html .nav-liquid:active {
+  transform: scale(0.97);
+  transition-duration: 0.12s;
+  transition-timing-function: var(--ios-ease);
+}
+
+html .celestial-card:active,
+html .explore-card:active,
+html .resource-card:active,
+html .pager-card:active {
+  transform: scale(0.985);
+  transition-duration: 0.12s;
+}
+
+/* 2. Menú móvil como hoja inferior iOS con lista agrupada. */
+@media (max-width: 1023px) {
+  /*
+    La hoja y el velo quedan por debajo del header (z-index 40):
+    la X del header sigue visible y pulsable con la hoja abierta.
+  */
+  html .nav-drawer-root {
+    inset: 0;
+    z-index: 35;
+  }
+
+  html .nav-drawer-veil {
+    background: rgb(8 9 12 / 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: ios-fade-in 0.28s var(--ios-ease);
+  }
+
+  html .nav-drawer-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: min(calc(100dvh - var(--legacy-header-h, 64px) - 16px), 640px);
+    gap: 6px;
+    padding: 28px var(--legacy-space-2) calc(var(--legacy-space-3) + var(--ios-safe-bottom));
+    border: 0.5px solid var(--ios-hairline);
+    border-bottom: 0;
+    border-radius: 28px 28px 0 0;
+    background: rgb(17 19 26 / 0.86);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 -24px 60px rgb(0 0 0 / 0.55);
+    animation: ios-sheet-in 0.42s var(--ios-spring);
+  }
+
+  /* Asa de la hoja (deslizar hacia abajo la cierra). */
+  html .nav-drawer-panel::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 38px;
+    height: 5px;
+    margin-left: -19px;
+    border-radius: 999px;
+    background: rgb(200 202 211 / 0.35);
+  }
+
+  /* Lista agrupada (inset grouped). */
+  html .nav-drawer-panel nav {
+    gap: 0;
+    overflow: hidden;
+    border: 0.5px solid var(--ios-hairline);
+    border-radius: var(--ios-radius-group);
+    background: rgb(230 232 238 / 0.04);
+  }
+
+  html .nav-drawer-panel nav .nav-drawer-link {
+    border-radius: 0;
+    min-height: 52px;
+  }
+
+  html .nav-drawer-panel nav .nav-drawer-link + .nav-drawer-link {
+    box-shadow: inset 0 0.5px 0 var(--ios-hairline);
+  }
+
+  html .nav-drawer-panel nav .nav-drawer-link.is-active {
+    background: rgb(214 184 120 / 0.1);
+    box-shadow: inset 3px 0 0 var(--legacy-gold);
+  }
+
+  html .nav-drawer-link:active {
+    transform: none;
+    background: rgb(230 232 238 / 0.08);
+  }
+
+  html .nav-drawer-search {
+    min-height: 48px;
+    border-radius: 14px;
+    background: rgb(230 232 238 / 0.06);
+    border-color: var(--ios-hairline);
+  }
+
+  html .nav-drawer-block {
+    border-top: 0;
+  }
+}
+
+/* «Sobre Legacy» junto, con la palabra en Ballet alineada a la línea base. */
+html .nav-drawer-link-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  min-width: 0;
+}
+
+html .nav-drawer-link-label .legacy-name {
+  font-size: 1.55em;
+  vertical-align: baseline;
+}
+
+/* 5. Texto e inputs a 16 px en móvil: iOS no hace zoom al enfocar. */
+@media (max-width: 768px) {
+  html body {
+    font-size: 16px;
+  }
+
+  html input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  html textarea,
+  html select {
+    font-size: 16px;
+  }
+
+  html .home-footer,
+  html .explore-footer {
+    padding-bottom: calc(var(--legacy-space-3) + var(--ios-safe-bottom));
+  }
+}
+
+@keyframes ios-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes ios-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 6. Movimiento reducido: sin escalas, resortes ni animaciones de hoja. */
+@media (prefers-reduced-motion: reduce) {
+  html .btn,
+  html .home-btn,
+  html .nav-menu-toggle,
+  html .header-admin-icon,
+  html .nav-drawer-link,
+  html .nav-liquid,
+  html .celestial-card,
+  html .explore-card,
+  html .resource-card,
+  html .pager-card {
+    transition: none;
+  }
+
+  html .btn:active:not(:disabled),
+  html .home-btn:active,
+  html .nav-menu-toggle:active,
+  html .header-admin-icon:active,
+  html .nav-drawer-link:active,
+  html .nav-liquid:active,
+  html .celestial-card:active,
+  html .explore-card:active,
+  html .resource-card:active,
+  html .pager-card:active {
+    transform: none;
+  }
+
+  html .nav-drawer-panel,
+  html .nav-drawer-veil {
+    animation: none;
+  }
+}
