@@ -1,3 +1,4 @@
+import { LegacyName } from '@/components/brand/LegacyName'
 import type { ReactNode } from 'react'
 import '@/styles/admin.css'
 import '@/styles/admin-auth.css'
@@ -55,7 +56,9 @@ export function AdminAuthFrame({
             {lead ? (
               <p className="auth-celestial-signature">
                 <LegacyMark size="sm" />
-                <span>Legacy · Archivo institucional</span>
+                <span>
+                  <LegacyName /> · Archivo institucional
+                </span>
               </p>
             ) : null}
           </header>

@@ -1,3 +1,4 @@
+import { LegacyName } from '@/components/brand/LegacyName'
 import { usePageMeta } from '@/lib/usePageMeta'
 import { Link } from 'react-router-dom'
 
@@ -10,7 +11,7 @@ export function NotFound() {
     >
       <div className="flex w-full max-w-[28rem] flex-col items-center text-center">
         <p className="font-brand text-base font-semibold tracking-[0.28em] text-legacy-gold uppercase">
-          LEGACY
+          <LegacyName />
         </p>
         <p className="mt-6 font-brand text-6xl leading-none font-semibold text-legacy-gold sm:text-7xl">
           404

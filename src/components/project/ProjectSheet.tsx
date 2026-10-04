@@ -108,7 +108,7 @@ export function ProjectSheet({
                 <span className="block truncate text-sm font-medium text-legacy-white">
                   {author.name}
                 </span>
-                <span className="block text-[0.7rem] text-legacy-muted">{author.role}</span>
+                <span className="block text-xs text-legacy-muted">{author.role}</span>
               </span>
             </li>
           ))}

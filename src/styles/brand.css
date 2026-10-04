@@ -41,12 +41,57 @@
   }
 }
 
+/* «Legacy» dentro de un texto: siempre en Ballet, dorado, a escala del texto que lo rodea. */
 .legacy-name {
-  font-family: var(--font-brand);
-  font-weight: 700;
+  display: inline-block;
+  font-family: var(--font-wordmark);
+  font-weight: 400;
   font-style: normal;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 1.45em;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 16;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: -0.12em;
+}
+
+.legacy-name-script {
+  display: inline-block;
+  background-image: linear-gradient(100deg, #d6b878 0%, #f0d9a0 46%, #d6b878 78%, #d6b878 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding: 0.32em 0.34em 0.62em 0.14em;
+  margin: -0.32em -0.34em -0.62em -0.14em;
+}
+
+/* Sección a la que se llega desde el menú: un destello dorado para que se note cuál es. */
+.is-anchor-target {
+  animation: legacy-anchor-glow 1.8s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes legacy-anchor-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgb(214 184 120 / 0);
+  }
+  20% {
+    box-shadow:
+      0 0 0 2px rgb(214 184 120 / 0.75),
+      0 0 28px rgb(214 184 120 / 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(214 184 120 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-anchor-target {
+    animation: none;
+    outline: 2px solid rgb(214 184 120 / 0.7);
+    outline-offset: 2px;
+  }
 }
 
 /* Filete entre el emblema y la firma (variante C). */

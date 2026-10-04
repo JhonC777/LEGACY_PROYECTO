@@ -44,7 +44,7 @@ export function ExploreFooter() {
           © 2026 {withLegacyName('LEGACY')}. Todos los derechos reservados.
         </p>
         <div className="flex items-center gap-2 text-legacy-muted sm:gap-3">
-          <Link to="/" className="text-sm hover:text-legacy-gold">
+          <Link to="/" className="inline-flex min-h-11 items-center px-2 text-sm hover:text-legacy-gold">
             Inicio
           </Link>
           {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
@@ -55,9 +55,9 @@ export function ExploreFooter() {
               rel="noreferrer"
               aria-label={label}
               title={label}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:text-legacy-gold focus-visible:text-legacy-gold sm:h-9 sm:w-9"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:text-legacy-gold focus-visible:text-legacy-gold"
             >
-              <Icon className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden />
+              <Icon className="h-5 w-5" aria-hidden />
             </a>
           ))}
         </div>

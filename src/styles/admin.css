@@ -1039,8 +1039,8 @@ body:has(.admin-shell) {
 
 .admin-toast-close {
   display: inline-flex;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -1261,17 +1261,17 @@ body:has(.admin-shell) {
 
 .admin-auth-field .glass-input {
   border-radius: 1rem;
-  padding: 0.9rem 2.8rem 0.9rem 2.7rem;
+  padding: 0.9rem 3.15rem 0.9rem 2.7rem;
   font-size: var(--legacy-text-md);
 }
 
 .admin-auth-reveal {
   position: absolute;
   top: 50%;
-  right: 0.35rem;
+  right: 0.2rem;
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
   translate: 0 -50%;
   place-items: center;
   border-radius: 0.75rem;
@@ -1411,9 +1411,9 @@ body:has(.admin-shell) {
 .admin-brand-sub {
   display: block;
   margin-top: 0.35rem;
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-legacy-gold);
 }
@@ -1437,7 +1437,7 @@ body:has(.admin-shell) {
 .admin-nav-heading {
   margin: 0 0 0.25rem;
   padding: 0 0.8rem;
-  font-size: 0.62rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -1510,6 +1510,7 @@ body:has(.admin-shell) {
   position: relative;
   display: flex;
   min-height: 3.1rem;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1517,12 +1518,20 @@ body:has(.admin-shell) {
   border: 0;
   border-radius: 1rem;
   background: transparent;
-  font-size: 0.66rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 600;
+  line-height: 1.15;
   color: var(--color-legacy-muted);
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s ease, background 0.2s ease;
+}
+
+.admin-tab > span:not(.admin-tab-badge):not(.admin-tab-new-orb) {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-tab.is-active {
@@ -1539,13 +1548,13 @@ body:has(.admin-shell) {
   position: absolute;
   top: 0.3rem;
   right: calc(50% - 1.35rem);
-  min-width: 1.05rem;
-  height: 1.05rem;
-  padding: 0 0.25rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.2rem;
   border-radius: 999px;
   background: var(--color-legacy-gold);
-  font-size: 0.6rem;
-  line-height: 1.05rem;
+  font-size: var(--legacy-text-xs);
+  line-height: 1.15rem;
   font-weight: 800;
   text-align: center;
   color: #0b0c10;
@@ -1674,7 +1683,7 @@ body:has(.admin-shell) {
   align-items: center;
   gap: 0.75rem;
   margin: 2.25rem 0 0.9rem;
-  font-size: 0.68rem;
+  font-size: var(--legacy-text-xs);
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;

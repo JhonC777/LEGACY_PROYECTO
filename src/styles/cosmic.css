@@ -1581,6 +1581,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
+  min-height: 44px;
   padding: 0.4rem 0;
   border: 0;
   background: transparent;

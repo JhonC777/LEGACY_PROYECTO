@@ -40,11 +40,18 @@ export function RouteScrollManager() {
       }
       let frame = 0
       let cancelled = false
+      let highlightTimer = 0
       const tick = () => {
         if (cancelled) return
         const node = document.getElementById(id)
         if (node) {
           scrollLegacyElementIntoView(node, 'start')
+          // En PC, Destacados y Categorías empiezan a la misma altura (dos columnas):
+          // el destello deja claro a qué sección llevó el menú.
+          node.classList.remove('is-anchor-target')
+          void node.offsetWidth
+          node.classList.add('is-anchor-target')
+          highlightTimer = window.setTimeout(() => node.classList.remove('is-anchor-target'), 1900)
           return
         }
         if (frame++ < 24) window.requestAnimationFrame(tick)
@@ -52,6 +59,7 @@ export function RouteScrollManager() {
       tick()
       return () => {
         cancelled = true
+        window.clearTimeout(highlightTimer)
       }
     }
 
