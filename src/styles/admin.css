@@ -513,9 +513,9 @@ body:has(.admin-shell) {
 }
 
 .admin-status.is-draft {
-  border-color: rgb(118 98 201 / 0.45);
-  background: rgb(118 98 201 / 0.14);
-  color: #c4b8f2;
+  border-color: rgb(230 232 238 / 0.4);
+  background: rgb(230 232 238 / 0.08);
+  color: #e6e8ee;
 }
 
 .admin-status.is-archived {
@@ -1563,9 +1563,17 @@ body:has(.admin-shell) {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: linear-gradient(150deg, var(--color-legacy-gold-soft), var(--color-legacy-gold) 55%, #a8874a);
-  color: #0b0c10;
+  background:
+    radial-gradient(45% 60% at 28% 8%, rgb(255 255 255 / 0.55), transparent 70%),
+    radial-gradient(80% 70% at 50% 120%, rgb(255 236 186 / 0.7), transparent 70%),
+    linear-gradient(180deg, rgb(240 217 160 / 0.75), rgb(190 152 82 / 0.7) 60%, rgb(226 196 132 / 0.8));
+  color: #14110c;
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
   box-shadow:
+    inset 1.5px 2px 1px -1px rgb(255 255 255 / 0.95),
+    inset -1.5px -2px 1px -1px rgb(255 244 214 / 0.9),
+    inset 0 0 0 0.5px rgb(255 240 200 / 0.4),
     0 0 0 4px rgb(12 13 18 / 0.95),
     0 8px 24px -6px rgb(214 184 120 / 0.7);
 }
