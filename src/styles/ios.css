@@ -1,0 +1,251 @@
+/* Sensación iOS: vidrio esmerilado, esquinas suaves y respuesta táctil. */
+
+:root {
+  --ios-card-radius: 22px;
+  --ios-hairline: rgb(214 184 120 / 0.18);
+  --ios-safe-top: env(safe-area-inset-top, 0px);
+  --ios-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ios-touch-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Header: barra fija de vidrio con un borde hairline dorado. */
+html :where(.glass-header, .legacy-header) {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: var(--ios-safe-top);
+  border-bottom: 0.5px solid rgb(214 184 120 / 0.18);
+  background: rgb(8 9 12 / 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Tarjetas con la continuidad visual de iOS. */
+html :where(
+  .celestial-card,
+  .explore-card,
+  .liquid-card,
+  .resource-card,
+  .process-card,
+  .archive-file-card,
+  .pager-card,
+  .admin-card,
+  .legacy-intro-card,
+  .explore-quote-card,
+  .institution-panel,
+  .project-panel,
+  .auth-celestial-card,
+  .auth-celestial-panel,
+  .access-panel,
+  .entry-panel,
+  .home-threshold-panel,
+  .resource-tile,
+  .institution-mosaic-tile,
+  .gallery-tile,
+  .catalog-row
+) {
+  border-radius: var(--ios-card-radius);
+}
+
+html :where(.btn, .home-btn, .home-cta, .nav-menu-toggle, .header-admin-icon) {
+  border-radius: 999px;
+}
+
+/* Press feedback: buttons, links and cards all compress consistently. */
+html :where(
+  button,
+  a,
+  [role='button'],
+  .celestial-card,
+  .explore-card,
+  .liquid-card,
+  .resource-card,
+  .process-card,
+  .archive-file-card,
+  .pager-card,
+  .admin-card,
+  .legacy-intro-card,
+  .explore-quote-card,
+  .institution-panel,
+  .project-panel,
+  .auth-celestial-card,
+  .auth-celestial-panel,
+  .access-panel,
+  .entry-panel,
+  .home-threshold-panel,
+  .resource-tile,
+  .institution-mosaic-tile,
+  .gallery-tile,
+  .catalog-row
+) {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html :where(
+  button,
+  a,
+  [role='button'],
+  .celestial-card,
+  .explore-card,
+  .liquid-card,
+  .resource-card,
+  .process-card,
+  .archive-file-card,
+  .pager-card,
+  .admin-card,
+  .legacy-intro-card,
+  .explore-quote-card,
+  .institution-panel,
+  .project-panel,
+  .auth-celestial-card,
+  .auth-celestial-panel,
+  .access-panel,
+  .entry-panel,
+  .home-threshold-panel,
+  .resource-tile,
+  .institution-mosaic-tile,
+  .gallery-tile,
+  .catalog-row
+):active:not(:disabled, [aria-disabled='true']) {
+  transform: scale(0.97);
+}
+
+/* Hoja inferior de vidrio para el menú móvil; no requiere cambios de JSX. */
+@media (max-width: 1023px) {
+  html .nav-drawer-root {
+    inset: 0;
+    z-index: 45;
+  }
+
+  html .nav-drawer-veil {
+    background: rgb(8 9 12 / 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  html .nav-drawer-panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: min(82dvh, 640px);
+    padding: 28px var(--legacy-space-2) calc(var(--legacy-space-3) + var(--ios-safe-bottom));
+    border: 0.5px solid rgb(230 232 238 / 0.12);
+    border-bottom: 0;
+    border-radius: 28px 28px 0 0;
+    background: rgb(17 19 26 / 0.86);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 -24px 60px rgb(8 9 12 / 0.55);
+  }
+
+  html .nav-drawer-panel::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 38px;
+    height: 5px;
+    margin-left: -19px;
+    border-radius: 999px;
+    background: rgb(200 202 211 / 0.35);
+  }
+
+  html .nav-drawer-search {
+    border-color: rgb(230 232 238 / 0.12);
+    background: rgb(230 232 238 / 0.06);
+  }
+}
+
+@media (max-width: 768px) {
+  html body {
+    font-size: 16px;
+  }
+
+  html input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  html select,
+  html textarea {
+    font-size: 16px;
+  }
+
+  html :where(.home-entry-stage, .explore-scroll, .admin-content, main) {
+    padding-bottom: calc(1rem + var(--ios-safe-bottom));
+  }
+
+  html :where(.home-footer, .explore-footer) {
+    padding-bottom: calc(1rem + var(--ios-safe-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html :where(
+    button,
+    a,
+    [role='button'],
+    .celestial-card,
+    .explore-card,
+    .liquid-card,
+    .resource-card,
+    .process-card,
+    .archive-file-card,
+    .pager-card,
+    .admin-card,
+    .legacy-intro-card,
+    .explore-quote-card,
+    .institution-panel,
+    .project-panel,
+    .auth-celestial-card,
+    .auth-celestial-panel,
+    .access-panel,
+    .entry-panel,
+    .home-threshold-panel,
+    .resource-tile,
+    .institution-mosaic-tile,
+    .gallery-tile,
+    .catalog-row
+  ) {
+    transition: none !important;
+  }
+
+  html :where(
+    button,
+    a,
+    [role='button'],
+    .celestial-card,
+    .explore-card,
+    .liquid-card,
+    .resource-card,
+    .process-card,
+    .archive-file-card,
+    .pager-card,
+    .admin-card,
+    .legacy-intro-card,
+    .explore-quote-card,
+    .institution-panel,
+    .project-panel,
+    .auth-celestial-card,
+    .auth-celestial-panel,
+    .access-panel,
+    .entry-panel,
+    .home-threshold-panel,
+    .resource-tile,
+    .institution-mosaic-tile,
+    .gallery-tile,
+    .catalog-row
+  ):active {
+    transform: none !important;
+  }
+}
