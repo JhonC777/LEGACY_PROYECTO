@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Plus,
   Settings,
   X,
   type LucideIcon,
@@ -31,7 +32,13 @@ type NavItem = {
   icon: LucideIcon
   end?: boolean
   badge?: number
+  group: 'archivo' | 'institucion'
 }
+
+const NAV_GROUPS: { id: NavItem['group']; label: string }[] = [
+  { id: 'archivo', label: 'Archivo' },
+  { id: 'institucion', label: 'Institución' },
+]
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { institution, projects, settings, status, media } = useAdminStore()
@@ -57,12 +64,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const uploading = media.filter((asset) => asset.status === 'uploading').length
 
   const nav: NavItem[] = [
-    { to: base, label: 'Resumen', icon: LayoutDashboard, end: true },
-    { to: `${base}/proyectos`, label: 'Proyectos', icon: FolderKanban, badge: drafts },
-    { to: `${base}/cargas`, label: 'Cargas', icon: CloudUpload, badge: uploading },
-    { to: `${base}/historial`, label: 'Historial', icon: History },
-    { to: `${base}/ajustes`, label: 'Ajustes', icon: Settings },
+    { to: base, label: 'Resumen', icon: LayoutDashboard, end: true, group: 'archivo' },
+    { to: `${base}/proyectos`, label: 'Proyectos', icon: FolderKanban, badge: drafts, group: 'archivo' },
+    { to: `${base}/cargas`, label: 'Cargas', icon: CloudUpload, badge: uploading, group: 'archivo' },
+    { to: `${base}/historial`, label: 'Historial', icon: History, group: 'institucion' },
+    { to: `${base}/ajustes`, label: 'Ajustes', icon: Settings, group: 'institucion' },
   ]
+  const isEditor = /\/proyectos\/[^/]+$/.test(location.pathname)
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -90,7 +98,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <LegacyMark size="sm" />
         <span className="min-w-0 leading-tight">
           <LegacyWordmark className="block text-lg" />
-          <span className="block text-xs text-legacy-muted">Panel institucional</span>
+          <span className="admin-brand-sub">Panel institucional</span>
         </span>
       </Link>
 
@@ -112,24 +120,47 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         </span>
       </div>
 
-      <nav className="admin-nav flex flex-1 flex-col gap-0.5" aria-label="Secciones del panel">
-        {nav.map(({ to, label, icon: Icon, end, badge }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn('admin-nav-link flex items-center gap-2.5', isActive && 'is-active')
-            }
-          >
-            <Icon className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="flex-1">{label}</span>
-            {badge ? <span className="admin-nav-badge">{badge}</span> : null}
-          </NavLink>
+      <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md admin-sidebar-cta">
+        <Plus className="h-4 w-4" aria-hidden />
+        Nuevo proyecto
+      </Link>
+
+      <nav className="admin-nav flex flex-1 flex-col" aria-label="Secciones del panel">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.id} className="admin-nav-group">
+            <p className="admin-nav-heading">{group.label}</p>
+            {nav
+              .filter((item) => item.group === group.id)
+              .map(({ to, label, icon: Icon, end, badge }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    cn('admin-nav-link flex items-center gap-2.5', isActive && 'is-active')
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="flex-1">{label}</span>
+                  {badge ? <span className="admin-nav-badge">{badge}</span> : null}
+                </NavLink>
+              ))}
+          </div>
         ))}
       </nav>
 
       <div className="admin-sidebar-footer mt-auto flex flex-col">
+        <div className="admin-sidebar-user" title={session?.email}>
+          <span className="admin-user-avatar" aria-hidden>
+            {(session?.name ?? 'A').charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-legacy-white">
+              {session?.name ?? 'Administrador'}
+            </span>
+            <span className="block truncate text-xs text-legacy-muted">{session?.email}</span>
+          </span>
+        </div>
         <Link
           to={`/instituciones/${institution.slug}`}
           className="admin-nav-link flex items-center gap-2.5"
@@ -236,12 +267,46 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main id="contenido" className="admin-content">
+        <main id="contenido" className={cn('admin-content', isEditor && 'is-editor')}>
           <div className="admin-content-inner">
             {children}
           </div>
         </main>
       </div>
+
+      {!isEditor ? (
+        <nav className="admin-tabbar" aria-label="Navegación rápida del panel">
+          <NavLink to={base} end className={({ isActive }) => cn('admin-tab', isActive && 'is-active')}>
+            <LayoutDashboard className="h-5 w-5" aria-hidden />
+            <span>Resumen</span>
+          </NavLink>
+          <NavLink to={`${base}/proyectos`} end className={({ isActive }) => cn('admin-tab', isActive && 'is-active')}>
+            <FolderKanban className="h-5 w-5" aria-hidden />
+            <span>Proyectos</span>
+            {drafts ? <span className="admin-tab-badge">{drafts}</span> : null}
+          </NavLink>
+          <Link to={`${base}/proyectos/nuevo`} className="admin-tab admin-tab-new" aria-label="Nuevo proyecto">
+            <span className="admin-tab-new-orb">
+              <Plus className="h-5 w-5" aria-hidden />
+            </span>
+            <span>Nuevo</span>
+          </Link>
+          <NavLink to={`${base}/cargas`} className={({ isActive }) => cn('admin-tab', isActive && 'is-active')}>
+            <CloudUpload className="h-5 w-5" aria-hidden />
+            <span>Cargas</span>
+            {uploading ? <span className="admin-tab-badge">{uploading}</span> : null}
+          </NavLink>
+          <button
+            type="button"
+            className="admin-tab"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu className="h-5 w-5" aria-hidden />
+            <span>Más</span>
+          </button>
+        </nav>
+      ) : null}
 
       <ConfirmDialog
         open={confirmSignOut}

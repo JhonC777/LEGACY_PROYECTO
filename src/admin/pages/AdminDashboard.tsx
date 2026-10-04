@@ -14,7 +14,6 @@ import {
   Layers3,
   Pencil,
   Plus,
-  Send,
   Star,
   Users,
   type LucideIcon,
@@ -25,6 +24,7 @@ import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '../componen
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatRelative } from '../format'
+import { useAdminSession } from '../session'
 import { getProjectIssues, useAdminStore } from '../store'
 import { ACTIVITY_LABEL } from '../types'
 import type { AdminProject } from '../types'
@@ -43,6 +43,7 @@ function tally(projects: AdminProject[], key: 'area' | 'collection' | 'year') {
 
 export function AdminDashboard() {
   const { institution, settings, projects, media, activity, status, reload } = useAdminStore()
+  const { session } = useAdminSession()
   const base = `/admin/${institution.slug}`
   const publicHref = `/instituciones/${institution.slug}`
 
@@ -165,10 +166,62 @@ export function AdminDashboard() {
     },
   ]
 
+  const firstName = (session?.name ?? '').trim().split(/\s+/)[0]
+  const today = new Date().toLocaleDateString('es-CO', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+
+  const focus: { key: string; count: number; title: string; hint: string; href: string; cta: string }[] = []
+  if (pending.length > 0) {
+    focus.push({
+      key: 'pending',
+      count: pending.length,
+      title: pending.length === 1 ? 'Proyecto incompleto' : 'Proyectos incompletos',
+      hint: pending
+        .slice(0, 2)
+        .map(({ project }) => project.title || 'Sin título')
+        .join(' · '),
+      href: `${base}/proyectos/${pending[0].project.id}`,
+      cta: 'Completar',
+    })
+  }
+  if (readyToPublish.length > 0) {
+    focus.push({
+      key: 'ready',
+      count: readyToPublish.length,
+      title: readyToPublish.length === 1 ? 'Borrador listo para publicar' : 'Borradores listos para publicar',
+      hint: 'Cumplen todos los requisitos de la ficha',
+      href: `${base}/proyectos?status=draft`,
+      cta: 'Revisar',
+    })
+  }
+  if (uploading.length > 0) {
+    focus.push({
+      key: 'uploading',
+      count: uploading.length,
+      title: uploading.length === 1 ? 'Archivo subiendo' : 'Archivos subiendo',
+      hint: 'No cierres la pestaña hasta que terminen',
+      href: `${base}/cargas`,
+      cta: 'Ver cargas',
+    })
+  }
+  if (featured.length === 0 && published.length > 0) {
+    focus.push({
+      key: 'featured',
+      count: 0,
+      title: 'Sin destacados en la portada',
+      hint: 'Elige qué proyectos ve primero el invitado',
+      href: `${base}/ajustes`,
+      cta: 'Elegir',
+    })
+  }
+
   return (
     <>
       <PageHeader
-        eyebrow="Centro de mando"
+        eyebrow={firstName ? `Hola, ${firstName}` : 'Centro de mando'}
         title={settings.name}
         description="Todo el archivo de tu institución: lo público, lo interno y lo que falta por completar."
         actions={
@@ -187,10 +240,9 @@ export function AdminDashboard() {
         }
       />
 
-      <p className="admin-isolation">
-        Solo ves <strong>{settings.name}</strong>. Los invitados no ven borradores ni archivados:
-        hoy el público muestra <strong>{published.length}</strong>{' '}
-        {published.length === 1 ? 'proyecto' : 'proyectos'}.
+      <p className="admin-hero-date mt-2">
+        <CalendarDays className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
+        {today}
       </p>
 
       {projects.length === 0 ? (
@@ -209,11 +261,58 @@ export function AdminDashboard() {
         </div>
       ) : (
         <>
-          <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Estado del archivo">
+          <section className="admin-card admin-focus mt-6 p-5" aria-labelledby="focus-title">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 id="focus-title" className="font-brand text-xl font-semibold text-legacy-white">
+                  {focus.length > 0 ? 'Lo que necesita tu atención' : 'Todo al día'}
+                </h2>
+                <p className="mt-0.5 text-xs text-legacy-muted">
+                  Hoy el público ve <strong className="text-legacy-white">{published.length}</strong>{' '}
+                  {published.length === 1 ? 'proyecto' : 'proyectos'}. Los borradores y archivados solo
+                  se ven aquí.
+                </p>
+              </div>
+              <Link to={publicHref} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                Ver sitio público
+              </Link>
+            </div>
+            {focus.length === 0 ? (
+              <p className="admin-focus-item is-done mt-4 text-sm text-legacy-muted">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-legacy-gold" aria-hidden />
+                No hay pendientes: todos los proyectos activos tienen su ficha completa.
+              </p>
+            ) : (
+              <ul className="mt-4 grid gap-2 md:grid-cols-2">
+                {focus.map((item) => (
+                  <li key={item.key}>
+                    <Link to={item.href} className="admin-focus-item group">
+                      <span className="admin-focus-num">
+                        {item.count > 0 ? item.count : <Star className="h-4 w-4" aria-hidden />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-legacy-white">{item.title}</span>
+                        <span className="mt-0.5 block truncate text-xs text-legacy-muted">{item.hint}</span>
+                      </span>
+                      <span className="admin-row-action">
+                        {item.cta}
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <h2 className="admin-section-title">Estado del archivo</h2>
+          <section className="admin-stats" aria-label="Estado del archivo">
             {stats.map(({ label, value, icon: Icon, href, hint, tone }) => (
               <Link
                 key={label}
                 to={href}
+                title={hint}
                 className={cn('admin-card admin-stat group', tone === 'gold' && 'is-gold')}
               >
                 <span className="flex items-center justify-between">
@@ -225,130 +324,29 @@ export function AdminDashboard() {
                     aria-hidden
                   />
                 </span>
-                <span className="mt-4 block font-brand text-4xl leading-none font-semibold text-legacy-white">
+                <span className="mt-3 block font-brand text-3xl leading-none font-semibold text-legacy-white">
                   {value}
                 </span>
                 <span className="mt-1.5 block text-sm font-semibold text-white/85">{label}</span>
-                <span className="mt-0.5 block text-xs text-legacy-muted">{hint}</span>
+                <span className="mt-0.5 hidden text-xs text-legacy-muted sm:block">{hint}</span>
               </Link>
             ))}
           </section>
 
-          <section className="admin-card mt-6 p-5" aria-labelledby="public-title">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h2 id="public-title" className="font-brand text-xl font-semibold text-legacy-white">
-                  Qué ve el invitado ahora
-                </h2>
-                <p className="mt-0.5 text-xs text-legacy-muted">
-                  Portada pública de {settings.shortName}. Los destacados salen de Ajustes.
-                </p>
-              </div>
-              <Link to={publicHref} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                Abrir sitio público
-              </Link>
-            </div>
-            {featured.length === 0 ? (
-              <p className="mt-4 text-sm text-legacy-muted">
-                No hay destacados de portada. El invitado verá los publicados más recientes.
-              </p>
-            ) : (
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {featured.map((project) => (
-                  <li key={project.id}>
-                    <Link to={`${base}/proyectos/${project.id}`} className="admin-row group">
-                      <span className="admin-thumb" aria-hidden>
-                        {project.coverImage ? (
-                          <img src={project.coverImage} alt="" loading="lazy" />
-                        ) : (
-                          <Star className="h-4 w-4 text-legacy-gold" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="truncate text-sm font-semibold text-legacy-white">
-                            {project.title}
-                          </span>
-                          <StatusBadge status={project.status} />
-                        </span>
-                        <span className="mt-0.5 block truncate text-xs text-legacy-muted">
-                          {project.area} · {project.year}
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <div className="mt-5 grid gap-5 xl:grid-cols-3">
-            <InventoryCard
-              id="areas-title"
-              title="Áreas"
-              icon={Layers3}
-              empty="Sin áreas registradas."
-              items={areas}
-              href={(label) => `${base}/proyectos?area=${encodeURIComponent(label)}`}
-            />
-            <InventoryCard
-              id="years-title"
-              title="Años"
-              icon={CalendarDays}
-              empty="Sin años documentados."
-              items={years}
-              href={(label) => `${base}/proyectos?year=${encodeURIComponent(label)}`}
-            />
-            <InventoryCard
-              id="collections-title"
-              title="Colecciones"
-              icon={BookOpen}
-              empty="Ningún proyecto tiene colección."
-              items={collections}
-              href={(label) => `${base}/proyectos?collection=${encodeURIComponent(label)}`}
-            />
-          </div>
-
-          <section className="admin-card mt-5 p-5" aria-labelledby="authors-title">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="authors-title" className="inline-flex items-center gap-2 font-brand text-xl font-semibold text-legacy-white">
-                <Users className="h-4 w-4 text-legacy-gold" aria-hidden />
-                Autores del archivo
-              </h2>
-              <span className="admin-count">{authorList.length}</span>
-            </div>
-            {authorList.length === 0 ? (
-              <p className="mt-3 text-sm text-legacy-muted">Todavía no hay autores en las fichas.</p>
-            ) : (
-              <div className="admin-inventory mt-4">
-                {authorList.slice(0, 16).map((item) => (
-                  <Link
-                    key={item.label}
-                    to={`${base}/proyectos?q=${encodeURIComponent(item.label)}`}
-                    className="admin-inventory-link"
-                  >
-                    <span className="truncate">{item.label}</span>
-                    <span className="admin-inventory-count">{item.count}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+          <h2 className="admin-section-title">Trabajo reciente</h2>
+          <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
             <section className="admin-card p-5" aria-labelledby="ops-title">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 id="ops-title" className="font-brand text-xl font-semibold text-legacy-white">
-                    Operación del archivo
-                  </h2>
+                  <h3 id="ops-title" className="font-brand text-xl font-semibold text-legacy-white">
+                    Últimas ediciones
+                  </h3>
                   <p className="mt-0.5 text-xs text-legacy-muted">
-                    Últimas ediciones, incompletos y listos para publicar.
+                    Lo que tocaste hace poco y lo que le falta a cada ficha.
                   </p>
                 </div>
                 <Link to={`${base}/proyectos`} className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
-                  Ver inventario
+                  Ver todos
                 </Link>
               </div>
 
@@ -387,28 +385,14 @@ export function AdminDashboard() {
                   )
                 })}
               </ul>
-
-              {readyToPublish.length > 0 ? (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-legacy-gold/20 bg-legacy-gold/[0.06] px-4 py-3">
-                  <p className="text-sm text-legacy-white">
-                    <Send className="mr-2 inline h-4 w-4 text-legacy-gold" aria-hidden />
-                    {readyToPublish.length === 1
-                      ? '1 borrador cumple todo y puede publicarse.'
-                      : `${readyToPublish.length} borradores cumplen todo y pueden publicarse.`}
-                  </p>
-                  <Link to={`${base}/proyectos?status=draft`} className="btn btn-secondary btn-sm">
-                    Revisar
-                  </Link>
-                </div>
-              ) : null}
             </section>
 
             <div className="flex flex-col gap-5">
               <section className="admin-card p-5" aria-labelledby="activity-title">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 id="activity-title" className="font-brand text-xl font-semibold text-legacy-white">
+                  <h3 id="activity-title" className="font-brand text-xl font-semibold text-legacy-white">
                     Actividad reciente
-                  </h2>
+                  </h3>
                   <Link to={`${base}/historial`} className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
                     Ver historial
                   </Link>
@@ -442,10 +426,14 @@ export function AdminDashboard() {
               </section>
 
               <section className="admin-card p-5" aria-labelledby="shortcuts-title">
-                <h2 id="shortcuts-title" className="font-brand text-xl font-semibold text-legacy-white">
+                <h3 id="shortcuts-title" className="font-brand text-xl font-semibold text-legacy-white">
                   Accesos rápidos
-                </h2>
+                </h3>
                 <div className="mt-3 grid gap-2">
+                  <Link to={`${base}/proyectos/nuevo`} className="admin-shortcut">
+                    <Plus className="h-4 w-4 text-legacy-gold" aria-hidden />
+                    Crear un proyecto nuevo
+                  </Link>
                   <Link to={`${base}/cargas`} className="admin-shortcut">
                     <CloudUpload className="h-4 w-4 text-legacy-gold" aria-hidden />
                     Subir imágenes o documentos
@@ -454,14 +442,114 @@ export function AdminDashboard() {
                     <Pencil className="h-4 w-4 text-legacy-gold" aria-hidden />
                     Editar identidad y portada pública
                   </Link>
-                  <Link to={publicHref} target="_blank" rel="noreferrer" className="admin-shortcut">
-                    <ExternalLink className="h-4 w-4 text-legacy-gold" aria-hidden />
-                    Abrir el sitio público
-                  </Link>
                 </div>
               </section>
             </div>
           </div>
+
+          <h2 className="admin-section-title">Portada pública</h2>
+          <section className="admin-card p-5" aria-labelledby="public-title">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 id="public-title" className="font-brand text-xl font-semibold text-legacy-white">
+                  Qué ve el invitado ahora
+                </h3>
+                <p className="mt-0.5 text-xs text-legacy-muted">
+                  Portada pública de {settings.shortName}. Los destacados se eligen en Ajustes.
+                </p>
+              </div>
+              <Link to={`${base}/ajustes`} className="btn btn-secondary btn-sm">
+                <Star className="h-3.5 w-3.5" aria-hidden />
+                Cambiar destacados
+              </Link>
+            </div>
+            {featured.length === 0 ? (
+              <p className="mt-4 text-sm text-legacy-muted">
+                No hay destacados de portada. El invitado verá los publicados más recientes.
+              </p>
+            ) : (
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                {featured.map((project) => (
+                  <li key={project.id}>
+                    <Link to={`${base}/proyectos/${project.id}`} className="admin-row group">
+                      <span className="admin-thumb" aria-hidden>
+                        {project.coverImage ? (
+                          <img src={project.coverImage} alt="" loading="lazy" />
+                        ) : (
+                          <Star className="h-4 w-4 text-legacy-gold" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold text-legacy-white">
+                            {project.title}
+                          </span>
+                          <StatusBadge status={project.status} />
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs text-legacy-muted">
+                          {project.area} · {project.year}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <h2 className="admin-section-title">Explorar el archivo</h2>
+          <div className="grid gap-5 xl:grid-cols-3">
+            <InventoryCard
+              id="areas-title"
+              title="Áreas"
+              icon={Layers3}
+              empty="Sin áreas registradas."
+              items={areas}
+              href={(label) => `${base}/proyectos?area=${encodeURIComponent(label)}`}
+            />
+            <InventoryCard
+              id="years-title"
+              title="Años"
+              icon={CalendarDays}
+              empty="Sin años documentados."
+              items={years}
+              href={(label) => `${base}/proyectos?year=${encodeURIComponent(label)}`}
+            />
+            <InventoryCard
+              id="collections-title"
+              title="Colecciones"
+              icon={BookOpen}
+              empty="Ningún proyecto tiene colección."
+              items={collections}
+              href={(label) => `${base}/proyectos?collection=${encodeURIComponent(label)}`}
+            />
+          </div>
+
+          <section className="admin-card mt-5 p-5" aria-labelledby="authors-title">
+            <div className="flex items-center justify-between gap-3">
+              <h3 id="authors-title" className="inline-flex items-center gap-2 font-brand text-xl font-semibold text-legacy-white">
+                <Users className="h-4 w-4 text-legacy-gold" aria-hidden />
+                Autores del archivo
+              </h3>
+              <span className="admin-count">{authorList.length}</span>
+            </div>
+            {authorList.length === 0 ? (
+              <p className="mt-3 text-sm text-legacy-muted">Todavía no hay autores en las fichas.</p>
+            ) : (
+              <div className="admin-inventory mt-4">
+                {authorList.slice(0, 16).map((item) => (
+                  <Link
+                    key={item.label}
+                    to={`${base}/proyectos?q=${encodeURIComponent(item.label)}`}
+                    className="admin-inventory-link"
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <span className="admin-inventory-count">{item.count}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
         </>
       )}
     </>
