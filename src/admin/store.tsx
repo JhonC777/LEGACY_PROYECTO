@@ -32,6 +32,7 @@ import {
   saveRemoteProject,
   subscribeRemoteReady,
 } from '@/data/archiveRemote'
+import { attachObjectUrl, detachObjectUrl } from '@/lib/blobRegistry'
 import { readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
 
 /**
@@ -629,7 +630,7 @@ export function AdminStoreProvider({
           name: file.name,
           kind: inferMediaKind(file.name, file.type),
           size: file.size,
-          url: URL.createObjectURL(file),
+          url: attachObjectUrl(file),
           uploadedAt: new Date().toISOString(),
           status: tooLarge ? 'error' : 'uploading',
           progress: 0,
@@ -670,7 +671,7 @@ export function AdminStoreProvider({
       const asset = mediaRef.current.find((item) => item.id === id)
       dispatch({ type: 'REMOVE_MEDIA', id })
       if (asset) {
-        if (asset.url.startsWith('blob:')) URL.revokeObjectURL(asset.url)
+        if (asset.url.startsWith('blob:')) detachObjectUrl(asset.url)
         log('delete', `Eliminó el archivo «${asset.name}»`)
       }
     },

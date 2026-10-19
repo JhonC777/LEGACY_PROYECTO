@@ -1,5 +1,6 @@
 import type { AdminProject } from '@/admin/types'
 import type { DemoAuthor, ProjectStatus } from '@/data/demoData'
+import { getBlobForObjectUrl } from '@/lib/blobRegistry'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 let clientPromise: Promise<SupabaseClient | null> | null = null
@@ -289,10 +290,16 @@ function allowedContentType(blob: Blob, path: string) {
   throw new Error('tipo de archivo no permitido')
 }
 
+async function blobFromObjectUrl(url: string): Promise<Blob> {
+  const cached = getBlobForObjectUrl(url)
+  if (cached) return cached
+  return fetch(url).then((response) => response.blob())
+}
+
 async function promoteUrl(url: string | undefined, path: string) {
   const supabase = await getClient()
   if (!supabase || !url?.startsWith('blob:')) return url
-  const blob = await fetch(url).then((response) => response.blob())
+  const blob = await blobFromObjectUrl(url)
   const contentType = allowedContentType(blob, path)
   const { error } = await supabase.storage.from('archive').upload(path, blob, {
     upsert: true,
