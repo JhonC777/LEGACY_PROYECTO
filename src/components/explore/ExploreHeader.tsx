@@ -1,6 +1,6 @@
 import { Menu, Search, UserRound, X } from 'lucide-react'
 import '@/styles/header.css'
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GlassInput } from '@/components/ui/GlassInput'
 import { LegacyMark } from '@/components/brand/LegacyMark'
@@ -32,6 +32,17 @@ export function ExploreHeader() {
   const location = useLocation()
   const headerRef = useRef<HTMLElement>(null)
   usePublishHeaderHeight(headerRef)
+  // Entre 1024 y 1279 px el buscador es estrecho: placeholder corto para que no se corte.
+  const [wideSearch, setWideSearch] = useState(
+    () => typeof window === 'undefined' || window.matchMedia('(min-width: 1280px)').matches,
+  )
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1280px)')
+    const update = () => setWideSearch(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   const goToSearch = (value: string) => {
     const term = value.trim()
@@ -94,7 +105,8 @@ export function ExploreHeader() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar proyectos, autores..."
+              placeholder={wideSearch ? 'Buscar proyectos, autores…' : 'Buscar…'}
+              aria-label="Buscar proyectos, autores"
               className="liquid-field liquid-touch py-2.5 pr-4 pl-10 text-sm"
             />
           </form>
@@ -142,7 +154,7 @@ export function ExploreHeader() {
                 aria-current={active ? 'page' : undefined}
                 onClick={() => setMenuOpen(false)}
               >
-                {withLegacyName(item.label)}
+                <span className="nav-drawer-link-label">{withLegacyName(item.label)}</span>
               </Link>
             )
           })}
@@ -154,7 +166,7 @@ export function ExploreHeader() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar proyectos, autores..."
+            placeholder="Buscar proyectos, autores…"
             aria-label="Buscar proyectos, autores"
           />
         </form>
