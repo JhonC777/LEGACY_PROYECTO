@@ -338,7 +338,7 @@ async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
 
 export async function saveRemoteProject(project: AdminProject) {
   const supabase = await getClient()
-  if (!supabase) return project
+  if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
   try {
     const prepared = await withDisplayUrls(await withStoredMedia(project))
     const { error } = await supabase.from('projects').upsert(toRow(prepared), { onConflict: 'id' })
@@ -349,17 +349,17 @@ export async function saveRemoteProject(project: AdminProject) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudo guardar en Supabase.'
     fail(remoteErrorMessage({ message }))
-    return project
+    throw error instanceof Error ? error : new Error(message)
   }
 }
 
 export async function deleteRemoteProject(id: string) {
   const supabase = await getClient()
-  if (!supabase) return
+  if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
   const { error } = await supabase.from('projects').delete().eq('id', id)
   if (error) {
     fail(remoteErrorMessage(error))
-    return
+    throw error
   }
   remember((remote ?? []).filter((project) => project.id !== id))
 }
