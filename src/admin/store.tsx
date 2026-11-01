@@ -447,8 +447,8 @@ export function AdminStoreProvider({
   }, [institution.slug])
 
   const persistRemote = useCallback(async (project: AdminProject) => {
-    const saved = await saveRemoteProject(project);
-      const current = projectsRef.current.find((item) => item.id === saved.id)
+    const saved = await saveRemoteProject(project)
+    const current = projectsRef.current.find((item) => item.id === saved.id)
       if (!current) return
       const mediaChanged =
         current.coverImage !== saved.coverImage ||
@@ -456,7 +456,7 @@ export function AdminStoreProvider({
         current.pdfUrl !== saved.pdfUrl ||
         current.videoUrl !== saved.videoUrl ||
         current.gallery.join('|') !== saved.gallery.join('|')
-      if (!mediaChanged) return
+      if (!mediaChanged) return saved
       const next: AdminProject = {
         ...current,
         coverImage: saved.coverImage,
