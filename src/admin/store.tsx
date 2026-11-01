@@ -616,27 +616,18 @@ export function AdminStoreProvider({
     [flushArchive, log],
   )
 
+  // Los archivos locales quedan listos para adjuntarse al proyecto.
+  // La transferencia real a Supabase Storage ocurre dentro de saveRemoteProject;
+  // el editor solo confirma el guardado cuando Storage y la fila DB terminan.
   const runUpload = useCallback(
     (asset: MediaAsset) => {
-      let progress = 0
-      const interval = window.setInterval(() => {
-        progress = Math.min(100, progress + 8 + Math.random() * 18)
-        if (progress >= 100) {
-          window.clearInterval(interval)
-          timers.current.delete(interval)
-          dispatch({
-            type: 'PATCH_MEDIA',
-            id: asset.id,
-            patch: { progress: 100, status: 'ready', uploadedAt: new Date().toISOString() },
-          })
-          log('upload', `Subió «${asset.name}»`)
-          return
-        }
-        dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { progress: Math.round(progress) } })
-      }, 180)
-      timers.current.add(interval)
+      dispatch({
+        type: 'PATCH_MEDIA',
+        id: asset.id,
+        patch: { progress: 100, status: 'ready', uploadedAt: new Date().toISOString() },
+      })
     },
-    [log],
+    [],
   )
 
   const uploadFiles = useCallback<StoreContextValue['uploadFiles']>(
