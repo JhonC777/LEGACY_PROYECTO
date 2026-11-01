@@ -362,15 +362,14 @@ export function AdminStoreProvider({
               }
             : seed(institution),
         )
-        const remote =
-          getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ??
-          []
+        const remote = getRemoteProjects()
+        const institutionProjects =
+          remote === null
+            ? payload.projects
+            : remote.filter((project) => project.institutionId === institution.id)
         dispatch({
           type: 'LOADED',
-          payload:
-            remote.length > 0
-              ? { ...payload, projects: overlayProjects(payload.projects, remote) }
-              : payload,
+          payload: { ...payload, projects: institutionProjects },
         })
       })()
     }, 520)
