@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getRemoteProjects, overlayProjects } from '@/data/archiveRemote'
+import { getRemoteProjects } from '@/data/archiveRemote'
 import {
   DEMO_PROJECTS,
   getRelatedProjects as relatedFromPool,
