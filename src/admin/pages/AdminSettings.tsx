@@ -121,8 +121,10 @@ export function AdminSettings() {
           if (featuredDirty) await setFeatured(featured)
           notify({
             tone: 'success',
-            title: 'Ajustes guardados',
-            description: 'La selección de proyectos destacados se confirmó en Supabase.',
+            title: featuredDirty ? 'Destacados guardados' : 'Ajustes actualizados',
+            description: featuredDirty
+              ? 'La selección de proyectos destacados se confirmó en Supabase.'
+              : 'La identidad institucional se mantiene en esta sesión; su persistencia remota requiere una tabla de ajustes.',
           })
         } catch (error) {
           notify({
