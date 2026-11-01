@@ -204,18 +204,20 @@ export function AdminProjectEditor() {
   const set = <K extends keyof ProjectDraftInput>(key: K, value: ProjectDraftInput[K]) =>
     setForm((current) => ({ ...current, [key]: value }))
 
-  const persist = () => {
+  const persist = async () => {
     if (isNew) {
-      const created = createProject(composed)
+      const created = await createProject(composed)
       return created
     }
-    return existing ? updateProject(existing.id, composed) : undefined
+    return existing ? await updateProject(existing.id, composed) : undefined
   }
 
   const handleSave = () => {
     setSaving(true)
     defer(() => {
-      const saved = persist()
+      void (async () => {
+      try {
+      const saved = await persist()
       setSaving(false)
       if (!saved) {
         notify({ tone: 'error', title: 'No se pudo guardar', description: 'El proyecto ya no existe.' })
@@ -230,6 +232,10 @@ export function AdminProjectEditor() {
         }`,
       })
       if (isNew) navigate(`${base}/proyectos/${saved.id}`, { replace: true })
+      } catch (error) {
+        notify({ tone: 'error', title: 'No se pudo guardar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+      } finally { setSaving(false) }
+      })()
     }, 420)
   }
 
@@ -237,13 +243,15 @@ export function AdminProjectEditor() {
     setConfirm(null)
     setSaving(true)
     defer(() => {
-      const saved = persist()
+      void (async () => {
+      try {
+      const saved = await persist()
       if (!saved) {
         setSaving(false)
         notify({ tone: 'error', title: 'No se pudo publicar', description: 'El proyecto ya no existe.' })
         return
       }
-      const result = setProjectStatus(saved.id, 'published')
+      const result = await setProjectStatus(saved.id, 'published')
       setSaving(false)
       if (result.ok) {
         setSnapshot(JSON.stringify({ ...form, tags: tagsText, technologies: techText }))
@@ -261,15 +269,23 @@ export function AdminProjectEditor() {
         })
         if (isNew) navigate(`${base}/proyectos/${saved.id}`, { replace: true })
       }
+      } catch (error) {
+        notify({ tone: 'error', title: 'No se pudo publicar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+      } finally { setSaving(false) }
+      })()
     }, 480)
   }
 
   const handleDelete = () => {
     if (!existing) return
-    deleteProject(existing.id)
-    setConfirm(null)
-    notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${existing.title}» se eliminó del archivo.` })
-    navigate(`${base}/proyectos`, { replace: true })
+    setSaving(true)
+    void deleteProject(existing.id).then(() => {
+      setConfirm(null)
+      notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${existing.title}» se eliminó del archivo.` })
+      navigate(`${base}/proyectos`, { replace: true })
+    }).catch((error) => {
+      notify({ tone: 'error', title: 'No se pudo eliminar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+    }).finally(() => setSaving(false))
   }
 
   const handleBack = () => {
