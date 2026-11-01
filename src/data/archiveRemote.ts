@@ -356,11 +356,17 @@ export async function saveRemoteProject(project: AdminProject) {
 export async function deleteRemoteProject(id: string) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
-  const { error } = await supabase.from('projects').delete().eq('id', id)
+  const { data, error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle()
   if (error) {
     fail(remoteErrorMessage(error))
     throw error
   }
+  if (!data) throw new Error('El proyecto no existe o no tienes permiso para eliminarlo.')
   remember((remote ?? []).filter((project) => project.id !== id))
 }
 
