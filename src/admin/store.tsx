@@ -511,8 +511,14 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('create', `Creó el borrador «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      const saved = await persistRemote(project)
-      return saved
+      try {
+        return await persistRemote(project)
+      } catch (error) {
+        projectsRef.current = projectsRef.current.filter((item) => item.id !== project.id)
+        dispatch({ type: 'REMOVE_PROJECT', id: project.id })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, institution.id, log, persistRemote],
   )
@@ -532,8 +538,14 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('update', `Actualizó «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      const saved = await persistRemote(project)
-      return saved
+      try {
+        return await persistRemote(project)
+      } catch (error) {
+        projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
+        dispatch({ type: 'UPSERT_PROJECT', project: current })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, log, persistRemote],
   )
@@ -580,8 +592,15 @@ export function AdminStoreProvider({
       const [type, label] = verb[status]
       log(type, `${label} «${project.title}»`, project)
       flushArchive()
-      await persistRemote(project)
-      return { ok: true, errors: [] }
+      try {
+        await persistRemote(project)
+        return { ok: true, errors: [] }
+      } catch (error) {
+        projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
+        dispatch({ type: 'UPSERT_PROJECT', project: current })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, log, persistRemote],
   )
