@@ -80,24 +80,29 @@ export function resolveInstitutionProjects(
   institution: DemoInstitution,
   publishedOnly = true,
 ): DemoProject[] {
-  const snap = readArchiveSnapshot(institution.slug)
-  const pool: DemoProject[] = snap
-    ? snap.projects
+  // Una vez que Supabase responde, su resultado es la fuente de verdad,
+  // incluso cuando la consulta devuelve cero proyectos. No mezclar demos ni
+  // snapshots antiguos con el catálogo persistido.
+  const remote = getRemoteProjects()
+  const projects: DemoProject[] = remote !== null
+    ? remote
         .filter((project) => project.institutionId === institution.id)
         .map(asDemoProject)
-    : DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
-
-  const showcase = DEMO_PROJECTS.filter(
-    (project) => project.isReal && project.institutionId === institution.id,
-  )
-  const missing = showcase.filter(
-    (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
-  )
-  const merged = missing.length > 0 ? [...missing, ...pool] : pool
-  const remote = getRemoteProjects()?.filter(
-    (project) => project.institutionId === institution.id,
-  )
-  const withRemote = remote && remote.length > 0 ? overlayProjects(merged, remote) : merged
+    : (() => {
+        const snap = readArchiveSnapshot(institution.slug)
+        const pool: DemoProject[] = snap
+          ? snap.projects
+              .filter((project) => project.institutionId === institution.id)
+              .map(asDemoProject)
+          : DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
+        const showcase = DEMO_PROJECTS.filter(
+          (project) => project.isReal && project.institutionId === institution.id,
+        )
+        const missing = showcase.filter(
+          (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
+        )
+        return missing.length > 0 ? [...missing, ...pool] : pool
+      })()
 
   return publishedOnly ? withRemote.filter((project) => project.status === 'published') : withRemote
 }
