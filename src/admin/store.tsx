@@ -351,6 +351,10 @@ export function AdminStoreProvider({
         }
         await refreshRemoteArchive()
         if (current !== attempt.current) return
+        if (getRemoteProjects() === null) {
+          dispatch({ type: 'FAILED' })
+          return
+        }
         const stored = readArchiveSnapshot(institution.slug)
         const payload = stripDemoDrafts(
           stored
