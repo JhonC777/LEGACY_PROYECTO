@@ -107,22 +107,33 @@ export function AdminSettings() {
     }
     setSaving(true)
     defer(() => {
-      if (identityDirty) {
-        updateSettings({
-          name: form.name.trim(),
-          shortName: form.shortName.trim(),
-          description: form.description.trim(),
-          accent: form.accent,
-          logoUrl: form.logoUrl,
-        })
-      }
-      if (featuredDirty) setFeatured(featured)
-      setSaving(false)
-      notify({
-        tone: 'success',
-        title: 'Ajustes guardados',
-        description: 'Quedaron guardados en el panel de esta institución.',
-      })
+      void (async () => {
+        try {
+          if (identityDirty) {
+            updateSettings({
+              name: form.name.trim(),
+              shortName: form.shortName.trim(),
+              description: form.description.trim(),
+              accent: form.accent,
+              logoUrl: form.logoUrl,
+            })
+          }
+          if (featuredDirty) await setFeatured(featured)
+          notify({
+            tone: 'success',
+            title: 'Ajustes guardados',
+            description: 'La selección de proyectos destacados se confirmó en Supabase.',
+          })
+        } catch (error) {
+          notify({
+            tone: 'error',
+            title: 'No se pudieron guardar los destacados',
+            description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
+          })
+        } finally {
+          setSaving(false)
+        }
+      })()
     }, 420)
   }
 
