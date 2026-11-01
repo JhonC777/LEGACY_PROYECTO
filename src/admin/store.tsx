@@ -302,7 +302,7 @@ type StoreContextValue = State & {
   removeMedia: (id: string) => void
   updateSettings: (patch: Partial<InstitutionSettings>) => void
   /** Curaduría de portada: sincroniza `featuredProjectIds` con `isFeatured`. */
-  setFeatured: (ids: string[]) => void
+  setFeatured: (ids: string[]) => Promise<void>
   log: (type: ActivityType, message: string, project?: Pick<AdminProject, 'id' | 'title'>) => void
 }
 
@@ -696,7 +696,7 @@ export function AdminStoreProvider({
   )
 
   const setFeatured = useCallback<StoreContextValue['setFeatured']>(
-    (ids) => {
+    async (ids) => {
       const allowed = ids
         .filter((id) =>
           projectsRef.current.some(
@@ -704,22 +704,38 @@ export function AdminStoreProvider({
           ),
         )
         .slice(0, 6)
-      const wanted = new Set(allowed)
-      projectsRef.current = projectsRef.current.map((project) => {
-        const shouldFeature = wanted.has(project.id)
-        if (project.isFeatured === shouldFeature) return project
-        const next = { ...project, isFeatured: shouldFeature }
-        dispatch({ type: 'UPSERT_PROJECT', project: next })
-        persistRemote(next)
+      const originalProjects = projectsRef.current
+      const originalSettings = settingsRef.current
+      const changed: AdminProject[] = []
+      const nextProjects = originalProjects.map((project) => {
+        const nextFeatured = allowed.includes(project.id)
+        if (project.isFeatured === nextFeatured) return project
+        const next = { ...project, isFeatured: nextFeatured }
+        changed.push(next)
         return next
       })
+      projectsRef.current = nextProjects
+      changed.forEach((project) => dispatch({ type: 'UPSERT_PROJECT', project }))
       dispatch({
         type: 'SETTINGS',
-        settings: { ...settingsRef.current, featuredProjectIds: allowed },
+        settings: { ...originalSettings, featuredProjectIds: allowed },
       })
-      log('settings', `Actualizó los destacados de portada (${allowed.length})`)
+      try {
+        await Promise.all(changed.map((project) => persistRemote(project)))
+        log('settings', `Actualizó los destacados de portada (${allowed.length})`)
+        flushArchive()
+      } catch (error) {
+        projectsRef.current = originalProjects
+        changed.forEach((project) => {
+          const original = originalProjects.find((item) => item.id === project.id)
+          if (original) dispatch({ type: 'UPSERT_PROJECT', project: original })
+        })
+        dispatch({ type: 'SETTINGS', settings: originalSettings })
+        flushArchive()
+        throw error
+      }
     },
-    [log, persistRemote],
+    [flushArchive, log, persistRemote],
   )
 
   const value = useMemo<StoreContextValue>(
