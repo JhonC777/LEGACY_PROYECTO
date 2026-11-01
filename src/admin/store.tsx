@@ -448,7 +448,7 @@ export function AdminStoreProvider({
   const persistRemote = useCallback(async (project: AdminProject) => {
     const saved = await saveRemoteProject(project)
     const current = projectsRef.current.find((item) => item.id === saved.id)
-      if (!current) return
+    if (!current) return saved
       const mediaChanged =
         current.coverImage !== saved.coverImage ||
         current.docUrl !== saved.docUrl ||
