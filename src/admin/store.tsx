@@ -293,10 +293,10 @@ function seed(institution: DemoInstitution): Omit<State, 'status'> {
 type StoreContextValue = State & {
   institution: DemoInstitution
   reload: () => void
-  createProject: (input: ProjectDraftInput) => AdminProject
-  updateProject: (id: string, patch: Partial<ProjectDraftInput>) => AdminProject | undefined
-  setProjectStatus: (id: string, status: ProjectStatus) => { ok: boolean; errors: string[] }
-  deleteProject: (id: string) => void
+  createProject: (input: ProjectDraftInput) => Promise<AdminProject>
+  updateProject: (id: string, patch: Partial<ProjectDraftInput>) => Promise<AdminProject | undefined>
+  setProjectStatus: (id: string, status: ProjectStatus) => Promise<{ ok: boolean; errors: string[] }>
+  deleteProject: (id: string) => Promise<void>
   uploadFiles: (files: File[], projectId?: string) => string[]
   retryUpload: (id: string) => void
   removeMedia: (id: string) => void
@@ -446,8 +446,8 @@ export function AdminStoreProvider({
     })
   }, [institution.slug])
 
-  const persistRemote = useCallback((project: AdminProject) => {
-    void saveRemoteProject(project).then((saved) => {
+  const persistRemote = useCallback(async (project: AdminProject) => {
+    const saved = await saveRemoteProject(project);
       const current = projectsRef.current.find((item) => item.id === saved.id)
       if (!current) return
       const mediaChanged =
@@ -468,7 +468,7 @@ export function AdminStoreProvider({
       projectsRef.current = projectsRef.current.map((item) => (item.id === next.id ? next : item))
       dispatch({ type: 'UPSERT_PROJECT', project: next })
       flushArchive()
-    })
+    return saved
   }, [flushArchive])
 
   useEffect(() => {
@@ -492,7 +492,7 @@ export function AdminStoreProvider({
   }, [institution.id])
 
   const createProject = useCallback<StoreContextValue['createProject']>(
-    (input) => {
+    async (input) => {
       const base = slugify(input.title) || 'proyecto-sin-titulo'
       const taken = new Set(projectsRef.current.map((project) => project.slug))
       let slug = base
@@ -511,14 +511,14 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('create', `Creó el borrador «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      persistRemote(project)
-      return project
+      const saved = await persistRemote(project)
+      return saved
     },
     [flushArchive, institution.id, log, persistRemote],
   )
 
   const updateProject = useCallback<StoreContextValue['updateProject']>(
-    (id, patch) => {
+    async (id, patch) => {
       const current = projectsRef.current.find((project) => project.id === id)
       if (!current) return undefined
       const project: AdminProject = {
@@ -532,14 +532,14 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('update', `Actualizó «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      persistRemote(project)
-      return project
+      const saved = await persistRemote(project)
+      return saved
     },
     [flushArchive, log, persistRemote],
   )
 
   const setProjectStatus = useCallback<StoreContextValue['setProjectStatus']>(
-    (id, status) => {
+    async (id, status) => {
       const current = projectsRef.current.find((project) => project.id === id)
       if (!current) return { ok: false, errors: ['El proyecto ya no existe'] }
 
@@ -580,20 +580,20 @@ export function AdminStoreProvider({
       const [type, label] = verb[status]
       log(type, `${label} «${project.title}»`, project)
       flushArchive()
-      persistRemote(project)
+      await persistRemote(project)
       return { ok: true, errors: [] }
     },
     [flushArchive, log, persistRemote],
   )
 
   const deleteProject = useCallback<StoreContextValue['deleteProject']>(
-    (id) => {
+    async (id) => {
       const current = projectsRef.current.find((project) => project.id === id)
+      await deleteRemoteProject(id)
       projectsRef.current = projectsRef.current.filter((project) => project.id !== id)
       dispatch({ type: 'REMOVE_PROJECT', id })
       if (current) log('delete', `Eliminó «${current.title}»`, current)
       flushArchive()
-      void deleteRemoteProject(id)
     },
     [flushArchive, log],
   )
