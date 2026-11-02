@@ -438,6 +438,73 @@ export async function saveRemoteProject(project: AdminProject) {
   }
 }
 
+export type RemoteInstitutionSettings = {
+  name: string
+  shortName: string
+  description: string
+  accent: string
+  logoUrl?: string
+}
+
+export async function loadRemoteInstitutionSettings(institutionId: string): Promise<RemoteInstitutionSettings | null> {
+  const supabase = await getClient()
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('institutions')
+    .select('name, short_name, description, accent, logo_url')
+    .eq('id', institutionId)
+    .maybeSingle()
+  if (error) throw new Error(remoteErrorMessage(error, 'cargar la identidad institucional'))
+  if (!data) return null
+  const storedLogo = data.logo_url ?? undefined
+  return {
+    name: data.name,
+    shortName: data.short_name,
+    description: data.description ?? '',
+    accent: data.accent ?? '#7662c9',
+    logoUrl: storedLogo?.startsWith('storage:') ? await displayMedia(storedLogo) : storedLogo,
+  }
+}
+
+export async function saveRemoteInstitutionSettings(
+  institutionId: string,
+  settings: RemoteInstitutionSettings,
+): Promise<RemoteInstitutionSettings> {
+  const supabase = await getClient()
+  if (!supabase) throw new Error('Supabase no está configurado.')
+  let logoUrl = settings.logoUrl
+  if (logoUrl?.startsWith('blob:')) {
+    const response = await fetch(logoUrl)
+    if (!response.ok) throw new Error('No se pudo leer el logo seleccionado.')
+    const blob = await response.blob()
+    const extension = blob.type === 'image/png' ? 'png'
+      : blob.type === 'image/webp' ? 'webp'
+      : blob.type === 'image/gif' ? 'gif' : 'jpg'
+    const path = `${institutionId}/identity/logo.${extension}`
+    const { error: uploadError } = await supabase.storage.from('archive').upload(path, blob, {
+      upsert: true,
+      contentType: blob.type || 'image/jpeg',
+    })
+    if (uploadError) throw new Error(remoteErrorMessage(uploadError, 'subir el logo institucional'))
+    logoUrl = `storage:${path}`
+  }
+  const { data, error } = await supabase
+    .from('institutions')
+    .update({
+      name: settings.name,
+      short_name: settings.shortName,
+      description: settings.description,
+      accent: settings.accent,
+      logo_url: logoUrl?.startsWith('blob:') ? null : logoUrl ?? null,
+    })
+    .eq('id', institutionId)
+    .select('id')
+    .maybeSingle()
+  if (error) throw new Error(remoteErrorMessage(error, 'guardar la identidad institucional'))
+  if (!data) throw new Error('Supabase no confirmó los cambios. Verifica que tu cuenta administre esta institución.')
+  return { ...settings, logoUrl: logoUrl?.startsWith('storage:') ? await displayMedia(logoUrl) : logoUrl }
+}
+
 export async function deleteRemoteProject(id: string) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
