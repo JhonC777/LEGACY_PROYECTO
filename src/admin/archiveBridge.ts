@@ -12,6 +12,14 @@ import type { AdminProject, InstitutionSettings, MediaAsset, ActivityEntry } fro
 const EVENT = 'legacy-archive-change'
 const keyFor = (slug: string) => `legacy.admin.archive.${slug}`
 
+// Únicos proyectos institucionales confirmados como reales en LEGACY.
+// Los registros demo permanecen en Supabase, pero no forman parte del catálogo.
+const REAL_PROJECT_IDS = new Set(['demo-p04', 'demo-p01'])
+
+export function isInstitutionRealProject(project: Pick<AdminProject, 'id'>) {
+  return REAL_PROJECT_IDS.has(project.id)
+}
+
 export type ArchiveSnapshot = {
   slug: string
   projects: AdminProject[]
@@ -86,20 +94,22 @@ export function resolveInstitutionProjects(
   const remote = getRemoteProjects()
   const projects: DemoProject[] = remote !== null
     ? remote
-        .filter((project) => project.institutionId === institution.id)
-        .map(asDemoProject)
+        .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+        .map((project) => ({ ...asDemoProject(project), isReal: true }))
     : (() => {
         const snap = readArchiveSnapshot(institution.slug)
         const pool: DemoProject[] = snap
           ? snap.projects
-              .filter((project) => project.institutionId === institution.id)
-              .map(asDemoProject)
-          : DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
+              .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+              .map((project) => ({ ...asDemoProject(project), isReal: true }))
+          : DEMO_PROJECTS.filter(
+              (project) => project.institutionId === institution.id && isInstitutionRealProject(project),
+            ).map((project) => ({ ...project, isReal: true }))
         const showcase = DEMO_PROJECTS.filter(
-          (project) => project.isReal && project.institutionId === institution.id,
+          (project) => isInstitutionRealProject(project) && project.institutionId === institution.id,
         )
         const missing = showcase.filter(
-          (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
+          (project) => !pool.some((item) => item.id === project.id),
         )
         return missing.length > 0 ? [...missing, ...pool] : pool
       })()
