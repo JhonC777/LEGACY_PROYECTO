@@ -104,7 +104,7 @@ export function resolveInstitutionProjects(
         return missing.length > 0 ? [...missing, ...pool] : pool
       })()
 
-  return publishedOnly ? withRemote.filter((project) => project.status === 'published') : withRemote
+  return publishedOnly ? projects.filter((project) => project.status === 'published') : projects
 }
 
 export function resolveProjectBySlug(institution: DemoInstitution, slug?: string) {
