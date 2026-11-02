@@ -396,7 +396,7 @@ export function AdminUploads() {
                       <p className="text-xs text-legacy-muted/70">Sin proyecto asociado</p>
                       {asset.status === 'ready' ? (
                         <label className="block">
-                          <span className="sr-only">Asociar ${asset.name} a un proyecto</span>
+                          <span className="sr-only">Asociar {asset.name} a un proyecto</span>
                           <select
                             className="glass-input liquid-field w-full rounded-lg px-2.5 py-2 text-xs"
                             value=""
