@@ -199,7 +199,7 @@ async function displayMedia(value?: string) {
   const supabase = await getClient()
   if (!supabase || !value?.startsWith('storage:')) return value
   const path = value.slice('storage:'.length)
-  const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 12)
+  const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24 * 7)
   if (error || !data?.signedUrl) return value
   return data.signedUrl
 }
@@ -333,9 +333,14 @@ async function promoteUrl(url: string | undefined, path: string) {
   if (!supabase || !url?.startsWith('blob:')) return url
   const blob = await blobFromObjectUrl(url)
   const contentType = allowedContentType(blob, path)
+  // El bucket actual no permite application/rtf; guarda RTF como binario para
+  // respetar su extensión y permitir su descarga sin cambiar la configuración remota.
+  const storageContentType = contentType === 'application/rtf' || contentType === 'text/rtf'
+    ? 'application/octet-stream'
+    : contentType
   const { error } = await supabase.storage.from('archive').upload(path, blob, {
     upsert: true,
-    contentType,
+    contentType: storageContentType,
   })
   if (error) throw error
   return `storage:${path}`
