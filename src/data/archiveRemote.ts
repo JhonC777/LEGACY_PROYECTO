@@ -379,18 +379,21 @@ export async function saveRemoteProject(project: AdminProject) {
   let stage = 'subir los archivos al almacenamiento'
   try {
     const stored = await withStoredMedia(project)
-    stage = 'preparar las direcciones de los archivos'
-    const prepared = await withDisplayUrls(stored)
-    stage = 'guardar el proyecto en la tabla projects'
+    // Primero se guarda la referencia storage: en la fila del proyecto. El bucket
+    // es privado y su política solo permite firmar objetos ya vinculados a un
+    // proyecto publicado; intentar firmarlos antes del upsert devuelve error.
+    stage = 'guardar el proyecto y vincular sus archivos'
     const { data, error } = await supabase
       .from('projects')
-      .upsert(toRow(prepared), { onConflict: 'id' })
+      .upsert(toRow(stored), { onConflict: 'id' })
       .select('id')
       .single()
     if (error) throw error
-    if (!data?.id || data.id !== prepared.id) {
+    if (!data?.id || data.id !== stored.id) {
       throw new Error('Supabase no confirmó el proyecto guardado.')
     }
+    stage = 'generar enlaces de visualización de los archivos'
+    const prepared = await withDisplayUrls(stored)
     const next = (remote ?? []).filter((item) => item.id !== prepared.id)
     remember([prepared, ...next])
     return prepared
