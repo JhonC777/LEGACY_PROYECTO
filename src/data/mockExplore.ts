@@ -2,7 +2,7 @@
  * Adaptadores de presentación para el Home claro.
  * La fuente única de contenido está en demoData.ts y será reemplazada por Supabase.
  */
-import { DEMO_INSTITUTIONS, getPublishedProjects } from './demoData'
+import { DEMO_INSTITUTIONS, getPublishedProjects, REAL_SHOWCASE_SLUG } from './demoData'
 
 export type MockProject = {
   id: string
@@ -36,7 +36,8 @@ export type MockInstitutionCard = {
 
 const publicProjects = getPublishedProjects().filter((project) => {
   const institution = DEMO_INSTITUTIONS.find((item) => item.id === project.institutionId)
-  return institution?.isActive === true
+  // El catálogo público no debe presentar registros de demostración como proyectos reales.
+  return institution?.isActive === true && project.slug === REAL_SHOWCASE_SLUG
 })
 const publicInstitutions = DEMO_INSTITUTIONS.filter((institution) => institution.isActive)
 
