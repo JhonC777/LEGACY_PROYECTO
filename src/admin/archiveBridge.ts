@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getRemoteProjects, overlayProjects } from '@/data/archiveRemote'
+import { getRemoteProjects } from '@/data/archiveRemote'
 import {
   DEMO_PROJECTS,
   getRelatedProjects as relatedFromPool,
-  isRealShowcase,
   type DemoInstitution,
   type DemoProject,
 } from '@/data/demoData'
@@ -11,6 +10,21 @@ import type { AdminProject, InstitutionSettings, MediaAsset, ActivityEntry } fro
 
 const EVENT = 'legacy-archive-change'
 const keyFor = (slug: string) => `legacy.admin.archive.${slug}`
+
+// Proyectos institucionales confirmados y proyectos creados desde el panel.
+// Los registros demo heredados (incluidos los que tengan is_real por error)
+// permanecen excluidos del catálogo público.
+const REAL_PROJECT_IDS = new Set(['demo-p04', 'demo-p01'])
+const CREATED_PROJECT_ID_PREFIX = 'proj-'
+
+export function isInstitutionRealProject(
+  project: Pick<AdminProject, 'id' | 'isReal'>,
+) {
+  return (
+    REAL_PROJECT_IDS.has(project.id) ||
+    (project.id.startsWith(CREATED_PROJECT_ID_PREFIX) && project.isReal === true)
+  )
+}
 
 export type ArchiveSnapshot = {
   slug: string
@@ -80,26 +94,33 @@ export function resolveInstitutionProjects(
   institution: DemoInstitution,
   publishedOnly = true,
 ): DemoProject[] {
-  const snap = readArchiveSnapshot(institution.slug)
-  const pool: DemoProject[] = snap
-    ? snap.projects
-        .filter((project) => project.institutionId === institution.id)
-        .map(asDemoProject)
-    : DEMO_PROJECTS.filter((project) => project.institutionId === institution.id)
+  // Una vez que Supabase responde, su resultado es la fuente de verdad,
+  // incluso cuando la consulta devuelve cero proyectos. No mezclar demos ni
+  // snapshots antiguos con el catálogo persistido.
+  const remote = getRemoteProjects()
+  const projects: DemoProject[] = remote !== null
+    ? remote
+        .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+        .map((project) => ({ ...asDemoProject(project), isReal: true }))
+    : (() => {
+        const snap = readArchiveSnapshot(institution.slug)
+        const pool: DemoProject[] = snap
+          ? snap.projects
+              .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+              .map((project) => ({ ...asDemoProject(project), isReal: true }))
+          : DEMO_PROJECTS.filter(
+              (project) => project.institutionId === institution.id && isInstitutionRealProject(project),
+            ).map((project) => ({ ...project, isReal: true }))
+        const showcase = DEMO_PROJECTS.filter(
+          (project) => isInstitutionRealProject(project) && project.institutionId === institution.id,
+        )
+        const missing = showcase.filter(
+          (project) => !pool.some((item) => item.id === project.id),
+        )
+        return missing.length > 0 ? [...missing, ...pool] : pool
+      })()
 
-  const showcase = DEMO_PROJECTS.filter(
-    (project) => project.isReal && project.institutionId === institution.id,
-  )
-  const missing = showcase.filter(
-    (project) => !pool.some((item) => item.id === project.id || isRealShowcase(item)),
-  )
-  const merged = missing.length > 0 ? [...missing, ...pool] : pool
-  const remote = getRemoteProjects()?.filter(
-    (project) => project.institutionId === institution.id,
-  )
-  const withRemote = remote && remote.length > 0 ? overlayProjects(merged, remote) : merged
-
-  return publishedOnly ? withRemote.filter((project) => project.status === 'published') : withRemote
+  return publishedOnly ? projects.filter((project) => project.status === 'published') : projects
 }
 
 export function resolveProjectBySlug(institution: DemoInstitution, slug?: string) {

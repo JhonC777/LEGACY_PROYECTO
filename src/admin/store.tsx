@@ -27,13 +27,15 @@ import {
 import {
   deleteRemoteProject,
   getRemoteProjects,
+  loadRemoteInstitutionSettings,
+  saveRemoteInstitutionSettings,
   overlayProjects,
   refreshRemoteArchive,
   saveRemoteProject,
   subscribeRemoteReady,
 } from '@/data/archiveRemote'
 import { attachObjectUrl, detachObjectUrl } from '@/lib/blobRegistry'
-import { readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
+import { isInstitutionRealProject, readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
 
 /**
  * Store DEMO del panel: todo vive en memoria y está aislado por institución.
@@ -138,11 +140,16 @@ const hoursAgo = (hours: number) =>
 const daysAgo = (days: number) => hoursAgo(days * 24)
 
 export function inferMediaKind(name: string, mime = ''): MediaKind {
-  if (mime.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif|svg)$/i.test(name)) {
-    return 'image'
-  }
+  // Coincide con los formatos que admite el bucket privado archive.
+  if (
+    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(mime.toLowerCase()) ||
+    /\.(png|jpe?g|webp|gif)$/i.test(name)
+  ) return 'image'
   if (mime === 'application/pdf' || /\.pdf$/i.test(name)) return 'pdf'
-  if (mime.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(name)) return 'video'
+  if (
+    ['video/mp4', 'video/webm', 'video/quicktime'].includes(mime.toLowerCase()) ||
+    /\.(mp4|webm|mov)$/i.test(name)
+  ) return 'video'
   return 'doc'
 }
 
@@ -293,16 +300,16 @@ function seed(institution: DemoInstitution): Omit<State, 'status'> {
 type StoreContextValue = State & {
   institution: DemoInstitution
   reload: () => void
-  createProject: (input: ProjectDraftInput) => AdminProject
-  updateProject: (id: string, patch: Partial<ProjectDraftInput>) => AdminProject | undefined
-  setProjectStatus: (id: string, status: ProjectStatus) => { ok: boolean; errors: string[] }
-  deleteProject: (id: string) => void
+  createProject: (input: ProjectDraftInput) => Promise<AdminProject>
+  updateProject: (id: string, patch: Partial<ProjectDraftInput>) => Promise<AdminProject | undefined>
+  setProjectStatus: (id: string, status: ProjectStatus) => Promise<{ ok: boolean; errors: string[] }>
+  deleteProject: (id: string) => Promise<void>
   uploadFiles: (files: File[], projectId?: string) => string[]
   retryUpload: (id: string) => void
   removeMedia: (id: string) => void
-  updateSettings: (patch: Partial<InstitutionSettings>) => void
+  updateSettings: (patch: Partial<InstitutionSettings>) => Promise<void>
   /** Curaduría de portada: sincroniza `featuredProjectIds` con `isFeatured`. */
-  setFeatured: (ids: string[]) => void
+  setFeatured: (ids: string[]) => Promise<void>
   log: (type: ActivityType, message: string, project?: Pick<AdminProject, 'id' | 'title'>) => void
 }
 
@@ -349,29 +356,48 @@ export function AdminStoreProvider({
           dispatch({ type: 'FAILED' })
           return
         }
-        await refreshRemoteArchive()
-        if (current !== attempt.current) return
-        const stored = readArchiveSnapshot(institution.slug)
-        const payload = stripDemoDrafts(
-          stored
-            ? {
-                projects: stored.projects,
-                media: stored.media,
-                activity: stored.activity,
-                settings: stored.settings,
-              }
-            : seed(institution),
-        )
-        const remote =
-          getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ??
-          []
-        dispatch({
-          type: 'LOADED',
-          payload:
-            remote.length > 0
-              ? { ...payload, projects: overlayProjects(payload.projects, remote) }
-              : payload,
-        })
+        try {
+          await refreshRemoteArchive()
+          if (current !== attempt.current) return
+          if (getRemoteProjects() === null) {
+            dispatch({ type: 'FAILED' })
+            return
+          }
+          const stored = readArchiveSnapshot(institution.slug)
+          const payload = stripDemoDrafts(
+            stored
+              ? {
+                  projects: stored.projects,
+                  media: stored.media,
+                  activity: stored.activity,
+                  settings: stored.settings,
+                }
+              : seed(institution),
+          )
+          const remote = getRemoteProjects()
+          const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
+          if (current !== attempt.current) return
+          const institutionProjects =
+            remote === null
+              ? payload.projects
+              : remote
+                  .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+                  .map((project) => ({ ...project, isReal: true }))
+          dispatch({
+            type: 'LOADED',
+            payload: {
+              ...payload,
+              projects: institutionProjects,
+              settings: remoteSettings
+                ? { ...payload.settings, ...remoteSettings }
+                : payload.settings,
+            },
+          })
+        } catch (error) {
+          if (current !== attempt.current) return
+          console.error('[legacy] No se pudo cargar el panel:', error)
+          dispatch({ type: 'FAILED' })
+        }
       })()
     }, 520)
     timers.current.add(timer)
@@ -446,17 +472,17 @@ export function AdminStoreProvider({
     })
   }, [institution.slug])
 
-  const persistRemote = useCallback((project: AdminProject) => {
-    void saveRemoteProject(project).then((saved) => {
-      const current = projectsRef.current.find((item) => item.id === saved.id)
-      if (!current) return
+  const persistRemote = useCallback(async (project: AdminProject) => {
+    const saved = await saveRemoteProject(project)
+    const current = projectsRef.current.find((item) => item.id === saved.id)
+    if (!current) return saved
       const mediaChanged =
         current.coverImage !== saved.coverImage ||
         current.docUrl !== saved.docUrl ||
         current.pdfUrl !== saved.pdfUrl ||
         current.videoUrl !== saved.videoUrl ||
         current.gallery.join('|') !== saved.gallery.join('|')
-      if (!mediaChanged) return
+      if (!mediaChanged) return saved
       const next: AdminProject = {
         ...current,
         coverImage: saved.coverImage,
@@ -468,14 +494,19 @@ export function AdminStoreProvider({
       projectsRef.current = projectsRef.current.map((item) => (item.id === next.id ? next : item))
       dispatch({ type: 'UPSERT_PROJECT', project: next })
       flushArchive()
-    })
+    return saved
   }, [flushArchive])
 
   useEffect(() => {
     return subscribeRemoteReady(() => {
       if (statusRef.current !== 'ready') return
       const remote =
-        getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ?? []
+        getRemoteProjects()
+          ?.filter(
+            (project) =>
+              project.institutionId === institution.id && isInstitutionRealProject(project),
+          )
+          .map((project) => ({ ...project, isReal: true })) ?? []
       if (remote.length === 0) return
       const projects = overlayProjects(projectsRef.current, remote)
       projectsRef.current = projects
@@ -492,7 +523,7 @@ export function AdminStoreProvider({
   }, [institution.id])
 
   const createProject = useCallback<StoreContextValue['createProject']>(
-    (input) => {
+    async (input) => {
       const base = slugify(input.title) || 'proyecto-sin-titulo'
       const taken = new Set(projectsRef.current.map((project) => project.slug))
       let slug = base
@@ -504,6 +535,7 @@ export function AdminStoreProvider({
         id: createId('proj'),
         slug,
         institutionId: institution.id,
+        isReal: true,
         status: 'draft',
         updatedAt: new Date().toISOString(),
       }
@@ -511,14 +543,20 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('create', `Creó el borrador «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      persistRemote(project)
-      return project
+      try {
+        return await persistRemote(project)
+      } catch (error) {
+        projectsRef.current = projectsRef.current.filter((item) => item.id !== project.id)
+        dispatch({ type: 'REMOVE_PROJECT', id: project.id })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, institution.id, log, persistRemote],
   )
 
   const updateProject = useCallback<StoreContextValue['updateProject']>(
-    (id, patch) => {
+    async (id, patch) => {
       const current = projectsRef.current.find((project) => project.id === id)
       if (!current) return undefined
       const project: AdminProject = {
@@ -532,14 +570,20 @@ export function AdminStoreProvider({
       dispatch({ type: 'UPSERT_PROJECT', project })
       log('update', `Actualizó «${project.title || 'Sin título'}»`, project)
       flushArchive()
-      persistRemote(project)
-      return project
+      try {
+        return await persistRemote(project)
+      } catch (error) {
+        projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
+        dispatch({ type: 'UPSERT_PROJECT', project: current })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, log, persistRemote],
   )
 
   const setProjectStatus = useCallback<StoreContextValue['setProjectStatus']>(
-    (id, status) => {
+    async (id, status) => {
       const current = projectsRef.current.find((project) => project.id === id)
       if (!current) return { ok: false, errors: ['El proyecto ya no existe'] }
 
@@ -548,9 +592,12 @@ export function AdminStoreProvider({
         if (errors.length > 0) return { ok: false, errors }
       }
 
+      const shouldRemainFeatured = status === 'published' && current.isFeatured
+      const originalSettings = settingsRef.current
       const project: AdminProject = {
         ...current,
         status,
+        isFeatured: shouldRemainFeatured,
         updatedAt: new Date().toISOString(),
         publishedAt:
           status === 'published' ? current.publishedAt ?? new Date().toISOString() : current.publishedAt,
@@ -560,16 +607,15 @@ export function AdminStoreProvider({
       )
       dispatch({ type: 'UPSERT_PROJECT', project })
 
-      if (status !== 'published' && settingsRef.current.featuredProjectIds.includes(id)) {
-        dispatch({
-          type: 'SETTINGS',
-          settings: {
-            ...settingsRef.current,
-            featuredProjectIds: settingsRef.current.featuredProjectIds.filter(
-              (featured) => featured !== id,
-            ),
-          },
-        })
+      if (!shouldRemainFeatured && settingsRef.current.featuredProjectIds.includes(id)) {
+        const nextSettings = {
+          ...settingsRef.current,
+          featuredProjectIds: settingsRef.current.featuredProjectIds.filter(
+            (featured) => featured !== id,
+          ),
+        }
+        settingsRef.current = nextSettings
+        dispatch({ type: 'SETTINGS', settings: nextSettings })
       }
 
       const verb: Record<ProjectStatus, [ActivityType, string]> = {
@@ -580,45 +626,45 @@ export function AdminStoreProvider({
       const [type, label] = verb[status]
       log(type, `${label} «${project.title}»`, project)
       flushArchive()
-      persistRemote(project)
-      return { ok: true, errors: [] }
+      try {
+        await persistRemote(project)
+        return { ok: true, errors: [] }
+      } catch (error) {
+        projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
+        dispatch({ type: 'UPSERT_PROJECT', project: current })
+        settingsRef.current = originalSettings
+        dispatch({ type: 'SETTINGS', settings: originalSettings })
+        flushArchive()
+        throw error
+      }
     },
     [flushArchive, log, persistRemote],
   )
 
   const deleteProject = useCallback<StoreContextValue['deleteProject']>(
-    (id) => {
+    async (id) => {
       const current = projectsRef.current.find((project) => project.id === id)
+      await deleteRemoteProject(id)
       projectsRef.current = projectsRef.current.filter((project) => project.id !== id)
       dispatch({ type: 'REMOVE_PROJECT', id })
       if (current) log('delete', `Eliminó «${current.title}»`, current)
       flushArchive()
-      void deleteRemoteProject(id)
     },
     [flushArchive, log],
   )
 
+  // Los archivos locales quedan listos para adjuntarse al proyecto.
+  // La transferencia real a Supabase Storage ocurre dentro de saveRemoteProject;
+  // el editor solo confirma el guardado cuando Storage y la fila DB terminan.
   const runUpload = useCallback(
     (asset: MediaAsset) => {
-      let progress = 0
-      const interval = window.setInterval(() => {
-        progress = Math.min(100, progress + 8 + Math.random() * 18)
-        if (progress >= 100) {
-          window.clearInterval(interval)
-          timers.current.delete(interval)
-          dispatch({
-            type: 'PATCH_MEDIA',
-            id: asset.id,
-            patch: { progress: 100, status: 'ready', uploadedAt: new Date().toISOString() },
-          })
-          log('upload', `Subió «${asset.name}»`)
-          return
-        }
-        dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { progress: Math.round(progress) } })
-      }, 180)
-      timers.current.add(interval)
+      dispatch({
+        type: 'PATCH_MEDIA',
+        id: asset.id,
+        patch: { progress: 100, status: 'ready' },
+      })
     },
-    [log],
+    [],
   )
 
   const uploadFiles = useCallback<StoreContextValue['uploadFiles']>(
@@ -631,7 +677,6 @@ export function AdminStoreProvider({
           kind: inferMediaKind(file.name, file.type),
           size: file.size,
           url: attachObjectUrl(file),
-          uploadedAt: new Date().toISOString(),
           status: tooLarge ? 'error' : 'uploading',
           progress: 0,
           error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
@@ -679,15 +724,25 @@ export function AdminStoreProvider({
   )
 
   const updateSettings = useCallback<StoreContextValue['updateSettings']>(
-    (patch) => {
-      dispatch({ type: 'SETTINGS', settings: { ...settingsRef.current, ...patch } })
-      log('settings', 'Actualizó los ajustes de la institución')
+    async (patch) => {
+      const next = { ...settingsRef.current, ...patch }
+      const saved = await saveRemoteInstitutionSettings(institution.id, {
+        name: next.name,
+        shortName: next.shortName,
+        description: next.description,
+        accent: next.accent,
+        logoUrl: next.logoUrl,
+      })
+      const confirmed = { ...next, ...saved }
+      dispatch({ type: 'SETTINGS', settings: confirmed })
+      log('settings', 'Actualizó la identidad institucional')
+      flushArchive()
     },
-    [log],
+    [flushArchive, institution.id, log],
   )
 
   const setFeatured = useCallback<StoreContextValue['setFeatured']>(
-    (ids) => {
+    async (ids) => {
       const allowed = ids
         .filter((id) =>
           projectsRef.current.some(
@@ -695,22 +750,60 @@ export function AdminStoreProvider({
           ),
         )
         .slice(0, 6)
-      const wanted = new Set(allowed)
-      projectsRef.current = projectsRef.current.map((project) => {
-        const shouldFeature = wanted.has(project.id)
-        if (project.isFeatured === shouldFeature) return project
-        const next = { ...project, isFeatured: shouldFeature }
-        dispatch({ type: 'UPSERT_PROJECT', project: next })
-        persistRemote(next)
+      const originalProjects = projectsRef.current
+      const originalSettings = settingsRef.current
+      const changed: AdminProject[] = []
+      const nextProjects = originalProjects.map((project) => {
+        const nextFeatured = allowed.includes(project.id)
+        if (project.isFeatured === nextFeatured) return project
+        const next = { ...project, isFeatured: nextFeatured }
+        changed.push(next)
         return next
       })
+      projectsRef.current = nextProjects
+      changed.forEach((project) => dispatch({ type: 'UPSERT_PROJECT', project }))
       dispatch({
         type: 'SETTINGS',
-        settings: { ...settingsRef.current, featuredProjectIds: allowed },
+        settings: { ...originalSettings, featuredProjectIds: allowed },
       })
-      log('settings', `Actualizó los destacados de portada (${allowed.length})`)
+      const persisted: AdminProject[] = []
+      try {
+        // Secuencial para saber exactamente qué escrituras llegaron a Supabase.
+        for (const project of changed) {
+          await persistRemote(project)
+          persisted.push(project)
+        }
+        log('settings', `Actualizó los destacados de portada (${allowed.length})`)
+        flushArchive()
+      } catch (error) {
+        const rollbackErrors: string[] = []
+        for (const project of persisted.reverse()) {
+          const original = originalProjects.find((item) => item.id === project.id)
+          if (!original) continue
+          try {
+            await persistRemote(original)
+          } catch (rollbackError) {
+            rollbackErrors.push(rollbackError instanceof Error ? rollbackError.message : 'Error desconocido')
+          }
+        }
+        projectsRef.current = originalProjects
+        changed.forEach((project) => {
+          const original = originalProjects.find((item) => item.id === project.id)
+          if (original) dispatch({ type: 'UPSERT_PROJECT', project: original })
+        })
+        settingsRef.current = originalSettings
+        dispatch({ type: 'SETTINGS', settings: originalSettings })
+        flushArchive()
+        if (rollbackErrors.length > 0) {
+          throw new Error(
+            `No se pudieron guardar todos los destacados y la reversión remota quedó incompleta: ${rollbackErrors.join(' · ')}`,
+            { cause: error },
+          )
+        }
+        throw error
+      }
     },
-    [log, persistRemote],
+    [flushArchive, log, persistRemote],
   )
 
   const value = useMemo<StoreContextValue>(

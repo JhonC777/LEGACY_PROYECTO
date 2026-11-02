@@ -126,18 +126,40 @@ function fail(message: string) {
   window.dispatchEvent(new CustomEvent(ERROR, { detail: message }))
 }
 
-export function remoteErrorMessage(error: { message?: string; code?: string }) {
+type RemoteError = {
+  message?: string
+  code?: string
+  details?: string
+  hint?: string
+  status?: number
+}
+
+export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
   const message = error.message ?? ''
+  const normalized = message.toLowerCase()
+  const code = error.code ? ` · código ${error.code}` : ''
+  const details = [error.details, error.hint].filter(Boolean).join(' ')
+  const technical = [message, details].filter(Boolean).join(' ').replace(/\\s+/g, ' ').slice(0, 260)
+
   if (/tipo de archivo no permitido/i.test(message)) {
-    return 'Ese tipo de archivo no está permitido.'
+    return 'El archivo no tiene un formato permitido. Usa JPG, PNG, WebP, GIF, PDF, DOC/DOCX, ODT, RTF, TXT, MP4, WebM o MOV.'
   }
-  if (/claim_admin|schema cache|relation|does not exist/i.test(message)) {
-    return 'La base todavía no está lista. Falta ejecutar el esquema en Supabase.'
+  if (/row-level security|rls|permission denied|not authorized|unauthorized|42501/i.test(`${normalized} ${error.code ?? ''}`)) {
+    return `Supabase rechazó los permisos durante ${stage}. Revisa que la sesión siga activa y que el administrador tenga acceso a esta institución.${code}`
+  }
+  if (/bucket.*not found|object not found|no such bucket/i.test(message)) {
+    return `No se encontró el almacenamiento de archivos durante ${stage}. Revisa el bucket archive en Supabase.${code}`
+  }
+  if (/payload too large|file size|entity too large|413/i.test(message)) {
+    return `El archivo supera el límite permitido durante ${stage}. Reduce su tamaño e inténtalo de nuevo.${code}`
+  }
+  if (/claim_admin|schema cache|relation .* does not exist|function .* does not exist/i.test(message)) {
+    return `La base de datos no reconoce un objeto necesario durante ${stage}. Hay que revisar el esquema de Supabase.${code}`
   }
   if (/email not confirmed/i.test(message)) {
     return 'Confirma el correo que te envió Supabase y vuelve a entrar con la misma contraseña.'
   }
-  if (/invalid login|already registered/i.test(message)) {
+  if (/invalid login|invalid_credentials/i.test(message) || error.code === 'invalid_credentials') {
     return 'Correo o contraseña incorrectos.'
   }
   if (/not an admin|already has an admin/i.test(message)) {
@@ -149,8 +171,15 @@ export function remoteErrorMessage(error: { message?: string; code?: string }) {
   if (/rate limit|too many/i.test(message)) {
     return 'Espera un momento antes de pedir otro correo.'
   }
-  if (message) console.error('[legacy] archivo remoto:', message)
-  return 'No se pudo completar la operación. Intenta de nuevo.'
+  if (/failed to fetch|networkerror|fetch failed|network request failed/i.test(message)) {
+    return `No se pudo conectar con Supabase durante ${stage}. Comprueba la conexión e inténtalo otra vez.${code}`
+  }
+
+  if (technical) {
+    console.error('[legacy] error remoto:', { stage, code: error.code, message, details, status: error.status })
+    return `Falló ${stage}: ${technical}${code}`
+  }
+  return `No se pudo completar ${stage}. Supabase no devolvió detalles del error.${code}`
 }
 
 function canonicalMedia(value: string): string
@@ -170,7 +199,9 @@ async function displayMedia(value?: string) {
   const supabase = await getClient()
   if (!supabase || !value?.startsWith('storage:')) return value
   const path = value.slice('storage:'.length)
-  const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 12)
+  const { data, error } = await supabase.storage
+    .from('archive')
+    .createSignedUrl(path, 60 * 60 * 24 * 7, { download: false })
   if (error || !data?.signedUrl) return value
   return data.signedUrl
 }
@@ -259,6 +290,8 @@ const ALLOWED_ARCHIVE_TYPES = new Set([
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.oasis.opendocument.text',
+  'application/rtf',
+  'text/rtf',
   'text/plain',
   'video/mp4',
   'video/webm',
@@ -275,6 +308,7 @@ const EXT_TO_TYPE: Record<string, string> = {
   doc: 'application/msword',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   odt: 'application/vnd.oasis.opendocument.text',
+  rtf: 'application/rtf',
   txt: 'text/plain',
   mp4: 'video/mp4',
   webm: 'video/webm',
@@ -296,72 +330,311 @@ async function blobFromObjectUrl(url: string): Promise<Blob> {
   return fetch(url).then((response) => response.blob())
 }
 
-async function promoteUrl(url: string | undefined, path: string) {
+async function uploadArchiveObject(
+  supabase: SupabaseClient,
+  path: string,
+  blob: Blob,
+  contentType: string,
+) {
+  const maxAttempts = 3
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const { error } = await supabase.storage.from('archive').upload(path, blob, {
+        upsert: true,
+        contentType,
+      })
+      if (!error) return
+      // HTTP errors (permisos, formato, tamaño) no mejoran repitiendo la petición.
+      throw error
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      const isNetworkFailure =
+        error instanceof TypeError ||
+        /failed to fetch|networkerror|fetch failed|network request failed/i.test(message)
+      if (!isNetworkFailure || attempt === maxAttempts) {
+        if (isNetworkFailure) {
+          throw new Error(`No se pudo completar la conexión al subir "${path}" después de ${attempt} intentos. Comprueba la conexión y vuelve a guardar.`, { cause: error })
+        }
+        throw error
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 500 * attempt))
+    }
+  }
+}
+
+function uniqueArchivePath(path: string) {
+  const slash = path.lastIndexOf('/')
+  const folder = path.slice(0, slash + 1)
+  const filename = path.slice(slash + 1)
+  const token = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return `${folder}${token}-${filename}`
+}
+
+function storagePath(value?: string | null): string | null {
+  if (!value) return null
+  const canonical = canonicalMedia(value)
+  return canonical?.startsWith('storage:') ? canonical.slice('storage:'.length) : null
+}
+
+function projectStoragePaths(project: Pick<AdminProject, 'coverImage' | 'gallery' | 'docUrl' | 'pdfUrl' | 'videoUrl'>) {
+  return [
+    storagePath(project.coverImage),
+    ...project.gallery.map(storagePath),
+    storagePath(project.docUrl),
+    storagePath(project.pdfUrl),
+    storagePath(project.videoUrl),
+  ].filter((path): path is string => Boolean(path))
+}
+
+async function removeUnreferencedArchiveObjects(paths: string[], institutionId: string) {
+  const candidates = [...new Set(paths)].filter((path) =>
+    path.startsWith(`${institutionId}/`) && !path.includes('..'),
+  )
+  if (candidates.length === 0) return
+  const supabase = await getClient()
+  if (!supabase) return
+
+  // Fallar cerrado: si no se puede leer el inventario completo de referencias,
+  // no se elimina absolutamente nada.
+  const [projectsResult, institutionsResult] = await Promise.all([
+    supabase.from('projects').select('cover_image, gallery, doc_url, pdf_url, video_url'),
+    supabase.from('institutions').select('logo_url'),
+  ])
+  if (projectsResult.error) throw projectsResult.error
+  if (institutionsResult.error) throw institutionsResult.error
+
+  const referenced = new Set<string>()
+  for (const row of projectsResult.data ?? []) {
+    for (const value of [
+      row.cover_image,
+      ...(Array.isArray(row.gallery) ? row.gallery : []),
+      row.doc_url,
+      row.pdf_url,
+      row.video_url,
+    ]) {
+      const path = storagePath(typeof value === 'string' ? value : null)
+      if (path) referenced.add(path)
+    }
+  }
+  for (const row of institutionsResult.data ?? []) {
+    const path = storagePath(row.logo_url)
+    if (path) referenced.add(path)
+  }
+
+  const safeToDelete = candidates.filter((path) => !referenced.has(path))
+  if (safeToDelete.length === 0) return
+  const { error } = await supabase.storage.from('archive').remove(safeToDelete)
+  if (error) throw error
+}
+
+async function cleanupUnreferencedSafely(paths: string[], institutionId: string) {
+  try {
+    await removeUnreferencedArchiveObjects(paths, institutionId)
+  } catch (error) {
+    // El guardado principal ya se confirmó. Un fallo de limpieza deja basura,
+    // nunca justifica borrar sin poder demostrar que el objeto está huérfano.
+    console.error('[legacy] No se pudo verificar/limpiar archivos huérfanos:', error)
+  }
+}
+
+async function promoteUrl(url: string | undefined, path: string, uploadedPaths: string[]) {
   const supabase = await getClient()
   if (!supabase || !url?.startsWith('blob:')) return url
   const blob = await blobFromObjectUrl(url)
   const contentType = allowedContentType(blob, path)
-  const { error } = await supabase.storage.from('archive').upload(path, blob, {
-    upsert: true,
-    contentType,
-  })
-  if (error) throw error
-  return `storage:${path}`
+  const storageContentType = contentType === 'application/rtf' || contentType === 'text/rtf'
+    ? 'application/octet-stream'
+    : contentType
+  const uniquePath = uniqueArchivePath(path)
+  await uploadArchiveObject(supabase, uniquePath, blob, storageContentType)
+  uploadedPaths.push(uniquePath)
+  return `storage:${uniquePath}`
 }
 
-async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
+async function withStoredMedia(project: AdminProject, uploadedPaths: string[] = []): Promise<AdminProject> {
   const coverImage =
-    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover`)) ??
+    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover-${fileNameFrom(project.coverImage, 'portada.jpg')}`, uploadedPaths)) ??
     project.coverImage
   const gallery: string[] = []
   for (let index = 0; index < project.gallery.length; index += 1) {
     const item = project.gallery[index]
     gallery.push(
-      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}`)) ??
+      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}-${fileNameFrom(item, 'imagen.jpg')}`, uploadedPaths)) ??
         item,
     )
   }
   const docUrl = await promoteUrl(
     project.docUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.docUrl ?? '', 'documento')}`,
+    uploadedPaths,
   )
   const pdfUrl = await promoteUrl(
     project.pdfUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.pdfUrl ?? '', 'informe.pdf')}`,
+    uploadedPaths,
   )
   const videoUrl = await promoteUrl(
     project.videoUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.videoUrl ?? '', 'video')}`,
+    uploadedPaths,
   )
   return { ...project, coverImage, gallery, docUrl, pdfUrl, videoUrl }
 }
 
 export async function saveRemoteProject(project: AdminProject) {
   const supabase = await getClient()
-  if (!supabase) return project
+  if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
+  let stage = 'subir los archivos al almacenamiento'
+  const uploadedPaths: string[] = []
+  const previous = (remote ?? []).find((item) => item.id === project.id)
   try {
-    const prepared = await withDisplayUrls(await withStoredMedia(project))
-    const { error } = await supabase.from('projects').upsert(toRow(prepared), { onConflict: 'id' })
+    const stored = await withStoredMedia(project, uploadedPaths)
+    // Primero se guarda la referencia storage: en la fila del proyecto. El bucket
+    // es privado y su política solo permite firmar objetos ya vinculados a un
+    // proyecto publicado; intentar firmarlos antes del upsert devuelve error.
+    stage = 'guardar el proyecto y vincular sus archivos'
+    const { data, error } = await supabase
+      .from('projects')
+      .upsert(toRow(stored), { onConflict: 'id' })
+      .select('id')
+      .single()
     if (error) throw error
+    if (!data?.id || data.id !== stored.id) {
+      throw new Error('Supabase no confirmó el proyecto guardado.')
+    }
+    stage = 'generar enlaces de visualización de los archivos'
+    const prepared = await withDisplayUrls(stored)
     const next = (remote ?? []).filter((item) => item.id !== prepared.id)
     remember([prepared, ...next])
+    if (previous) {
+      const nextPaths = new Set(projectStoragePaths(stored))
+      const replacedPaths = projectStoragePaths(previous).filter((path) => !nextPaths.has(path))
+      void cleanupUnreferencedSafely(replacedPaths, project.institutionId)
+    }
     return prepared
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'No se pudo guardar en Supabase.'
-    fail(remoteErrorMessage({ message }))
-    return project
+    void cleanupUnreferencedSafely(uploadedPaths, project.institutionId)
+    const remoteError = (error && typeof error === 'object' ? error : {}) as RemoteError
+    const message = remoteErrorMessage(
+      { ...remoteError, message: remoteError.message ?? (error instanceof Error ? error.message : '') },
+      stage,
+    )
+    fail(message)
+    throw new Error(message, { cause: error })
   }
+}
+
+export type RemoteInstitutionSettings = {
+  name: string
+  shortName: string
+  description: string
+  accent: string
+  logoUrl?: string
+}
+
+export async function loadRemoteInstitutionSettings(institutionId: string): Promise<RemoteInstitutionSettings | null> {
+  const supabase = await getClient()
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('institutions')
+    .select('name, short_name, description, accent, logo_url')
+    .eq('id', institutionId)
+    .maybeSingle()
+  if (error) throw new Error(remoteErrorMessage(error, 'cargar la identidad institucional'))
+  if (!data) return null
+  const storedLogo = data.logo_url ?? undefined
+  return {
+    name: data.name,
+    shortName: data.short_name,
+    description: data.description ?? '',
+    accent: data.accent ?? '#7662c9',
+    logoUrl: storedLogo?.startsWith('storage:') ? await displayMedia(storedLogo) : storedLogo,
+  }
+}
+
+export async function saveRemoteInstitutionSettings(
+  institutionId: string,
+  settings: RemoteInstitutionSettings,
+): Promise<RemoteInstitutionSettings> {
+  const supabase = await getClient()
+  if (!supabase) throw new Error('Supabase no está configurado.')
+  let logoUrl = settings.logoUrl
+  const uploadedLogoPaths: string[] = []
+  const { data: previousInstitution, error: previousInstitutionError } = await supabase
+    .from('institutions')
+    .select('logo_url')
+    .eq('id', institutionId)
+    .maybeSingle()
+  if (previousInstitutionError) throw new Error(remoteErrorMessage(previousInstitutionError, 'leer el logo institucional anterior'))
+  if (logoUrl?.startsWith('blob:')) {
+    const response = await fetch(logoUrl)
+    if (!response.ok) throw new Error('No se pudo leer el logo seleccionado.')
+    const blob = await response.blob()
+    const extension = blob.type === 'image/png' ? 'png'
+      : blob.type === 'image/webp' ? 'webp'
+      : blob.type === 'image/gif' ? 'gif' : 'jpg'
+    const path = uniqueArchivePath(`${institutionId}/identity/logo.${extension}`)
+    const { error: uploadError } = await supabase.storage.from('archive').upload(path, blob, {
+      upsert: false,
+      contentType: blob.type || 'image/jpeg',
+    })
+    if (uploadError) throw new Error(remoteErrorMessage(uploadError, 'subir el logo institucional'))
+    uploadedLogoPaths.push(path)
+    logoUrl = `storage:${path}`
+  }
+  const { data, error } = await supabase
+    .from('institutions')
+    .update({
+      name: settings.name,
+      short_name: settings.shortName,
+      description: settings.description,
+      accent: settings.accent,
+      logo_url: logoUrl?.startsWith('blob:') ? null : logoUrl ?? null,
+    })
+    .eq('id', institutionId)
+    .select('id')
+    .maybeSingle()
+  if (error) {
+    void cleanupUnreferencedSafely(uploadedLogoPaths, institutionId)
+    throw new Error(remoteErrorMessage(error, 'guardar la identidad institucional'))
+  }
+  if (!data) {
+    void cleanupUnreferencedSafely(uploadedLogoPaths, institutionId)
+    throw new Error('Supabase no confirmó los cambios. Verifica que tu cuenta administre esta institución.')
+  }
+  const previousLogoPath = storagePath(previousInstitution?.logo_url)
+  const nextLogoPath = storagePath(logoUrl)
+  if (previousLogoPath && previousLogoPath !== nextLogoPath) {
+    void cleanupUnreferencedSafely([previousLogoPath], institutionId)
+  }
+  return { ...settings, logoUrl: logoUrl?.startsWith('storage:') ? await displayMedia(logoUrl) : logoUrl }
 }
 
 export async function deleteRemoteProject(id: string) {
   const supabase = await getClient()
-  if (!supabase) return
-  const { error } = await supabase.from('projects').delete().eq('id', id)
+  if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
+  const { data, error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', id)
+    .select('id, institution_id, cover_image, gallery, doc_url, pdf_url, video_url')
+    .maybeSingle()
   if (error) {
     fail(remoteErrorMessage(error))
-    return
+    throw error
   }
+  if (!data) throw new Error('El proyecto no existe o no tienes permiso para eliminarlo.')
   remember((remote ?? []).filter((project) => project.id !== id))
+  const deletedPaths = [
+    storagePath(data.cover_image),
+    ...(Array.isArray(data.gallery) ? data.gallery.map(storagePath) : []),
+    storagePath(data.doc_url),
+    storagePath(data.pdf_url),
+    storagePath(data.video_url),
+  ].filter((path): path is string => Boolean(path))
+  void cleanupUnreferencedSafely(deletedPaths, data.institution_id)
 }
 
 export function overlayProjects<T extends { id: string; slug: string }>(base: T[], extra: T[]) {

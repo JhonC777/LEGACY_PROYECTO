@@ -46,7 +46,7 @@ export type MediaAsset = {
   kind: MediaKind
   size: number
   url: string
-  uploadedAt: string
+  uploadedAt?: string
   status: 'uploading' | 'ready' | 'error'
   progress: number
   error?: string

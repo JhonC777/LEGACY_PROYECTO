@@ -8,7 +8,7 @@ export function attachObjectUrl(blob: Blob): string {
 }
 
 export function getBlobForObjectUrl(url: string): Blob | undefined {
-  return byUrl.get(url)
+  return byUrl.get(url.split('#')[0])
 }
 
 export function detachObjectUrl(url: string): void {

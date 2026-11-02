@@ -41,14 +41,35 @@ import { formatBytes, formatRelative } from '../format'
 import { isValidResourceUrl, resourceFileName, safeHref, withResourceName } from '@/lib/resources'
 import { createId, emptyDraft, getProjectIssues, inferMediaKind, useAdminStore } from '../store'
 import { useToast } from '../toast'
-import type { AdminProject, MediaKind, ProjectDraftInput } from '../types'
+import { UPLOAD_LIMIT_BYTES, type AdminProject, type MediaKind, type ProjectDraftInput } from '../types'
 
 type UploadTarget = { id: string; target: 'cover' | 'gallery' | 'doc' | 'pdf' | 'video' }
 
+const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif'
+
 const RESOURCE_ACCEPT: Record<'doc' | 'pdf' | 'video', string> = {
-  doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text',
+  doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/rtf,text/rtf,text/plain',
   pdf: '.pdf,application/pdf',
-  video: 'video/*,.mp4,.webm,.mov',
+  video: '.mp4,.webm,.mov,video/mp4,video/webm,video/quicktime',
+}
+
+const RESOURCE_EXTENSIONS: Record<'doc' | 'pdf' | 'video', RegExp> = {
+  doc: /\.(doc|docx|odt|rtf|txt)$/i,
+  pdf: /\.pdf$/i,
+  video: /\.(mp4|webm|mov)$/i,
+}
+
+const RESOURCE_MIMES: Record<'doc' | 'pdf' | 'video', string[]> = {
+  doc: [
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+    'application/rtf',
+    'text/rtf',
+    'text/plain',
+  ],
+  pdf: ['application/pdf'],
+  video: ['video/mp4', 'video/webm', 'video/quicktime'],
 }
 
 
@@ -94,6 +115,7 @@ export function AdminProjectEditor() {
   const [snapshot, setSnapshot] = useState('')
   const [hydratedFor, setHydratedFor] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [pendingUploadCount, setPendingUploadCount] = useState(0)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [confirm, setConfirm] = useState<'leave' | 'delete' | 'publish' | null>(null)
   const pendingUploads = useRef<UploadTarget[]>([])
@@ -171,6 +193,7 @@ export function AdminProjectEditor() {
     })
     if (done.length > 0) {
       pendingUploads.current = pendingUploads.current.filter((item) => !done.includes(item))
+      setPendingUploadCount(pendingUploads.current.length)
     }
   }, [media])
 
@@ -204,18 +227,24 @@ export function AdminProjectEditor() {
   const set = <K extends keyof ProjectDraftInput>(key: K, value: ProjectDraftInput[K]) =>
     setForm((current) => ({ ...current, [key]: value }))
 
-  const persist = () => {
+  const persist = async () => {
     if (isNew) {
-      const created = createProject(composed)
+      const created = await createProject(composed)
       return created
     }
-    return existing ? updateProject(existing.id, composed) : undefined
+    return existing ? await updateProject(existing.id, composed) : undefined
   }
 
   const handleSave = () => {
+    if (pendingUploads.current.length > 0) {
+      notify({ tone: 'info', title: 'Archivos en preparación', description: 'Espera a que los archivos terminen de incorporarse al formulario y vuelve a guardar.' })
+      return
+    }
     setSaving(true)
     defer(() => {
-      const saved = persist()
+      void (async () => {
+      try {
+      const saved = await persist()
       setSaving(false)
       if (!saved) {
         notify({ tone: 'error', title: 'No se pudo guardar', description: 'El proyecto ya no existe.' })
@@ -230,20 +259,31 @@ export function AdminProjectEditor() {
         }`,
       })
       if (isNew) navigate(`${base}/proyectos/${saved.id}`, { replace: true })
+      } catch (error) {
+        notify({ tone: 'error', title: 'No se pudo guardar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+      } finally { setSaving(false) }
+      })()
     }, 420)
   }
 
   const handlePublish = () => {
+    if (pendingUploads.current.length > 0) {
+      setConfirm(null)
+      notify({ tone: 'info', title: 'Archivos en preparación', description: 'Espera a que los archivos terminen de incorporarse al formulario y vuelve a publicar.' })
+      return
+    }
     setConfirm(null)
     setSaving(true)
     defer(() => {
-      const saved = persist()
+      void (async () => {
+      try {
+      const saved = await persist()
       if (!saved) {
         setSaving(false)
         notify({ tone: 'error', title: 'No se pudo publicar', description: 'El proyecto ya no existe.' })
         return
       }
-      const result = setProjectStatus(saved.id, 'published')
+      const result = await setProjectStatus(saved.id, 'published')
       setSaving(false)
       if (result.ok) {
         setSnapshot(JSON.stringify({ ...form, tags: tagsText, technologies: techText }))
@@ -261,15 +301,23 @@ export function AdminProjectEditor() {
         })
         if (isNew) navigate(`${base}/proyectos/${saved.id}`, { replace: true })
       }
+      } catch (error) {
+        notify({ tone: 'error', title: 'No se pudo publicar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+      } finally { setSaving(false) }
+      })()
     }, 480)
   }
 
   const handleDelete = () => {
     if (!existing) return
-    deleteProject(existing.id)
-    setConfirm(null)
-    notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${existing.title}» se eliminó del archivo.` })
-    navigate(`${base}/proyectos`, { replace: true })
+    setSaving(true)
+    void deleteProject(existing.id).then(() => {
+      setConfirm(null)
+      notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${existing.title}» se eliminó del archivo.` })
+      navigate(`${base}/proyectos`, { replace: true })
+    }).catch((error) => {
+      notify({ tone: 'error', title: 'No se pudo eliminar', description: error instanceof Error ? error.message : 'Error de conexión con Supabase.' })
+    }).finally(() => setSaving(false))
   }
 
   const handleBack = () => {
@@ -281,13 +329,22 @@ export function AdminProjectEditor() {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
     if (files.length === 0) return
-    const images = files.filter((file) => file.type.startsWith('image/'))
+    const images = files.filter((file) =>
+      ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type.toLowerCase()) ||
+      /\.(jpe?g|png|webp|gif)$/i.test(file.name),
+    )
     if (images.length !== files.length) {
       notify({ tone: 'error', title: 'Solo imágenes', description: 'La portada y la galería aceptan únicamente archivos de imagen.' })
     }
     if (images.length === 0) return
-    const ids = uploadFiles(target === 'cover' ? images.slice(0, 1) : images, existing?.id)
+    const accepted = images.filter((file) => file.size <= UPLOAD_LIMIT_BYTES)
+    if (accepted.length !== images.length) {
+      notify({ tone: 'error', title: 'Archivo demasiado grande', description: 'Cada archivo debe pesar máximo 15 MB.' })
+    }
+    if (accepted.length === 0) return
+    const ids = uploadFiles(target === 'cover' ? accepted.slice(0, 1) : accepted, existing?.id)
     pendingUploads.current.push(...ids.map((id) => ({ id, target })))
+    setPendingUploadCount(pendingUploads.current.length)
   }
 
   const onPickResource = (target: 'doc' | 'pdf' | 'video') => (event: ChangeEvent<HTMLInputElement>) => {
@@ -295,7 +352,20 @@ export function AdminProjectEditor() {
     event.target.value = ''
     if (files.length === 0) return
     const file = files[0]
+    const mime = file.type.toLowerCase().split(';')[0]?.trim() ?? ''
+    const matchesTarget =
+      RESOURCE_EXTENSIONS[target].test(file.name) || RESOURCE_MIMES[target].includes(mime)
+    if (!matchesTarget) {
+      const expected =
+        target === 'pdf' ? 'un archivo PDF' : target === 'video' ? 'un video MP4, WebM o MOV' : 'un documento DOC, DOCX, ODT, RTF o TXT'
+      notify({ tone: 'error', title: 'Tipo no válido', description: `Este campo acepta ${expected}.` })
+      return
+    }
     const kind = inferMediaKind(file.name, file.type)
+    if (file.size > UPLOAD_LIMIT_BYTES) {
+      notify({ tone: 'error', title: 'Archivo demasiado grande', description: 'El límite por archivo es de 15 MB.' })
+      return
+    }
     const allowed: Record<'doc' | 'pdf' | 'video', MediaKind[]> = {
       doc: ['doc'],
       pdf: ['pdf'],
@@ -309,6 +379,7 @@ export function AdminProjectEditor() {
     }
     const ids = uploadFiles([file], existing?.id)
     pendingUploads.current.push({ id: ids[0], target })
+    setPendingUploadCount(pendingUploads.current.length)
   }
 
   const updateAuthor = (id: string, patch: Partial<{ name: string; role: string }>) =>
@@ -401,7 +472,7 @@ export function AdminProjectEditor() {
             type="button"
             className="btn btn-secondary btn-md"
             onClick={handleSave}
-            disabled={saving || (!dirty && !isNew)}
+            disabled={saving || pendingUploadCount > 0 || (!dirty && !isNew)}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
             {isNew ? 'Guardar borrador' : 'Guardar'}
@@ -410,7 +481,7 @@ export function AdminProjectEditor() {
             type="button"
             className="btn btn-primary btn-md"
             onClick={() => setConfirm('publish')}
-            disabled={!canPublish}
+            disabled={!canPublish || pendingUploadCount > 0}
             title={canPublish ? undefined : 'Completa los requisitos para publicar'}
           >
             <Send className="h-4 w-4" aria-hidden />
@@ -607,7 +678,7 @@ export function AdminProjectEditor() {
                   Portada <span className="text-legacy-gold">*</span>
                 </p>
                 <label className={cn('admin-dropzone aspect-[4/3]', form.coverImage && 'has-media')}>
-                  <input type="file" accept="image/*" className="sr-only" onChange={onPickFiles('cover')} />
+                  <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onPickFiles('cover')} />
                   {form.coverImage ? (
                     <img src={form.coverImage} alt="Portada actual" />
                   ) : (
@@ -650,7 +721,7 @@ export function AdminProjectEditor() {
                     Galería <span className="font-medium normal-case tracking-normal">· {form.gallery.length} imágenes</span>
                   </p>
                   <label className="btn btn-secondary btn-sm cursor-pointer">
-                    <input type="file" accept="image/*" multiple className="sr-only" onChange={onPickFiles('gallery')} />
+                    <input type="file" accept={IMAGE_ACCEPT} multiple className="sr-only" onChange={onPickFiles('gallery')} />
                     <Plus className="h-4 w-4" aria-hidden />
                     Añadir
                   </label>
@@ -901,15 +972,15 @@ function Field({
   children: ReactNode
 }) {
   return (
-    <label className="block">
-      <span className="mb-2 flex items-center justify-between gap-2">
+    <div className="block">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
           {label} {required ? <span className="text-legacy-gold">*</span> : null}
         </span>
         {hint ? <span className="text-xs text-legacy-muted/80">{hint}</span> : null}
-      </span>
+      </div>
       {children}
-    </label>
+    </div>
   )
 }
 

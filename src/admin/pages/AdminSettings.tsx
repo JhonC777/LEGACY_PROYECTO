@@ -107,22 +107,37 @@ export function AdminSettings() {
     }
     setSaving(true)
     defer(() => {
-      if (identityDirty) {
-        updateSettings({
-          name: form.name.trim(),
-          shortName: form.shortName.trim(),
-          description: form.description.trim(),
-          accent: form.accent,
-          logoUrl: form.logoUrl,
-        })
-      }
-      if (featuredDirty) setFeatured(featured)
-      setSaving(false)
-      notify({
-        tone: 'success',
-        title: 'Ajustes guardados',
-        description: 'Quedaron guardados en el panel de esta institución.',
-      })
+      void (async () => {
+        try {
+          if (identityDirty) {
+            await updateSettings({
+              name: form.name.trim(),
+              shortName: form.shortName.trim(),
+              description: form.description.trim(),
+              accent: form.accent,
+              logoUrl: form.logoUrl,
+            })
+          }
+          if (featuredDirty) await setFeatured(featured)
+          notify({
+            tone: 'success',
+            title: featuredDirty ? 'Destacados guardados' : 'Ajustes actualizados',
+            description: identityDirty && featuredDirty
+              ? 'La identidad institucional y los proyectos destacados se guardaron en Supabase.'
+              : identityDirty
+                ? 'La identidad institucional se guardó en Supabase.'
+                : 'La selección de proyectos destacados se confirmó en Supabase.',
+          })
+        } catch (error) {
+          notify({
+            tone: 'error',
+            title: 'No se pudieron guardar los ajustes',
+            description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
+          })
+        } finally {
+          setSaving(false)
+        }
+      })()
     }, 420)
   }
 

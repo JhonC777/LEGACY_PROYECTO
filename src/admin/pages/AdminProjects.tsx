@@ -45,6 +45,7 @@ export function AdminProjects() {
   const { notify } = useToast()
   const [params, setParams] = useSearchParams()
   const [pending, setPending] = useState<PendingAction | null>(null)
+  const [savingAction, setSavingAction] = useState(false)
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -139,44 +140,70 @@ export function AdminProjects() {
     query || statusFilter !== 'all' || areaFilter || yearFilter || collectionFilter,
   )
 
-  const runPublish = (project: AdminProject) => {
-    const result = setProjectStatus(project.id, 'published')
+  const runPublish = async (project: AdminProject) => {
+    const result = await setProjectStatus(project.id, 'published')
     if (result.ok) {
       notify({
         tone: 'success',
         title: 'Proyecto publicado',
         description: `«${project.title}» ya es visible en el catálogo público.`,
       })
-    } else {
-      notify({
-        tone: 'error',
-        title: 'No se puede publicar todavía',
-        description: result.errors.slice(0, 3).join(' · '),
-      })
+      return true
     }
+    notify({
+      tone: 'error',
+      title: 'No se puede publicar todavía',
+      description: result.errors.slice(0, 3).join(' · '),
+    })
+    return false
   }
 
   const confirmPending = () => {
-    if (!pending) return
-    const { kind, project } = pending
-    if (kind === 'delete') {
-      deleteProject(project.id)
-      notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${project.title}» se eliminó del archivo.` })
-    } else if (kind === 'archive') {
-      setProjectStatus(project.id, 'archived')
-      notify({ tone: 'success', title: 'Proyecto archivado', description: 'Ya no aparece en el catálogo público. Puedes restaurarlo cuando quieras.' })
-    } else if (kind === 'unpublish') {
-      setProjectStatus(project.id, 'draft')
-      notify({ tone: 'info', title: 'Publicación retirada', description: 'El proyecto volvió a borrador.' })
-    } else if (kind === 'publish') {
-      runPublish(project)
-    }
-    setPending(null)
+    if (!pending || savingAction) return
+    const action = pending
+    void (async () => {
+      setSavingAction(true)
+      try {
+        if (action.kind === 'delete') {
+          await deleteProject(action.project.id)
+          notify({ tone: 'success', title: 'Proyecto eliminado', description: `«${action.project.title}» se eliminó del archivo.` })
+        } else if (action.kind === 'archive') {
+          const result = await setProjectStatus(action.project.id, 'archived')
+          if (!result.ok) throw new Error(result.errors.join(' · '))
+          notify({ tone: 'success', title: 'Proyecto archivado', description: 'Ya no aparece en el catálogo público. Puedes restaurarlo cuando quieras.' })
+        } else if (action.kind === 'unpublish') {
+          const result = await setProjectStatus(action.project.id, 'draft')
+          if (!result.ok) throw new Error(result.errors.join(' · '))
+          notify({ tone: 'info', title: 'Publicación retirada', description: 'El proyecto volvió a borrador.' })
+        } else if (action.kind === 'publish') {
+          await runPublish(action.project)
+        }
+        setPending(null)
+      } catch (error) {
+        notify({
+          tone: 'error',
+          title: 'No se pudo completar la acción',
+          description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
+        })
+      } finally {
+        setSavingAction(false)
+      }
+    })()
   }
 
   const restore = (project: AdminProject) => {
-    setProjectStatus(project.id, 'draft')
-    notify({ tone: 'success', title: 'Proyecto restaurado', description: 'Volvió a borradores para que lo revises antes de publicar.' })
+    if (savingAction) return
+    setSavingAction(true)
+    void setProjectStatus(project.id, 'draft').then((result) => {
+      if (!result.ok) throw new Error(result.errors.join(' · '))
+      notify({ tone: 'success', title: 'Proyecto restaurado', description: 'Volvió a borradores para que lo revises antes de publicar.' })
+    }).catch((error) => {
+      notify({
+        tone: 'error',
+        title: 'No se pudo restaurar',
+        description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
+      })
+    }).finally(() => setSavingAction(false))
   }
 
   const header = (
@@ -597,8 +624,9 @@ export function AdminProjects() {
           </>
         }
         confirmLabel="Eliminar definitivamente"
+        loading={savingAction}
         onConfirm={confirmPending}
-        onCancel={() => setPending(null)}
+        onCancel={() => !savingAction && setPending(null)}
       />
       <ConfirmDialog
         open={pending?.kind === 'archive'}
