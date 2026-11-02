@@ -356,42 +356,48 @@ export function AdminStoreProvider({
           dispatch({ type: 'FAILED' })
           return
         }
-        await refreshRemoteArchive()
-        if (current !== attempt.current) return
-        if (getRemoteProjects() === null) {
+        try {
+          await refreshRemoteArchive()
+          if (current !== attempt.current) return
+          if (getRemoteProjects() === null) {
+            dispatch({ type: 'FAILED' })
+            return
+          }
+          const stored = readArchiveSnapshot(institution.slug)
+          const payload = stripDemoDrafts(
+            stored
+              ? {
+                  projects: stored.projects,
+                  media: stored.media,
+                  activity: stored.activity,
+                  settings: stored.settings,
+                }
+              : seed(institution),
+          )
+          const remote = getRemoteProjects()
+          const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
+          if (current !== attempt.current) return
+          const institutionProjects =
+            remote === null
+              ? payload.projects
+              : remote
+                  .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+                  .map((project) => ({ ...project, isReal: true }))
+          dispatch({
+            type: 'LOADED',
+            payload: {
+              ...payload,
+              projects: institutionProjects,
+              settings: remoteSettings
+                ? { ...payload.settings, ...remoteSettings }
+                : payload.settings,
+            },
+          })
+        } catch (error) {
+          if (current !== attempt.current) return
+          console.error('[legacy] No se pudo cargar el panel:', error)
           dispatch({ type: 'FAILED' })
-          return
         }
-        const stored = readArchiveSnapshot(institution.slug)
-        const payload = stripDemoDrafts(
-          stored
-            ? {
-                projects: stored.projects,
-                media: stored.media,
-                activity: stored.activity,
-                settings: stored.settings,
-              }
-            : seed(institution),
-        )
-        const remote = getRemoteProjects()
-        const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
-        if (current !== attempt.current) return
-        const institutionProjects =
-          remote === null
-            ? payload.projects
-            : remote
-                .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
-                .map((project) => ({ ...project, isReal: true }))
-        dispatch({
-          type: 'LOADED',
-          payload: {
-            ...payload,
-            projects: institutionProjects,
-            settings: remoteSettings
-              ? { ...payload.settings, ...remoteSettings }
-              : payload.settings,
-          },
-        })
       })()
     }, 520)
     timers.current.add(timer)
@@ -586,9 +592,11 @@ export function AdminStoreProvider({
         if (errors.length > 0) return { ok: false, errors }
       }
 
+      const shouldRemainFeatured = status === 'published' && current.isFeatured
       const project: AdminProject = {
         ...current,
         status,
+        isFeatured: shouldRemainFeatured,
         updatedAt: new Date().toISOString(),
         publishedAt:
           status === 'published' ? current.publishedAt ?? new Date().toISOString() : current.publishedAt,
@@ -598,16 +606,15 @@ export function AdminStoreProvider({
       )
       dispatch({ type: 'UPSERT_PROJECT', project })
 
-      if (status !== 'published' && settingsRef.current.featuredProjectIds.includes(id)) {
-        dispatch({
-          type: 'SETTINGS',
-          settings: {
-            ...settingsRef.current,
-            featuredProjectIds: settingsRef.current.featuredProjectIds.filter(
-              (featured) => featured !== id,
-            ),
-          },
-        })
+      if (!shouldRemainFeatured && settingsRef.current.featuredProjectIds.includes(id)) {
+        const nextSettings = {
+          ...settingsRef.current,
+          featuredProjectIds: settingsRef.current.featuredProjectIds.filter(
+            (featured) => featured !== id,
+          ),
+        }
+        settingsRef.current = nextSettings
+        dispatch({ type: 'SETTINGS', settings: nextSettings })
       }
 
       const verb: Record<ProjectStatus, [ActivityType, string]> = {
@@ -756,18 +763,40 @@ export function AdminStoreProvider({
         type: 'SETTINGS',
         settings: { ...originalSettings, featuredProjectIds: allowed },
       })
+      const persisted: AdminProject[] = []
       try {
-        await Promise.all(changed.map((project) => persistRemote(project)))
+        // Secuencial para saber exactamente qué escrituras llegaron a Supabase.
+        for (const project of changed) {
+          await persistRemote(project)
+          persisted.push(project)
+        }
         log('settings', `Actualizó los destacados de portada (${allowed.length})`)
         flushArchive()
       } catch (error) {
+        const rollbackErrors: string[] = []
+        for (const project of persisted.reverse()) {
+          const original = originalProjects.find((item) => item.id === project.id)
+          if (!original) continue
+          try {
+            await persistRemote(original)
+          } catch (rollbackError) {
+            rollbackErrors.push(rollbackError instanceof Error ? rollbackError.message : 'Error desconocido')
+          }
+        }
         projectsRef.current = originalProjects
         changed.forEach((project) => {
           const original = originalProjects.find((item) => item.id === project.id)
           if (original) dispatch({ type: 'UPSERT_PROJECT', project: original })
         })
+        settingsRef.current = originalSettings
         dispatch({ type: 'SETTINGS', settings: originalSettings })
         flushArchive()
+        if (rollbackErrors.length > 0) {
+          throw new Error(
+            `No se pudieron guardar todos los destacados y la reversión remota quedó incompleta: ${rollbackErrors.join(' · ')}`,
+            { cause: error },
+          )
+        }
         throw error
       }
     },
