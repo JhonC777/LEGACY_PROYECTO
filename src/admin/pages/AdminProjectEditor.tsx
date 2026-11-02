@@ -115,6 +115,7 @@ export function AdminProjectEditor() {
   const [snapshot, setSnapshot] = useState('')
   const [hydratedFor, setHydratedFor] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [pendingUploadCount, setPendingUploadCount] = useState(0)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [confirm, setConfirm] = useState<'leave' | 'delete' | 'publish' | null>(null)
   const pendingUploads = useRef<UploadTarget[]>([])
@@ -192,6 +193,7 @@ export function AdminProjectEditor() {
     })
     if (done.length > 0) {
       pendingUploads.current = pendingUploads.current.filter((item) => !done.includes(item))
+      setPendingUploadCount(pendingUploads.current.length)
     }
   }, [media])
 
@@ -234,6 +236,10 @@ export function AdminProjectEditor() {
   }
 
   const handleSave = () => {
+    if (pendingUploads.current.length > 0) {
+      notify({ tone: 'info', title: 'Archivos en preparación', description: 'Espera a que los archivos terminen de incorporarse al formulario y vuelve a guardar.' })
+      return
+    }
     setSaving(true)
     defer(() => {
       void (async () => {
@@ -261,6 +267,11 @@ export function AdminProjectEditor() {
   }
 
   const handlePublish = () => {
+    if (pendingUploads.current.length > 0) {
+      setConfirm(null)
+      notify({ tone: 'info', title: 'Archivos en preparación', description: 'Espera a que los archivos terminen de incorporarse al formulario y vuelve a publicar.' })
+      return
+    }
     setConfirm(null)
     setSaving(true)
     defer(() => {
@@ -333,6 +344,7 @@ export function AdminProjectEditor() {
     if (accepted.length === 0) return
     const ids = uploadFiles(target === 'cover' ? accepted.slice(0, 1) : accepted, existing?.id)
     pendingUploads.current.push(...ids.map((id) => ({ id, target })))
+    setPendingUploadCount(pendingUploads.current.length)
   }
 
   const onPickResource = (target: 'doc' | 'pdf' | 'video') => (event: ChangeEvent<HTMLInputElement>) => {
@@ -367,6 +379,7 @@ export function AdminProjectEditor() {
     }
     const ids = uploadFiles([file], existing?.id)
     pendingUploads.current.push({ id: ids[0], target })
+    setPendingUploadCount(pendingUploads.current.length)
   }
 
   const updateAuthor = (id: string, patch: Partial<{ name: string; role: string }>) =>
@@ -459,7 +472,7 @@ export function AdminProjectEditor() {
             type="button"
             className="btn btn-secondary btn-md"
             onClick={handleSave}
-            disabled={saving || (!dirty && !isNew)}
+            disabled={saving || pendingUploadCount > 0 || (!dirty && !isNew)}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
             {isNew ? 'Guardar borrador' : 'Guardar'}
@@ -468,7 +481,7 @@ export function AdminProjectEditor() {
             type="button"
             className="btn btn-primary btn-md"
             onClick={() => setConfirm('publish')}
-            disabled={!canPublish}
+            disabled={!canPublish || pendingUploadCount > 0}
             title={canPublish ? undefined : 'Completa los requisitos para publicar'}
           >
             <Send className="h-4 w-4" aria-hidden />
