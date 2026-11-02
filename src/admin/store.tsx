@@ -664,6 +664,34 @@ export function AdminStoreProvider({
     [flushArchive, log],
   )
 
+  // Las cargas del editor siguen siendo temporales hasta guardar la ficha.
+  const runUpload = useCallback(
+    (asset: MediaAsset) => {
+      dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { progress: 100, status: 'ready' } })
+    },
+    [],
+  )
+
+  const uploadFiles = useCallback<StoreContextValue['uploadFiles']>(
+    (files, projectId) => files.map((file) => {
+      const tooLarge = file.size > UPLOAD_LIMIT_BYTES
+      const asset: MediaAsset = {
+        id: createId('media'),
+        name: file.name,
+        kind: inferMediaKind(file.name, file.type),
+        size: file.size,
+        url: attachObjectUrl(file),
+        status: tooLarge ? 'error' : 'uploading',
+        progress: 0,
+        error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
+        projectId,
+      }
+      dispatch({ type: 'ADD_MEDIA', asset })
+      if (!tooLarge) runUpload(asset)
+      return asset.id
+    }),
+    [runUpload],
+  )
   // El editor conserva cargas temporales hasta guardar la ficha; el repositorio
   // persiste cada archivo de forma independiente en Supabase Storage.
   const uploadRepositoryFiles = useCallback<StoreContextValue['uploadRepositoryFiles']>(
