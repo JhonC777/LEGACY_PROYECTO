@@ -628,7 +628,7 @@ export function AdminStoreProvider({
       dispatch({
         type: 'PATCH_MEDIA',
         id: asset.id,
-        patch: { progress: 100, status: 'ready', uploadedAt: new Date().toISOString() },
+        patch: { progress: 100, status: 'ready' },
       })
     },
     [],
@@ -644,7 +644,6 @@ export function AdminStoreProvider({
           kind: inferMediaKind(file.name, file.type),
           size: file.size,
           url: attachObjectUrl(file),
-          uploadedAt: new Date().toISOString(),
           status: tooLarge ? 'error' : 'uploading',
           progress: 0,
           error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
