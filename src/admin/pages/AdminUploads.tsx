@@ -36,7 +36,8 @@ export function AdminUploads() {
   const { institution, media, projects, status, reload, uploadFiles, retryUpload, removeMedia } =
     useAdminStore()
   const { notify } = useToast()
-  const [kind, setKind] = useState<KindFilter>('all')\n  const [query, setQuery] = useState('')
+  const [kind, setKind] = useState<KindFilter>('all')
+  const [query, setQuery] = useState('')
   const [dragging, setDragging] = useState(false)
   const [toDelete, setToDelete] = useState<MediaAsset | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -210,7 +211,8 @@ export function AdminUploads() {
         </section>
       ) : null}
 
-      <div className="admin-toolbar mt-6">\n        <input className="glass-input liquid-field w-full max-w-sm rounded-xl px-4 py-2.5 text-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar archivo o proyecto…" aria-label="Buscar archivos" />
+      <div className="admin-toolbar mt-6">
+        <input className="glass-input liquid-field w-full max-w-sm rounded-xl px-4 py-2.5 text-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar archivo o proyecto…" aria-label="Buscar archivos" />
         <div className="admin-tabs" role="tablist" aria-label="Filtrar por tipo">
           {tabs.map((tab) => (
             <button
