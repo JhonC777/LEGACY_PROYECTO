@@ -126,18 +126,40 @@ function fail(message: string) {
   window.dispatchEvent(new CustomEvent(ERROR, { detail: message }))
 }
 
-export function remoteErrorMessage(error: { message?: string; code?: string }) {
+type RemoteError = {
+  message?: string
+  code?: string
+  details?: string
+  hint?: string
+  status?: number
+}
+
+export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
   const message = error.message ?? ''
+  const normalized = message.toLowerCase()
+  const code = error.code ? ` · código ${error.code}` : ''
+  const details = [error.details, error.hint].filter(Boolean).join(' ')
+  const technical = [message, details].filter(Boolean).join(' ').replace(/\\s+/g, ' ').slice(0, 260)
+
   if (/tipo de archivo no permitido/i.test(message)) {
-    return 'Ese tipo de archivo no está permitido.'
+    return 'El archivo no tiene un formato permitido. Usa JPG, PNG, WebP, GIF, PDF, DOC/DOCX, ODT, TXT, MP4, WebM o MOV.'
   }
-  if (/claim_admin|schema cache|relation|does not exist/i.test(message)) {
-    return 'La base todavía no está lista. Falta ejecutar el esquema en Supabase.'
+  if (/row-level security|rls|permission denied|not authorized|unauthorized|42501/i.test(`${normalized} ${error.code ?? ''}`)) {
+    return `Supabase rechazó los permisos durante ${stage}. Revisa que la sesión siga activa y que el administrador tenga acceso a esta institución.${code}`
+  }
+  if (/bucket.*not found|object not found|no such bucket/i.test(message)) {
+    return `No se encontró el almacenamiento de archivos durante ${stage}. Revisa el bucket archive en Supabase.${code}`
+  }
+  if (/payload too large|file size|entity too large|413/i.test(message)) {
+    return `El archivo supera el límite permitido durante ${stage}. Reduce su tamaño e inténtalo de nuevo.${code}`
+  }
+  if (/claim_admin|schema cache|relation .* does not exist|function .* does not exist/i.test(message)) {
+    return `La base de datos no reconoce un objeto necesario durante ${stage}. Hay que revisar el esquema de Supabase.${code}`
   }
   if (/email not confirmed/i.test(message)) {
     return 'Confirma el correo que te envió Supabase y vuelve a entrar con la misma contraseña.'
   }
-  if (/invalid login|already registered/i.test(message)) {
+  if (/invalid login|invalid_credentials/i.test(message) || error.code === 'invalid_credentials') {
     return 'Correo o contraseña incorrectos.'
   }
   if (/not an admin|already has an admin/i.test(message)) {
@@ -149,8 +171,15 @@ export function remoteErrorMessage(error: { message?: string; code?: string }) {
   if (/rate limit|too many/i.test(message)) {
     return 'Espera un momento antes de pedir otro correo.'
   }
-  if (message) console.error('[legacy] archivo remoto:', message)
-  return 'No se pudo completar la operación. Intenta de nuevo.'
+  if (/failed to fetch|networkerror|fetch failed|network request failed/i.test(message)) {
+    return `No se pudo conectar con Supabase durante ${stage}. Comprueba la conexión e inténtalo otra vez.${code}`
+  }
+
+  if (technical) {
+    console.error('[legacy] error remoto:', { stage, code: error.code, message, details, status: error.status })
+    return `Falló ${stage}: ${technical}${code}`
+  }
+  return `No se pudo completar ${stage}. Supabase no devolvió detalles del error.${code}`
 }
 
 function canonicalMedia(value: string): string
@@ -339,17 +368,25 @@ async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
 export async function saveRemoteProject(project: AdminProject) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
+  let stage = 'subir los archivos al almacenamiento'
   try {
-    const prepared = await withDisplayUrls(await withStoredMedia(project))
+    const stored = await withStoredMedia(project)
+    stage = 'preparar las direcciones de los archivos'
+    const prepared = await withDisplayUrls(stored)
+    stage = 'guardar el proyecto en la tabla projects'
     const { error } = await supabase.from('projects').upsert(toRow(prepared), { onConflict: 'id' })
     if (error) throw error
     const next = (remote ?? []).filter((item) => item.id !== prepared.id)
     remember([prepared, ...next])
     return prepared
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'No se pudo guardar en Supabase.'
-    fail(remoteErrorMessage({ message }))
-    throw error instanceof Error ? error : new Error(message)
+    const remoteError = (error && typeof error === 'object' ? error : {}) as RemoteError
+    const message = remoteErrorMessage(
+      { ...remoteError, message: remoteError.message ?? (error instanceof Error ? error.message : '') },
+      stage,
+    )
+    fail(message)
+    throw new Error(message, { cause: error })
   }
 }
 
