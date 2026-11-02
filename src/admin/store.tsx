@@ -33,7 +33,7 @@ import {
   subscribeRemoteReady,
 } from '@/data/archiveRemote'
 import { attachObjectUrl, detachObjectUrl } from '@/lib/blobRegistry'
-import { readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
+import { isInstitutionRealProject, readArchiveSnapshot, writeArchiveSnapshot } from './archiveBridge'
 
 /**
  * Store DEMO del panel: todo vive en memoria y está aislado por institución.
@@ -370,7 +370,9 @@ export function AdminStoreProvider({
         const institutionProjects =
           remote === null
             ? payload.projects
-            : remote.filter((project) => project.institutionId === institution.id)
+            : remote
+                .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
+                .map((project) => ({ ...project, isReal: true }))
         dispatch({
           type: 'LOADED',
           payload: { ...payload, projects: institutionProjects },
