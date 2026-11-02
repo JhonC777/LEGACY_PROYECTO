@@ -138,11 +138,16 @@ const hoursAgo = (hours: number) =>
 const daysAgo = (days: number) => hoursAgo(days * 24)
 
 export function inferMediaKind(name: string, mime = ''): MediaKind {
-  if (mime.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif|svg)$/i.test(name)) {
-    return 'image'
-  }
+  // Coincide con los formatos que admite el bucket privado archive.
+  if (
+    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(mime.toLowerCase()) ||
+    /\.(png|jpe?g|webp|gif)$/i.test(name)
+  ) return 'image'
   if (mime === 'application/pdf' || /\.pdf$/i.test(name)) return 'pdf'
-  if (mime.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(name)) return 'video'
+  if (
+    ['video/mp4', 'video/webm', 'video/quicktime'].includes(mime.toLowerCase()) ||
+    /\.(mp4|webm|mov)$/i.test(name)
+  ) return 'video'
   return 'doc'
 }
 
