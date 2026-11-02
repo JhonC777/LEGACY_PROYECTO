@@ -1,4 +1,4 @@
-import type { AdminProject } from '@/admin/types'
+import type { AdminProject, MediaAsset } from '@/admin/types'
 import type { DemoAuthor, ProjectStatus } from '@/data/demoData'
 import { getBlobForObjectUrl } from '@/lib/blobRegistry'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -217,6 +217,55 @@ async function withDisplayUrls(project: AdminProject): Promise<AdminProject> {
     pdfUrl: await displayMedia(project.pdfUrl),
     videoUrl: await displayMedia(project.videoUrl),
   }
+}
+
+
+/** Inventario persistente del bucket privado, no solo archivos temporales de la sesión. */
+export async function listRemoteMedia(institutionId: string, projects: AdminProject[]): Promise<MediaAsset[]> {
+  const supabase = await getClient()
+  if (!supabase) return []
+  const projectById = new Map(projects.map((project) => [project.id, project]))
+  const collected: MediaAsset[] = []
+  const walk = async (prefix: string): Promise<void> => {
+    const { data, error } = await supabase.storage.from('archive').list(prefix, {
+      limit: 1000,
+      sortBy: { column: 'created_at', order: 'desc' },
+    })
+    if (error) throw new Error(remoteErrorMessage(error, 'listar los archivos institucionales'))
+    for (const item of data ?? []) {
+      const path = prefix ? `${prefix}/${item.name}` : item.name
+      if (!item.id) {
+        await walk(path)
+        continue
+      }
+      const metadata = (item.metadata ?? {}) as { size?: number; mimetype?: string; lastModified?: string }
+      const mime = (metadata.mimetype ?? '').toLowerCase()
+      const ext = item.name.split('.').pop()?.toLowerCase() ?? ''
+      const kind = mime.startsWith('image/') || /^(png|jpe?g|webp|gif|svg)$/.test(ext)
+        ? 'image'
+        : mime === 'application/pdf' || ext === 'pdf'
+          ? 'pdf'
+          : mime.startsWith('video/') || /^(mp4|webm|mov)$/.test(ext)
+            ? 'video'
+            : 'doc'
+      const parts = path.split('/')
+      const projectId = parts.length > 2 ? parts[1] : undefined
+      const { data: signed } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+      collected.push({
+        id: path,
+        name: parts.slice(2).join('/') || item.name,
+        kind,
+        size: metadata.size ?? 0,
+        url: signed?.signedUrl ?? '',
+        uploadedAt: metadata.lastModified ?? item.updated_at ?? item.created_at ?? undefined,
+        status: 'ready',
+        progress: 100,
+        projectId: projectById.has(projectId ?? '') ? projectId : undefined,
+      })
+    }
+  }
+  await walk(institutionId)
+  return collected
 }
 
 export async function refreshRemoteArchive() {
