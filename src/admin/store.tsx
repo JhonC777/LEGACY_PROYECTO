@@ -377,21 +377,28 @@ export function AdminStoreProvider({
           )
           const remote = getRemoteProjects()
           const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
-          if (current !== attempt.current) return
           const institutionProjects =
             remote === null
               ? payload.projects
               : remote
                   .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
                   .map((project) => ({ ...project, isReal: true }))
+          const remoteMedia = await listRemoteMedia(institution.id, institutionProjects)
+          if (current !== attempt.current) return
           dispatch({
             type: 'LOADED',
             payload: {
               ...payload,
               projects: institutionProjects,
-              settings: remoteSettings
-                ? { ...payload.settings, ...remoteSettings }
-                : payload.settings,
+              media: remoteMedia,
+              settings: {
+                ...payload.settings,
+                ...(remoteSettings ?? {}),
+                featuredProjectIds: institutionProjects
+                  .filter((project) => project.status === 'published' && project.isFeatured)
+                  .slice(0, 6)
+                  .map((project) => project.id),
+              },
             },
           })
         } catch (error) {
