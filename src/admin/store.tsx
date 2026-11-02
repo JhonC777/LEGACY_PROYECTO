@@ -25,13 +25,16 @@ import {
   type StoreStatus,
 } from './types'
 import {
+  deleteRemoteMedia,
   deleteRemoteProject,
   getRemoteProjects,
   loadRemoteInstitutionSettings,
+  listRemoteMedia,
   saveRemoteInstitutionSettings,
   overlayProjects,
   refreshRemoteArchive,
   saveRemoteProject,
+  uploadRemoteMedia,
   subscribeRemoteReady,
 } from '@/data/archiveRemote'
 import { attachObjectUrl, detachObjectUrl } from '@/lib/blobRegistry'
@@ -305,8 +308,9 @@ type StoreContextValue = State & {
   setProjectStatus: (id: string, status: ProjectStatus) => Promise<{ ok: boolean; errors: string[] }>
   deleteProject: (id: string) => Promise<void>
   uploadFiles: (files: File[], projectId?: string) => string[]
-  retryUpload: (id: string) => void
-  removeMedia: (id: string) => void
+  uploadRepositoryFiles: (files: File[]) => Promise<void>
+  retryUpload: (id: string) => Promise<void>
+  removeMedia: (id: string) => Promise<void>
   updateSettings: (patch: Partial<InstitutionSettings>) => Promise<void>
   /** Curaduría de portada: sincroniza `featuredProjectIds` con `isFeatured`. */
   setFeatured: (ids: string[]) => Promise<void>
@@ -376,21 +380,28 @@ export function AdminStoreProvider({
           )
           const remote = getRemoteProjects()
           const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
-          if (current !== attempt.current) return
           const institutionProjects =
             remote === null
               ? payload.projects
               : remote
                   .filter((project) => project.institutionId === institution.id && isInstitutionRealProject(project))
                   .map((project) => ({ ...project, isReal: true }))
+          const remoteMedia = await listRemoteMedia(institution.id, institutionProjects)
+          if (current !== attempt.current) return
           dispatch({
             type: 'LOADED',
             payload: {
               ...payload,
               projects: institutionProjects,
-              settings: remoteSettings
-                ? { ...payload.settings, ...remoteSettings }
-                : payload.settings,
+              media: remoteMedia,
+              settings: {
+                ...payload.settings,
+                ...(remoteSettings ?? {}),
+                featuredProjectIds: institutionProjects
+                  .filter((project) => project.status === 'published' && project.isFeatured)
+                  .slice(0, 6)
+                  .map((project) => project.id),
+              },
             },
           })
         } catch (error) {
@@ -653,76 +664,96 @@ export function AdminStoreProvider({
     [flushArchive, log],
   )
 
-  // Los archivos locales quedan listos para adjuntarse al proyecto.
-  // La transferencia real a Supabase Storage ocurre dentro de saveRemoteProject;
-  // el editor solo confirma el guardado cuando Storage y la fila DB terminan.
+  // Las cargas del editor siguen siendo temporales hasta guardar la ficha.
   const runUpload = useCallback(
     (asset: MediaAsset) => {
-      dispatch({
-        type: 'PATCH_MEDIA',
-        id: asset.id,
-        patch: { progress: 100, status: 'ready' },
-      })
+      dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { progress: 100, status: 'ready' } })
     },
     [],
   )
 
   const uploadFiles = useCallback<StoreContextValue['uploadFiles']>(
-    (files, projectId) => {
-      return files.map((file) => {
-        const tooLarge = file.size > UPLOAD_LIMIT_BYTES
-        const asset: MediaAsset = {
-          id: createId('media'),
-          name: file.name,
-          kind: inferMediaKind(file.name, file.type),
-          size: file.size,
-          url: attachObjectUrl(file),
-          status: tooLarge ? 'error' : 'uploading',
-          progress: 0,
-          error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
-          projectId,
-        }
-        dispatch({ type: 'ADD_MEDIA', asset })
-        if (!tooLarge) runUpload(asset)
-        return asset.id
-      })
-    },
+    (files, projectId) => files.map((file) => {
+      const tooLarge = file.size > UPLOAD_LIMIT_BYTES
+      const asset: MediaAsset = {
+        id: createId('media'),
+        name: file.name,
+        kind: inferMediaKind(file.name, file.type),
+        size: file.size,
+        url: attachObjectUrl(file),
+        status: tooLarge ? 'error' : 'uploading',
+        progress: 0,
+        error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
+        projectId,
+      }
+      dispatch({ type: 'ADD_MEDIA', asset })
+      if (!tooLarge) runUpload(asset)
+      return asset.id
+    }),
     [runUpload],
   )
-
-  // Los blob: de la sesión se conservan al salir del panel para que el invitado
-  // pueda abrir y descargar el archivo recién publicado en esta misma pestaña.
+  // El editor conserva cargas temporales hasta guardar la ficha; el repositorio
+  // persiste cada archivo de forma independiente en Supabase Storage.
+  const uploadRepositoryFiles = useCallback<StoreContextValue['uploadRepositoryFiles']>(
+    async (files) => {
+      await Promise.all(files.map(async (file) => {
+        const tooLarge = file.size > UPLOAD_LIMIT_BYTES
+        const localUrl = attachObjectUrl(file)
+        const asset: MediaAsset = {
+          id: createId('media'), name: file.name, kind: inferMediaKind(file.name, file.type),
+          size: file.size, url: localUrl, status: tooLarge ? 'error' : 'uploading',
+          progress: 0, error: tooLarge ? 'Supera el límite de 15 MB' : undefined,
+        }
+        dispatch({ type: 'ADD_MEDIA', asset })
+        if (tooLarge) return
+        try {
+          const stored = await uploadRemoteMedia(file, file.name, institution.id)
+          detachObjectUrl(localUrl)
+          dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { ...stored, status: 'ready', progress: 100, error: undefined } })
+          log('upload', 'Almacenó «' + file.name + '» en el repositorio')
+        } catch (error) {
+          dispatch({ type: 'PATCH_MEDIA', id: asset.id, patch: { status: 'error', progress: 0, error: error instanceof Error ? error.message : 'No se pudo guardar el archivo en Supabase.' } })
+        }
+      }))
+    },
+    [institution.id, log],
+  )
 
   const retryUpload = useCallback<StoreContextValue['retryUpload']>(
-    (id) => {
+    async (id) => {
       const asset = mediaRef.current.find((item) => item.id === id)
-      if (!asset) return
+      if (!asset || !asset.url.startsWith('blob:')) return
       if (asset.size > UPLOAD_LIMIT_BYTES) {
-        dispatch({
-          type: 'PATCH_MEDIA',
-          id,
-          patch: { status: 'error', error: 'Supera el límite de 15 MB' },
-        })
+        dispatch({ type: 'PATCH_MEDIA', id, patch: { status: 'error', error: 'Supera el límite de 15 MB' } })
         return
       }
       dispatch({ type: 'PATCH_MEDIA', id, patch: { status: 'uploading', progress: 0, error: undefined } })
-      runUpload({ ...asset, status: 'uploading', progress: 0 })
+      try {
+        const response = await fetch(asset.url)
+        if (!response.ok) throw new Error('No se pudo recuperar el archivo temporal. Vuelve a seleccionarlo.')
+        const blob = await response.blob()
+        const stored = await uploadRemoteMedia(blob, asset.name, institution.id)
+        detachObjectUrl(asset.url)
+        dispatch({ type: 'PATCH_MEDIA', id, patch: { ...stored, status: 'ready', progress: 100, error: undefined } })
+        log('upload', 'Reintentó y almacenó «' + asset.name + '»')
+      } catch (error) {
+        dispatch({ type: 'PATCH_MEDIA', id, patch: { status: 'error', progress: 0, error: error instanceof Error ? error.message : 'No se pudo guardar el archivo.' } })
+      }
     },
-    [runUpload],
+    [institution.id, log],
   )
 
   const removeMedia = useCallback<StoreContextValue['removeMedia']>(
-    (id) => {
+    async (id) => {
       const asset = mediaRef.current.find((item) => item.id === id)
+      if (!asset) return
+      if (asset.url.startsWith('blob:')) detachObjectUrl(asset.url)
+      else await deleteRemoteMedia(asset.id, institution.id)
       dispatch({ type: 'REMOVE_MEDIA', id })
-      if (asset) {
-        if (asset.url.startsWith('blob:')) detachObjectUrl(asset.url)
-        log('delete', `Eliminó el archivo «${asset.name}»`)
-      }
+      log('delete', 'Eliminó el archivo «' + asset.name + '» del repositorio')
     },
-    [log],
+    [institution.id, log],
   )
-
   const updateSettings = useCallback<StoreContextValue['updateSettings']>(
     async (patch) => {
       const next = { ...settingsRef.current, ...patch }
@@ -746,7 +777,7 @@ export function AdminStoreProvider({
       const allowed = ids
         .filter((id) =>
           projectsRef.current.some(
-            (project) => project.id === id && project.status === 'published',
+            (project) => project.id === id && project.status === 'published' && project.isReal === true,
           ),
         )
         .slice(0, 6)
@@ -816,6 +847,7 @@ export function AdminStoreProvider({
       setProjectStatus,
       deleteProject,
       uploadFiles,
+      uploadRepositoryFiles,
       retryUpload,
       removeMedia,
       updateSettings,
@@ -836,6 +868,7 @@ export function AdminStoreProvider({
       updateSettings,
       setFeatured,
       log,
+      uploadRepositoryFiles,
     ],
   )
 

@@ -37,7 +37,7 @@ export function AdminSettings() {
   const published = useMemo(
     () =>
       [...projects]
-        .filter((project) => project.status === 'published')
+        .filter((project) => project.status === 'published' && project.isReal === true)
         .sort((a, b) => a.title.localeCompare(b.title, 'es')),
     [projects],
   )
@@ -76,8 +76,8 @@ export function AdminSettings() {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      notify({ tone: 'error', title: 'Solo imágenes', description: 'El logo debe ser PNG, JPG, WebP o SVG.' })
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      notify({ tone: 'error', title: 'Formato no compatible', description: 'El logo debe ser PNG, JPG, WebP o GIF.' })
       return
     }
     releaseDraftLogo()

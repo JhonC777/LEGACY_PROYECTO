@@ -41,11 +41,7 @@ export function InstitutionHome() {
 
   const projects = resolveInstitutionProjects(institution, true)
   void revision
-  const featuredSource = projects.filter((project) => project.isFeatured)
-  const featured = (featuredSource.length > 0 ? featuredSource : projects).slice(
-    0,
-    6,
-  )
+  const featured = projects.filter((project) => project.isFeatured).slice(0, 6)
   const areas = [...new Set(projects.map((project) => project.area))].sort((a, b) =>
     a.localeCompare(b, 'es'),
   )

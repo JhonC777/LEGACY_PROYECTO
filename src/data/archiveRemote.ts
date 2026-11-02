@@ -1,4 +1,4 @@
-import type { AdminProject } from '@/admin/types'
+import type { AdminProject, MediaAsset } from '@/admin/types'
 import type { DemoAuthor, ProjectStatus } from '@/data/demoData'
 import { getBlobForObjectUrl } from '@/lib/blobRegistry'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -219,6 +219,72 @@ async function withDisplayUrls(project: AdminProject): Promise<AdminProject> {
   }
 }
 
+
+/** Inventario persistente del bucket privado, no solo archivos temporales de la sesión. */
+export async function listRemoteMedia(institutionId: string, projects: AdminProject[]): Promise<MediaAsset[]> {
+  const supabase = await getClient()
+  if (!supabase) return []
+  const projectById = new Map(projects.map((project) => [project.id, project]))
+  const projectByPath = new Map<string, string>()
+  for (const project of projects) {
+    for (const path of projectStoragePaths(project)) projectByPath.set(path, project.id)
+  }
+  const collected: MediaAsset[] = []
+  const walk = async (prefix: string): Promise<void> => {
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.storage.from('archive').list(prefix, {
+        limit: 1000,
+        offset,
+        sortBy: { column: 'created_at', order: 'desc' },
+      })
+      if (error) throw new Error(remoteErrorMessage(error, 'listar los archivos institucionales'))
+      const entries = data ?? []
+      for (const item of entries) {
+        const path = prefix ? `${prefix}/${item.name}` : item.name
+        if (!item.id) {
+          await walk(path)
+          continue
+        }
+        const metadata = (item.metadata ?? {}) as { size?: number; mimetype?: string; lastModified?: string }
+        const mime = (metadata.mimetype ?? '').toLowerCase()
+        const ext = item.name.split('.').pop()?.toLowerCase() ?? ''
+        const kind = mime.startsWith('image/') || /^(png|jpe?g|webp|gif|svg)$/.test(ext)
+          ? 'image'
+          : mime === 'application/pdf' || ext === 'pdf'
+            ? 'pdf'
+            : mime.startsWith('video/') || /^(mp4|webm|mov)$/.test(ext)
+              ? 'video'
+              : 'doc'
+        const projectId = projectByPath.get(path)
+        const storedName = path.split('/').slice(2).join('/') || item.name
+        const displayName = storedName
+          .replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '')
+          .replace(/^\\d+-[a-z0-9]+-/i, '')
+        const { data: signed, error: signedError } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+        if (signedError || !signed?.signedUrl) {
+          throw new Error(remoteErrorMessage(signedError ?? { message: 'No se pudo generar el enlace temporal del archivo.' }, 'previsualizar los archivos institucionales'))
+        }
+        collected.push({
+          id: path,
+          name: displayName,
+          kind,
+          size: metadata.size ?? 0,
+          url: signed.signedUrl,
+          uploadedAt: metadata.lastModified ?? item.updated_at ?? item.created_at ?? undefined,
+          status: 'ready',
+          progress: 100,
+          projectId: projectById.has(projectId ?? '') ? projectId : undefined,
+        })
+      }
+      if (entries.length < 1000) break
+      offset += entries.length
+    }
+  }
+  await walk(institutionId)
+  return collected
+}
+
 export async function refreshRemoteArchive() {
   const supabase = await getClient()
   if (!supabase) return null
@@ -388,13 +454,13 @@ function projectStoragePaths(project: Pick<AdminProject, 'coverImage' | 'gallery
   ].filter((path): path is string => Boolean(path))
 }
 
-async function removeUnreferencedArchiveObjects(paths: string[], institutionId: string) {
+async function removeUnreferencedArchiveObjects(paths: string[], institutionId: string): Promise<boolean> {
   const candidates = [...new Set(paths)].filter((path) =>
     path.startsWith(`${institutionId}/`) && !path.includes('..'),
   )
-  if (candidates.length === 0) return
+  if (candidates.length === 0) return false
   const supabase = await getClient()
-  if (!supabase) return
+  if (!supabase) throw new Error('Supabase no está configurado.')
 
   // Fallar cerrado: si no se puede leer el inventario completo de referencias,
   // no se elimina absolutamente nada.
@@ -424,9 +490,10 @@ async function removeUnreferencedArchiveObjects(paths: string[], institutionId: 
   }
 
   const safeToDelete = candidates.filter((path) => !referenced.has(path))
-  if (safeToDelete.length === 0) return
+  if (safeToDelete.length === 0) return false
   const { error } = await supabase.storage.from('archive').remove(safeToDelete)
   if (error) throw error
+  return true
 }
 
 async function cleanupUnreferencedSafely(paths: string[], institutionId: string) {
@@ -483,6 +550,29 @@ async function withStoredMedia(project: AdminProject, uploadedPaths: string[] = 
   return { ...project, coverImage, gallery, docUrl, pdfUrl, videoUrl }
 }
 
+export async function uploadRemoteMedia(blob: Blob, fileName: string, institutionId: string): Promise<MediaAsset> {
+  const supabase = await getClient()
+  if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
+  if (!institutionId || institutionId.includes('..') || institutionId.includes('/')) throw new Error('La institución no es válida para almacenar este archivo.')
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-120) || 'archivo'
+  const contentType = allowedContentType(blob, safeName)
+  const storageContentType = contentType === 'application/rtf' || contentType === 'text/rtf' ? 'application/octet-stream' : contentType
+  const path = uniqueArchivePath(institutionId + '/_unassigned/' + safeName)
+  await uploadArchiveObject(supabase, path, blob, storageContentType)
+  const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+  if (error || !data?.signedUrl) {
+    await cleanupUnreferencedSafely([path], institutionId)
+    throw new Error(remoteErrorMessage(error ?? { message: 'No se pudo generar el enlace del archivo.' }, 'previsualizar el archivo recién subido'))
+  }
+  const kind: MediaAsset['kind'] = contentType.startsWith('image/') ? 'image' : contentType === 'application/pdf' ? 'pdf' : contentType.startsWith('video/') ? 'video' : 'doc'
+  return { id: path, name: fileName, kind, size: blob.size, url: data.signedUrl, uploadedAt: new Date().toISOString(), status: 'ready', progress: 100 }
+}
+
+export async function deleteRemoteMedia(path: string, institutionId: string) {
+  if (!path.startsWith(institutionId + '/') || path.includes('..')) throw new Error('La ruta del archivo no pertenece a esta institución.')
+  const removed = await removeUnreferencedArchiveObjects([path], institutionId)
+  if (!removed) throw new Error('No se eliminó el archivo porque está vinculado a un proyecto o a la identidad institucional. Quita primero esa referencia desde su ficha.')
+}
 export async function saveRemoteProject(project: AdminProject) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')

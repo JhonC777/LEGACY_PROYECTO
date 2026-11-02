@@ -14,16 +14,13 @@ const keyFor = (slug: string) => `legacy.admin.archive.${slug}`
 // Proyectos institucionales confirmados y proyectos creados desde el panel.
 // Los registros demo heredados (incluidos los que tengan is_real por error)
 // permanecen excluidos del catálogo público.
-const REAL_PROJECT_IDS = new Set(['demo-p04', 'demo-p01'])
-const CREATED_PROJECT_ID_PREFIX = 'proj-'
+const REAL_PROJECT_IDS = new Set(['demo-p-real'])
+const DEMO_PROJECT_IDS = new Set(DEMO_PROJECTS.map((project) => project.id))
 
 export function isInstitutionRealProject(
   project: Pick<AdminProject, 'id' | 'isReal'>,
 ) {
-  return (
-    REAL_PROJECT_IDS.has(project.id) ||
-    (project.id.startsWith(CREATED_PROJECT_ID_PREFIX) && project.isReal === true)
-  )
+  return REAL_PROJECT_IDS.has(project.id) || (!DEMO_PROJECT_IDS.has(project.id) && project.isReal === true)
 }
 
 export type ArchiveSnapshot = {

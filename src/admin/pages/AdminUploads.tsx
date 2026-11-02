@@ -33,12 +33,15 @@ const KIND_META: Record<MediaKind, { label: string; icon: LucideIcon }> = {
 }
 
 export function AdminUploads() {
-  const { institution, media, projects, status, reload, uploadFiles, retryUpload, removeMedia } =
+  const { institution, media, projects, status, reload, uploadRepositoryFiles, retryUpload, removeMedia, updateProject } =
     useAdminStore()
   const { notify } = useToast()
   const [kind, setKind] = useState<KindFilter>('all')
+  const [query, setQuery] = useState('')
   const [dragging, setDragging] = useState(false)
   const [toDelete, setToDelete] = useState<MediaAsset | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [assigningId, setAssigningId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const base = `/admin/${institution.slug}`
 
@@ -56,14 +59,36 @@ export function AdminUploads() {
   const visible = useMemo(
     () =>
       [...media]
-        .filter((asset) => kind === 'all' || asset.kind === kind)
+        .filter((asset) => {
+          const projectTitle = projects.find((project) => project.id === asset.projectId)?.title ?? ''
+          const matchesQuery = asset.name.toLowerCase().includes(query.toLowerCase()) ||
+            projectTitle.toLowerCase().includes(query.toLowerCase())
+          return (kind === 'all' || asset.kind === kind) && matchesQuery
+        })
         .sort((a, b) => {
           const rank = (asset: MediaAsset) =>
             asset.status === 'uploading' ? 0 : asset.status === 'error' ? 1 : 2
           return rank(a) - rank(b) || (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? '')
         }),
-    [media, kind],
+    [media, kind, query, projects],
   )
+
+  const visibleGroups = useMemo(() => {
+    const groups = new Map<string, MediaAsset[]>()
+    visible.forEach((asset) => {
+      const key = asset.projectId && projects.some((project) => project.id === asset.projectId)
+        ? asset.projectId
+        : '__unassigned__'
+      groups.set(key, [...(groups.get(key) ?? []), asset])
+    })
+    return [...groups.entries()].sort(([a], [b]) => {
+      if (a === '__unassigned__') return 1
+      if (b === '__unassigned__') return -1
+      const titleA = projects.find((project) => project.id === a)?.title ?? a
+      const titleB = projects.find((project) => project.id === b)?.title ?? b
+      return titleA.localeCompare(titleB, 'es')
+    })
+  }, [visible, projects])
 
   const uploading = media.filter((asset) => asset.status === 'uploading')
   const totalBytes = media
@@ -73,18 +98,18 @@ export function AdminUploads() {
   const handleFiles = (files: FileList | null) => {
     const list = Array.from(files ?? [])
     if (list.length === 0) return
-    const ids = uploadFiles(list)
     const rejected = list.filter((file) => file.size > UPLOAD_LIMIT_BYTES).length
+    void uploadRepositoryFiles(list)
     notify({
       tone: rejected > 0 ? 'error' : 'info',
       title:
         rejected > 0
           ? `${rejected} archivo${rejected === 1 ? '' : 's'} supera${rejected === 1 ? '' : 'n'} el límite`
-          : `${ids.length} archivo${ids.length === 1 ? '' : 's'} preparado${ids.length === 1 ? '' : 's'}`,
+          : `${list.length} archivo${list.length === 1 ? '' : 's'} en proceso`,
       description:
         rejected > 0
           ? 'El límite es 15 MB por archivo. El resto continúa subiendo.'
-          : 'Se transferirán a Supabase Storage cuando guardes el proyecto al que los adjuntes.',
+          : 'Se guardan directamente en Supabase Storage y estarán disponibles después de recargar.',
     })
   }
 
@@ -108,11 +133,65 @@ export function AdminUploads() {
     }
   }
 
-  const confirmDelete = () => {
-    if (!toDelete) return
-    removeMedia(toDelete.id)
-    notify({ tone: 'success', title: 'Archivo eliminado', description: `«${toDelete.name}» se quitó del repositorio.` })
-    setToDelete(null)
+  const assignToProject = async (asset: MediaAsset, projectId: string) => {
+    const project = projects.find((item) => item.id === projectId)
+    if (!project || asset.status !== 'ready' || assigningId) return
+    setAssigningId(asset.id)
+    try {
+      if (asset.kind === 'image') {
+        const gallery = project.gallery.includes(asset.url)
+          ? project.gallery
+          : [...project.gallery, asset.url]
+        await updateProject(project.id, { gallery })
+      } else if (asset.kind === 'video') {
+        if (project.videoUrl && project.videoUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un video asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { videoUrl: asset.url })
+      } else if (asset.kind === 'pdf') {
+        if (project.pdfUrl && project.pdfUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un PDF asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { pdfUrl: asset.url })
+      } else {
+        if (project.docUrl && project.docUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un documento asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { docUrl: asset.url })
+      }
+      reload()
+      notify({
+        tone: 'success',
+        title: 'Archivo asociado',
+        description: `«${asset.name}» quedó vinculado a «${project.title}».`,
+      })
+    } catch (error) {
+      notify({
+        tone: 'error',
+        title: 'No se pudo asociar el archivo',
+        description: error instanceof Error ? error.message : 'No se guardó la asociación del archivo.',
+      })
+    } finally {
+      setAssigningId(null)
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!toDelete || deleting) return
+    setDeleting(true)
+    try {
+      await removeMedia(toDelete.id)
+      notify({ tone: 'success', title: 'Archivo eliminado', description: `«${toDelete.name}» se quitó del repositorio.` })
+      setToDelete(null)
+    } catch (error) {
+      notify({
+        tone: 'error',
+        title: 'No se pudo eliminar',
+        description: error instanceof Error ? error.message : 'El archivo sigue protegido en el almacenamiento.',
+      })
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const header = (
@@ -211,6 +290,7 @@ export function AdminUploads() {
       ) : null}
 
       <div className="admin-toolbar mt-6">
+        <input className="glass-input liquid-field w-full max-w-sm rounded-xl px-4 py-2.5 text-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar archivo o proyecto…" aria-label="Buscar archivos" />
         <div className="admin-tabs" role="tablist" aria-label="Filtrar por tipo">
           {tabs.map((tab) => (
             <button
@@ -253,8 +333,24 @@ export function AdminUploads() {
           />
         </div>
       ) : (
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Archivos">
-          {visible.map((asset) => {
+        <div className="mt-4 space-y-6" aria-label="Archivos agrupados por proyecto">
+          {visibleGroups.map(([groupId, assets]) => {
+            const groupProject = projects.find((item) => item.id === groupId)
+            return (
+              <section key={groupId} aria-labelledby={'media-group-' + groupId}>
+                <div className="mb-3 flex items-center justify-between gap-3 border-b border-white/10 pb-2">
+                  <div className="min-w-0">
+                    <h2 id={'media-group-' + groupId} className="truncate text-sm font-semibold text-legacy-white">
+                      {groupProject?.title ?? 'Sin proyecto asociado'}
+                    </h2>
+                    <p className="mt-0.5 text-xs text-legacy-muted">
+                      {groupProject ? 'Archivos vinculados a este proyecto' : 'Archivos institucionales independientes'}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs text-legacy-muted">{assets.length} archivos</span>
+                </div>
+                <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label={'Archivos de ' + (groupProject?.title ?? 'Sin proyecto asociado')}>
+          {assets.map((asset) => {
             const meta = KIND_META[asset.kind]
             const Icon = meta.icon
             const project = projects.find((item) => item.id === asset.projectId)
@@ -296,14 +392,43 @@ export function AdminUploads() {
                       Usado en «{project.title}»
                     </Link>
                   ) : (
-                    <p className="mt-1.5 text-xs text-legacy-muted/70">Sin proyecto asociado</p>
+                    <div className="mt-1.5 space-y-2">
+                      <p className="text-xs text-legacy-muted/70">Sin proyecto asociado</p>
+                      {asset.status === 'ready' ? (
+                        <label className="block">
+                          <span className="sr-only">Asociar {asset.name} a un proyecto</span>
+                          <select
+                            className="glass-input liquid-field w-full rounded-lg px-2.5 py-2 text-xs"
+                            value=""
+                            disabled={assigningId === asset.id || projects.every((item) => item.status === 'archived')}
+                            onChange={(event) => {
+                              const projectId = event.target.value
+                              if (projectId) void assignToProject(asset, projectId)
+                            }}
+                          >
+                            <option value="">Asociar a un proyecto…</option>
+                            {projects.filter((item) => item.status !== 'archived').map((item) => (
+                              <option key={item.id} value={item.id}>{item.title}</option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
+                    </div>
                   )}
                   <div className="mt-3 flex items-center gap-1">
                     {asset.status === 'ready' ? (
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => copyUrl(asset)}>
-                        <Copy className="h-4 w-4" aria-hidden />
-                        Copiar enlace
-                      </button>
+                      <>
+                        <a href={asset.url} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" aria-label={`Abrir ${asset.name}`}>
+                          Abrir
+                        </a>
+                        <a href={asset.url} download={asset.name} className="btn btn-ghost btn-sm" aria-label={`Descargar ${asset.name}`}>
+                          Descargar
+                        </a>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => copyUrl(asset)}>
+                          <Copy className="h-4 w-4" aria-hidden />
+                          Copiar enlace
+                        </button>
+                      </>
                     ) : null}
                     {asset.status === 'error' && asset.size <= UPLOAD_LIMIT_BYTES ? (
                       <button type="button" className="btn btn-secondary btn-sm" onClick={() => retryUpload(asset.id)}>
@@ -315,7 +440,7 @@ export function AdminUploads() {
                       type="button"
                       className="btn btn-ghost btn-sm ml-auto"
                       onClick={() => setToDelete(asset)}
-                      disabled={asset.status === 'uploading'}
+                      disabled={asset.status === 'uploading' || Boolean(asset.projectId)}
                       aria-label={`Eliminar ${asset.name}`}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -325,7 +450,11 @@ export function AdminUploads() {
               </li>
             )
           })}
-        </ul>
+                </ul>
+              </section>
+            )
+          })}
+        </div>
       )}
 
       <ConfirmDialog
@@ -335,10 +464,11 @@ export function AdminUploads() {
         title="¿Eliminar este archivo?"
         description={
           toDelete?.projectId
-            ? 'Este archivo está asociado a un proyecto. La ficha conservará el enlace, pero el archivo dejará de estar disponible en el repositorio.'
-            : 'El archivo se quitará del repositorio. Esta acción no se puede deshacer.'
+            ? 'Este archivo está vinculado a un proyecto. Para proteger la publicación, primero debes quitarlo de la ficha del proyecto.'
+            : 'Se eliminará el objeto de Supabase Storage. Esta acción no se puede deshacer.'
         }
-        confirmLabel="Eliminar"
+        confirmLabel={deleting ? 'Eliminando…' : 'Eliminar'}
+        loading={deleting}
         onConfirm={confirmDelete}
         onCancel={() => setToDelete(null)}
       />
