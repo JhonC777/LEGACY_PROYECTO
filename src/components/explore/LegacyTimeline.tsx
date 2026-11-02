@@ -1,10 +1,10 @@
 import { CalendarDays, Layers3, Library } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DEMO_INSTITUTIONS, getPublishedProjects, PILOT_CATALOG_PATH } from '@/data/demoData'
+import { DEMO_INSTITUTIONS, getPublishedProjects, PILOT_CATALOG_PATH, REAL_SHOWCASE_SLUG } from '@/data/demoData'
 
 const publicProjects = getPublishedProjects().filter((project) => {
   const institution = DEMO_INSTITUTIONS.find((item) => item.id === project.institutionId)
-  return institution?.isActive === true
+  return institution?.isActive === true && project.slug === REAL_SHOWCASE_SLUG
 })
 
 const YEARS = [...new Set(publicProjects.map((project) => project.year))].sort(
@@ -35,7 +35,7 @@ function countByYear(year: number) {
   return publicProjects.filter((project) => project.year === year).length
 }
 
-/** Accesos rápidos del catálogo demo: años, áreas y colecciones. */
+/** Accesos rápidos del archivo público: años, áreas y colecciones. */
 export function LegacyTimeline() {
   return (
     <section className="explore-card mt-6 rounded-2xl p-5 lg:p-6">
