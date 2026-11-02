@@ -575,8 +575,6 @@ export function AdminStoreProvider({
       } catch (error) {
         projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
         dispatch({ type: 'UPSERT_PROJECT', project: current })
-        settingsRef.current = originalSettings
-        dispatch({ type: 'SETTINGS', settings: originalSettings })
         flushArchive()
         throw error
       }
@@ -634,6 +632,8 @@ export function AdminStoreProvider({
       } catch (error) {
         projectsRef.current = projectsRef.current.map((item) => item.id === id ? current : item)
         dispatch({ type: 'UPSERT_PROJECT', project: current })
+        settingsRef.current = originalSettings
+        dispatch({ type: 'SETTINGS', settings: originalSettings })
         flushArchive()
         throw error
       }
