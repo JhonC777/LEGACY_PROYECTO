@@ -36,7 +36,7 @@ export function AdminUploads() {
   const { institution, media, projects, status, reload, uploadFiles, retryUpload, removeMedia } =
     useAdminStore()
   const { notify } = useToast()
-  const [kind, setKind] = useState<KindFilter>('all')
+  const [kind, setKind] = useState<KindFilter>('all')\n  const [query, setQuery] = useState('')
   const [dragging, setDragging] = useState(false)
   const [toDelete, setToDelete] = useState<MediaAsset | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -56,7 +56,7 @@ export function AdminUploads() {
   const visible = useMemo(
     () =>
       [...media]
-        .filter((asset) => kind === 'all' || asset.kind === kind)
+        .filter((asset) => (kind === 'all' || asset.kind === kind) && (asset.name.toLowerCase().includes(query.toLowerCase()) || projects.find((project) => project.id === asset.projectId)?.title.toLowerCase().includes(query.toLowerCase())))
         .sort((a, b) => {
           const rank = (asset: MediaAsset) =>
             asset.status === 'uploading' ? 0 : asset.status === 'error' ? 1 : 2
@@ -210,7 +210,7 @@ export function AdminUploads() {
         </section>
       ) : null}
 
-      <div className="admin-toolbar mt-6">
+      <div className="admin-toolbar mt-6">\n        <input className="glass-input liquid-field w-full max-w-sm rounded-xl px-4 py-2.5 text-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar archivo o proyecto…" aria-label="Buscar archivos" />
         <div className="admin-tabs" role="tablist" aria-label="Filtrar por tipo">
           {tabs.map((tab) => (
             <button
