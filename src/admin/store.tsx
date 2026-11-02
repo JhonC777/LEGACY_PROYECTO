@@ -819,6 +819,7 @@ export function AdminStoreProvider({
       setProjectStatus,
       deleteProject,
       uploadFiles,
+      uploadRepositoryFiles,
       retryUpload,
       removeMedia,
       updateSettings,
