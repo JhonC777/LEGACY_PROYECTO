@@ -480,7 +480,12 @@ export function AdminStoreProvider({
     return subscribeRemoteReady(() => {
       if (statusRef.current !== 'ready') return
       const remote =
-        getRemoteProjects()?.filter((project) => project.institutionId === institution.id) ?? []
+        getRemoteProjects()
+          ?.filter(
+            (project) =>
+              project.institutionId === institution.id && isInstitutionRealProject(project),
+          )
+          .map((project) => ({ ...project, isReal: true })) ?? []
       if (remote.length === 0) return
       const projects = overlayProjects(projectsRef.current, remote)
       projectsRef.current = projects
