@@ -14,7 +14,7 @@ const keyFor = (slug: string) => `legacy.admin.archive.${slug}`
 // Proyectos institucionales confirmados y proyectos creados desde el panel.
 // Los registros demo heredados (incluidos los que tengan is_real por error)
 // permanecen excluidos del catálogo público.
-const REAL_PROJECT_IDS = new Set(['demo-p04', 'demo-p01'])
+const REAL_PROJECT_IDS = new Set(['demo-p-real'])
 const CREATED_PROJECT_ID_PREFIX = 'proj-'
 
 export function isInstitutionRealProject(
