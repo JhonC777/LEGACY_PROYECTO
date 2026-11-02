@@ -596,7 +596,10 @@ export async function saveRemoteInstitutionSettings(
     .eq('id', institutionId)
     .select('id')
     .maybeSingle()
-  if (error) throw new Error(remoteErrorMessage(error, 'guardar la identidad institucional'))
+  if (error) {
+    void cleanupUnreferencedSafely(uploadedLogoPaths, institutionId)
+    throw new Error(remoteErrorMessage(error, 'guardar la identidad institucional'))
+  }
   if (!data) {
     void cleanupUnreferencedSafely(uploadedLogoPaths, institutionId)
     throw new Error('Supabase no confirmó los cambios. Verifica que tu cuenta administre esta institución.')
