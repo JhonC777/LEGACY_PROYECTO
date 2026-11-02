@@ -754,7 +754,7 @@ export function AdminStoreProvider({
       const allowed = ids
         .filter((id) =>
           projectsRef.current.some(
-            (project) => project.id === id && project.status === 'published',
+            (project) => project.id === id && project.status === 'published' && project.isReal === true,
           ),
         )
         .slice(0, 6)
