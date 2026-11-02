@@ -231,48 +231,54 @@ export async function listRemoteMedia(institutionId: string, projects: AdminProj
   }
   const collected: MediaAsset[] = []
   const walk = async (prefix: string): Promise<void> => {
-    const { data, error } = await supabase.storage.from('archive').list(prefix, {
-      limit: 1000,
-      sortBy: { column: 'created_at', order: 'desc' },
-    })
-    if (error) throw new Error(remoteErrorMessage(error, 'listar los archivos institucionales'))
-    for (const item of data ?? []) {
-      const path = prefix ? `${prefix}/${item.name}` : item.name
-      if (!item.id) {
-        await walk(path)
-        continue
-      }
-      const metadata = (item.metadata ?? {}) as { size?: number; mimetype?: string; lastModified?: string }
-      const mime = (metadata.mimetype ?? '').toLowerCase()
-      const ext = item.name.split('.').pop()?.toLowerCase() ?? ''
-      const kind = mime.startsWith('image/') || /^(png|jpe?g|webp|gif|svg)$/.test(ext)
-        ? 'image'
-        : mime === 'application/pdf' || ext === 'pdf'
-          ? 'pdf'
-          : mime.startsWith('video/') || /^(mp4|webm|mov)$/.test(ext)
-            ? 'video'
-            : 'doc'
-      const parts = path.split('/')
-      const projectId = projectByPath.get(path)
-      const storedName = parts.slice(2).join('/') || item.name
-      const displayName = storedName
-        .replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '')
-        .replace(/^\d+-[a-z0-9]+-/i, '')
-      const { data: signed, error: signedError } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
-      if (signedError || !signed?.signedUrl) {
-        throw new Error(remoteErrorMessage(signedError ?? { message: 'No se pudo generar el enlace temporal del archivo.' }, 'previsualizar los archivos institucionales'))
-      }
-      collected.push({
-        id: path,
-        name: displayName,
-        kind,
-        size: metadata.size ?? 0,
-        url: signed.signedUrl,
-        uploadedAt: metadata.lastModified ?? item.updated_at ?? item.created_at ?? undefined,
-        status: 'ready',
-        progress: 100,
-        projectId: projectById.has(projectId ?? '') ? projectId : undefined,
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.storage.from('archive').list(prefix, {
+        limit: 1000,
+        offset,
+        sortBy: { column: 'created_at', order: 'desc' },
       })
+      if (error) throw new Error(remoteErrorMessage(error, 'listar los archivos institucionales'))
+      const entries = data ?? []
+      for (const item of entries) {
+        const path = prefix ? `${prefix}/${item.name}` : item.name
+        if (!item.id) {
+          await walk(path)
+          continue
+        }
+        const metadata = (item.metadata ?? {}) as { size?: number; mimetype?: string; lastModified?: string }
+        const mime = (metadata.mimetype ?? '').toLowerCase()
+        const ext = item.name.split('.').pop()?.toLowerCase() ?? ''
+        const kind = mime.startsWith('image/') || /^(png|jpe?g|webp|gif|svg)$/.test(ext)
+          ? 'image'
+          : mime === 'application/pdf' || ext === 'pdf'
+            ? 'pdf'
+            : mime.startsWith('video/') || /^(mp4|webm|mov)$/.test(ext)
+              ? 'video'
+              : 'doc'
+        const projectId = projectByPath.get(path)
+        const storedName = path.split('/').slice(2).join('/') || item.name
+        const displayName = storedName
+          .replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '')
+          .replace(/^\\d+-[a-z0-9]+-/i, '')
+        const { data: signed, error: signedError } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+        if (signedError || !signed?.signedUrl) {
+          throw new Error(remoteErrorMessage(signedError ?? { message: 'No se pudo generar el enlace temporal del archivo.' }, 'previsualizar los archivos institucionales'))
+        }
+        collected.push({
+          id: path,
+          name: displayName,
+          kind,
+          size: metadata.size ?? 0,
+          url: signed.signedUrl,
+          uploadedAt: metadata.lastModified ?? item.updated_at ?? item.created_at ?? undefined,
+          status: 'ready',
+          progress: 100,
+          projectId: projectById.has(projectId ?? '') ? projectId : undefined,
+        })
+      }
+      if (entries.length < 1000) break
+      offset += entries.length
     }
   }
   await walk(institutionId)
