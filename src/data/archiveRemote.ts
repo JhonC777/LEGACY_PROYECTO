@@ -374,8 +374,15 @@ export async function saveRemoteProject(project: AdminProject) {
     stage = 'preparar las direcciones de los archivos'
     const prepared = await withDisplayUrls(stored)
     stage = 'guardar el proyecto en la tabla projects'
-    const { error } = await supabase.from('projects').upsert(toRow(prepared), { onConflict: 'id' })
+    const { data, error } = await supabase
+      .from('projects')
+      .upsert(toRow(prepared), { onConflict: 'id' })
+      .select('id')
+      .single()
     if (error) throw error
+    if (!data?.id || data.id !== prepared.id) {
+      throw new Error('Supabase no confirmó el proyecto guardado.')
+    }
     const next = (remote ?? []).filter((item) => item.id !== prepared.id)
     remember([prepared, ...next])
     return prepared
