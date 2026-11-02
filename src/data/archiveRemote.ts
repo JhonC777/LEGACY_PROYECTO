@@ -225,6 +225,10 @@ export async function listRemoteMedia(institutionId: string, projects: AdminProj
   const supabase = await getClient()
   if (!supabase) return []
   const projectById = new Map(projects.map((project) => [project.id, project]))
+  const projectByPath = new Map<string, string>()
+  for (const project of projects) {
+    for (const path of projectStoragePaths(project)) projectByPath.set(path, project.id)
+  }
   const collected: MediaAsset[] = []
   const walk = async (prefix: string): Promise<void> => {
     const { data, error } = await supabase.storage.from('archive').list(prefix, {
@@ -249,14 +253,18 @@ export async function listRemoteMedia(institutionId: string, projects: AdminProj
             ? 'video'
             : 'doc'
       const parts = path.split('/')
-      const projectId = parts.length > 2 ? parts[1] : undefined
+      const projectId = projectByPath.get(path)
+      const storedName = parts.slice(2).join('/') || item.name
+      const displayName = storedName
+        .replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '')
+        .replace(/^\d+-[a-z0-9]+-/i, '')
       const { data: signed, error: signedError } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
       if (signedError || !signed?.signedUrl) {
         throw new Error(remoteErrorMessage(signedError ?? { message: 'No se pudo generar el enlace temporal del archivo.' }, 'previsualizar los archivos institucionales'))
       }
       collected.push({
         id: path,
-        name: parts.slice(2).join('/') || item.name,
+        name: displayName,
         kind,
         size: metadata.size ?? 0,
         url: signed.signedUrl,
