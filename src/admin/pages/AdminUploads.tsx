@@ -33,7 +33,7 @@ const KIND_META: Record<MediaKind, { label: string; icon: LucideIcon }> = {
 }
 
 export function AdminUploads() {
-  const { institution, media, projects, status, reload, uploadRepositoryFiles, retryUpload, removeMedia } =
+  const { institution, media, projects, status, reload, uploadRepositoryFiles, retryUpload, removeMedia, updateProject } =
     useAdminStore()
   const { notify } = useToast()
   const [kind, setKind] = useState<KindFilter>('all')
@@ -41,6 +41,7 @@ export function AdminUploads() {
   const [dragging, setDragging] = useState(false)
   const [toDelete, setToDelete] = useState<MediaAsset | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [assigningId, setAssigningId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const base = `/admin/${institution.slug}`
 
@@ -129,6 +130,49 @@ export function AdminUploads() {
       notify({ tone: 'success', title: 'Enlace copiado', description: 'Pégalo en la sección Recursos de un proyecto.' })
     } catch {
       notify({ tone: 'error', title: 'No se pudo copiar', description: 'Tu navegador bloqueó el acceso al portapapeles.' })
+    }
+  }
+
+  const assignToProject = async (asset: MediaAsset, projectId: string) => {
+    const project = projects.find((item) => item.id === projectId)
+    if (!project || asset.status !== 'ready' || assigningId) return
+    setAssigningId(asset.id)
+    try {
+      if (asset.kind === 'image') {
+        const gallery = project.gallery.includes(asset.url)
+          ? project.gallery
+          : [...project.gallery, asset.url]
+        await updateProject(project.id, { gallery })
+      } else if (asset.kind === 'video') {
+        if (project.videoUrl && project.videoUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un video asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { videoUrl: asset.url })
+      } else if (asset.kind === 'pdf') {
+        if (project.pdfUrl && project.pdfUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un PDF asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { pdfUrl: asset.url })
+      } else {
+        if (project.docUrl && project.docUrl !== asset.url) {
+          throw new Error('Este proyecto ya tiene un documento asignado. Para proteger el recurso actual, no lo reemplacé.')
+        }
+        await updateProject(project.id, { docUrl: asset.url })
+      }
+      reload()
+      notify({
+        tone: 'success',
+        title: 'Archivo asociado',
+        description: `«${asset.name}» quedó vinculado a «${project.title}».`,
+      })
+    } catch (error) {
+      notify({
+        tone: 'error',
+        title: 'No se pudo asociar el archivo',
+        description: error instanceof Error ? error.message : 'No se guardó la asociación del archivo.',
+      })
+    } finally {
+      setAssigningId(null)
     }
   }
 
@@ -348,7 +392,28 @@ export function AdminUploads() {
                       Usado en «{project.title}»
                     </Link>
                   ) : (
-                    <p className="mt-1.5 text-xs text-legacy-muted/70">Sin proyecto asociado</p>
+                    <div className="mt-1.5 space-y-2">
+                      <p className="text-xs text-legacy-muted/70">Sin proyecto asociado</p>
+                      {asset.status === 'ready' ? (
+                        <label className="block">
+                          <span className="sr-only">Asociar ${asset.name} a un proyecto</span>
+                          <select
+                            className="glass-input liquid-field w-full rounded-lg px-2.5 py-2 text-xs"
+                            value=""
+                            disabled={assigningId === asset.id || projects.every((item) => item.status === 'archived')}
+                            onChange={(event) => {
+                              const projectId = event.target.value
+                              if (projectId) void assignToProject(asset, projectId)
+                            }}
+                          >
+                            <option value="">Asociar a un proyecto…</option>
+                            {projects.filter((item) => item.status !== 'archived').map((item) => (
+                              <option key={item.id} value={item.id}>{item.title}</option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
+                    </div>
                   )}
                   <div className="mt-3 flex items-center gap-1">
                     {asset.status === 'ready' ? (
