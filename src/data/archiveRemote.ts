@@ -362,43 +362,123 @@ async function uploadArchiveObject(
   }
 }
 
-async function promoteUrl(url: string | undefined, path: string) {
+function uniqueArchivePath(path: string) {
+  const slash = path.lastIndexOf('/')
+  const folder = path.slice(0, slash + 1)
+  const filename = path.slice(slash + 1)
+  const token = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return `${folder}${token}-${filename}`
+}
+
+function storagePath(value?: string | null): string | null {
+  if (!value) return null
+  const canonical = canonicalMedia(value)
+  return canonical?.startsWith('storage:') ? canonical.slice('storage:'.length) : null
+}
+
+function projectStoragePaths(project: Pick<AdminProject, 'coverImage' | 'gallery' | 'docUrl' | 'pdfUrl' | 'videoUrl'>) {
+  return [
+    storagePath(project.coverImage),
+    ...project.gallery.map(storagePath),
+    storagePath(project.docUrl),
+    storagePath(project.pdfUrl),
+    storagePath(project.videoUrl),
+  ].filter((path): path is string => Boolean(path))
+}
+
+async function removeUnreferencedArchiveObjects(paths: string[], institutionId: string) {
+  const candidates = [...new Set(paths)].filter((path) =>
+    path.startsWith(`${institutionId}/`) && !path.includes('..'),
+  )
+  if (candidates.length === 0) return
+  const supabase = await getClient()
+  if (!supabase) return
+
+  // Fallar cerrado: si no se puede leer el inventario completo de referencias,
+  // no se elimina absolutamente nada.
+  const [projectsResult, institutionsResult] = await Promise.all([
+    supabase.from('projects').select('cover_image, gallery, doc_url, pdf_url, video_url'),
+    supabase.from('institutions').select('logo_url'),
+  ])
+  if (projectsResult.error) throw projectsResult.error
+  if (institutionsResult.error) throw institutionsResult.error
+
+  const referenced = new Set<string>()
+  for (const row of projectsResult.data ?? []) {
+    for (const value of [
+      row.cover_image,
+      ...(Array.isArray(row.gallery) ? row.gallery : []),
+      row.doc_url,
+      row.pdf_url,
+      row.video_url,
+    ]) {
+      const path = storagePath(typeof value === 'string' ? value : null)
+      if (path) referenced.add(path)
+    }
+  }
+  for (const row of institutionsResult.data ?? []) {
+    const path = storagePath(row.logo_url)
+    if (path) referenced.add(path)
+  }
+
+  const safeToDelete = candidates.filter((path) => !referenced.has(path))
+  if (safeToDelete.length === 0) return
+  const { error } = await supabase.storage.from('archive').remove(safeToDelete)
+  if (error) throw error
+}
+
+async function cleanupUnreferencedSafely(paths: string[], institutionId: string) {
+  try {
+    await removeUnreferencedArchiveObjects(paths, institutionId)
+  } catch (error) {
+    // El guardado principal ya se confirmó. Un fallo de limpieza deja basura,
+    // nunca justifica borrar sin poder demostrar que el objeto está huérfano.
+    console.error('[legacy] No se pudo verificar/limpiar archivos huérfanos:', error)
+  }
+}
+
+async function promoteUrl(url: string | undefined, path: string, uploadedPaths: string[]) {
   const supabase = await getClient()
   if (!supabase || !url?.startsWith('blob:')) return url
   const blob = await blobFromObjectUrl(url)
   const contentType = allowedContentType(blob, path)
-  // El bucket actual no permite application/rtf; guarda RTF como binario para
-  // respetar su extensión y permitir su descarga sin cambiar la configuración remota.
   const storageContentType = contentType === 'application/rtf' || contentType === 'text/rtf'
     ? 'application/octet-stream'
     : contentType
-  await uploadArchiveObject(supabase, path, blob, storageContentType)
-  return `storage:${path}`
+  const uniquePath = uniqueArchivePath(path)
+  await uploadArchiveObject(supabase, uniquePath, blob, storageContentType)
+  uploadedPaths.push(uniquePath)
+  return `storage:${uniquePath}`
 }
 
-async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
+async function withStoredMedia(project: AdminProject, uploadedPaths: string[] = []): Promise<AdminProject> {
   const coverImage =
-    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover-${fileNameFrom(project.coverImage, 'portada.jpg')}`)) ??
+    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover-${fileNameFrom(project.coverImage, 'portada.jpg')}`, uploadedPaths)) ??
     project.coverImage
   const gallery: string[] = []
   for (let index = 0; index < project.gallery.length; index += 1) {
     const item = project.gallery[index]
     gallery.push(
-      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}-${fileNameFrom(item, 'imagen.jpg')}`)) ??
+      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}-${fileNameFrom(item, 'imagen.jpg')}`, uploadedPaths)) ??
         item,
     )
   }
   const docUrl = await promoteUrl(
     project.docUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.docUrl ?? '', 'documento')}`,
+    uploadedPaths,
   )
   const pdfUrl = await promoteUrl(
     project.pdfUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.pdfUrl ?? '', 'informe.pdf')}`,
+    uploadedPaths,
   )
   const videoUrl = await promoteUrl(
     project.videoUrl,
     `${project.institutionId}/${project.id}/${fileNameFrom(project.videoUrl ?? '', 'video')}`,
+    uploadedPaths,
   )
   return { ...project, coverImage, gallery, docUrl, pdfUrl, videoUrl }
 }
@@ -407,8 +487,10 @@ export async function saveRemoteProject(project: AdminProject) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.')
   let stage = 'subir los archivos al almacenamiento'
+  const uploadedPaths: string[] = []
+  const previous = (remote ?? []).find((item) => item.id === project.id)
   try {
-    const stored = await withStoredMedia(project)
+    const stored = await withStoredMedia(project, uploadedPaths)
     // Primero se guarda la referencia storage: en la fila del proyecto. El bucket
     // es privado y su política solo permite firmar objetos ya vinculados a un
     // proyecto publicado; intentar firmarlos antes del upsert devuelve error.
@@ -426,8 +508,14 @@ export async function saveRemoteProject(project: AdminProject) {
     const prepared = await withDisplayUrls(stored)
     const next = (remote ?? []).filter((item) => item.id !== prepared.id)
     remember([prepared, ...next])
+    if (previous) {
+      const nextPaths = new Set(projectStoragePaths(stored))
+      const replacedPaths = projectStoragePaths(previous).filter((path) => !nextPaths.has(path))
+      void cleanupUnreferencedSafely(replacedPaths, project.institutionId)
+    }
     return prepared
   } catch (error) {
+    void cleanupUnreferencedSafely(uploadedPaths, project.institutionId)
     const remoteError = (error && typeof error === 'object' ? error : {}) as RemoteError
     const message = remoteErrorMessage(
       { ...remoteError, message: remoteError.message ?? (error instanceof Error ? error.message : '') },
@@ -473,6 +561,13 @@ export async function saveRemoteInstitutionSettings(
   const supabase = await getClient()
   if (!supabase) throw new Error('Supabase no está configurado.')
   let logoUrl = settings.logoUrl
+  const uploadedLogoPaths: string[] = []
+  const { data: previousInstitution, error: previousInstitutionError } = await supabase
+    .from('institutions')
+    .select('logo_url')
+    .eq('id', institutionId)
+    .maybeSingle()
+  if (previousInstitutionError) throw new Error(remoteErrorMessage(previousInstitutionError, 'leer el logo institucional anterior'))
   if (logoUrl?.startsWith('blob:')) {
     const response = await fetch(logoUrl)
     if (!response.ok) throw new Error('No se pudo leer el logo seleccionado.')
@@ -480,12 +575,13 @@ export async function saveRemoteInstitutionSettings(
     const extension = blob.type === 'image/png' ? 'png'
       : blob.type === 'image/webp' ? 'webp'
       : blob.type === 'image/gif' ? 'gif' : 'jpg'
-    const path = `${institutionId}/identity/logo.${extension}`
+    const path = uniqueArchivePath(`${institutionId}/identity/logo.${extension}`)
     const { error: uploadError } = await supabase.storage.from('archive').upload(path, blob, {
-      upsert: true,
+      upsert: false,
       contentType: blob.type || 'image/jpeg',
     })
     if (uploadError) throw new Error(remoteErrorMessage(uploadError, 'subir el logo institucional'))
+    uploadedLogoPaths.push(path)
     logoUrl = `storage:${path}`
   }
   const { data, error } = await supabase
@@ -501,7 +597,15 @@ export async function saveRemoteInstitutionSettings(
     .select('id')
     .maybeSingle()
   if (error) throw new Error(remoteErrorMessage(error, 'guardar la identidad institucional'))
-  if (!data) throw new Error('Supabase no confirmó los cambios. Verifica que tu cuenta administre esta institución.')
+  if (!data) {
+    void cleanupUnreferencedSafely(uploadedLogoPaths, institutionId)
+    throw new Error('Supabase no confirmó los cambios. Verifica que tu cuenta administre esta institución.')
+  }
+  const previousLogoPath = storagePath(previousInstitution?.logo_url)
+  const nextLogoPath = storagePath(logoUrl)
+  if (previousLogoPath && previousLogoPath !== nextLogoPath) {
+    void cleanupUnreferencedSafely([previousLogoPath], institutionId)
+  }
   return { ...settings, logoUrl: logoUrl?.startsWith('storage:') ? await displayMedia(logoUrl) : logoUrl }
 }
 
@@ -512,7 +616,7 @@ export async function deleteRemoteProject(id: string) {
     .from('projects')
     .delete()
     .eq('id', id)
-    .select('id')
+    .select('id, institution_id, cover_image, gallery, doc_url, pdf_url, video_url')
     .maybeSingle()
   if (error) {
     fail(remoteErrorMessage(error))
@@ -520,6 +624,14 @@ export async function deleteRemoteProject(id: string) {
   }
   if (!data) throw new Error('El proyecto no existe o no tienes permiso para eliminarlo.')
   remember((remote ?? []).filter((project) => project.id !== id))
+  const deletedPaths = [
+    storagePath(data.cover_image),
+    ...(Array.isArray(data.gallery) ? data.gallery.map(storagePath) : []),
+    storagePath(data.doc_url),
+    storagePath(data.pdf_url),
+    storagePath(data.video_url),
+  ].filter((path): path is string => Boolean(path))
+  void cleanupUnreferencedSafely(deletedPaths, data.institution_id)
 }
 
 export function overlayProjects<T extends { id: string; slug: string }>(base: T[], extra: T[]) {
