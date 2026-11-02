@@ -199,7 +199,9 @@ async function displayMedia(value?: string) {
   const supabase = await getClient()
   if (!supabase || !value?.startsWith('storage:')) return value
   const path = value.slice('storage:'.length)
-  const { data, error } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24 * 7)
+  const { data, error } = await supabase.storage
+    .from('archive')
+    .createSignedUrl(path, 60 * 60 * 24 * 7, { download: false })
   if (error || !data?.signedUrl) return value
   return data.signedUrl
 }
