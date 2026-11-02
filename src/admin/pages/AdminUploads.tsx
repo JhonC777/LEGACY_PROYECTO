@@ -60,7 +60,7 @@ export function AdminUploads() {
         .sort((a, b) => {
           const rank = (asset: MediaAsset) =>
             asset.status === 'uploading' ? 0 : asset.status === 'error' ? 1 : 2
-          return rank(a) - rank(b) || b.uploadedAt.localeCompare(a.uploadedAt)
+          return rank(a) - rank(b) || (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? '')
         }),
     [media, kind],
   )
@@ -80,11 +80,11 @@ export function AdminUploads() {
       title:
         rejected > 0
           ? `${rejected} archivo${rejected === 1 ? '' : 's'} supera${rejected === 1 ? '' : 'n'} el límite`
-          : `Subiendo ${ids.length} archivo${ids.length === 1 ? '' : 's'}`,
+          : `${ids.length} archivo${ids.length === 1 ? '' : 's'} preparado${ids.length === 1 ? '' : 's'}`,
       description:
         rejected > 0
           ? 'El límite es 15 MB por archivo. El resto continúa subiendo.'
-          : 'Puedes seguir trabajando; te avisaremos al terminar.',
+          : 'Se transferirán a Supabase Storage cuando guardes el proyecto al que los adjuntes.',
     })
   }
 
@@ -284,7 +284,7 @@ export function AdminUploads() {
                     {asset.name}
                   </p>
                   <p className="mt-0.5 text-xs text-legacy-muted">
-                    {meta.label} · {formatBytes(asset.size)} · {formatRelative(asset.uploadedAt)}
+                    {meta.label} · {formatBytes(asset.size)} · {asset.uploadedAt ? formatRelative(asset.uploadedAt) : 'Pendiente de guardar'}
                   </p>
                   {asset.error ? (
                     <p className="mt-1.5 text-xs text-red-300">{asset.error}</p>
