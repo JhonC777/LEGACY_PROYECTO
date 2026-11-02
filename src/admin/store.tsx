@@ -519,6 +519,7 @@ export function AdminStoreProvider({
         id: createId('proj'),
         slug,
         institutionId: institution.id,
+        isReal: true,
         status: 'draft',
         updatedAt: new Date().toISOString(),
       }
