@@ -328,6 +328,38 @@ async function blobFromObjectUrl(url: string): Promise<Blob> {
   return fetch(url).then((response) => response.blob())
 }
 
+async function uploadArchiveObject(
+  supabase: SupabaseClient,
+  path: string,
+  blob: Blob,
+  contentType: string,
+) {
+  const maxAttempts = 3
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const { error } = await supabase.storage.from('archive').upload(path, blob, {
+        upsert: true,
+        contentType,
+      })
+      if (!error) return
+      // HTTP errors (permisos, formato, tamaño) no mejoran repitiendo la petición.
+      throw error
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      const isNetworkFailure =
+        error instanceof TypeError ||
+        /failed to fetch|networkerror|fetch failed|network request failed/i.test(message)
+      if (!isNetworkFailure || attempt === maxAttempts) {
+        if (isNetworkFailure) {
+          throw new Error(`No se pudo completar la conexión al subir "${path}" después de ${attempt} intentos. Comprueba la conexión y vuelve a guardar.`, { cause: error })
+        }
+        throw error
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 500 * attempt))
+    }
+  }
+}
+
 async function promoteUrl(url: string | undefined, path: string) {
   const supabase = await getClient()
   if (!supabase || !url?.startsWith('blob:')) return url
@@ -338,11 +370,7 @@ async function promoteUrl(url: string | undefined, path: string) {
   const storageContentType = contentType === 'application/rtf' || contentType === 'text/rtf'
     ? 'application/octet-stream'
     : contentType
-  const { error } = await supabase.storage.from('archive').upload(path, blob, {
-    upsert: true,
-    contentType: storageContentType,
-  })
-  if (error) throw error
+  await uploadArchiveObject(supabase, path, blob, storageContentType)
   return `storage:${path}`
 }
 
