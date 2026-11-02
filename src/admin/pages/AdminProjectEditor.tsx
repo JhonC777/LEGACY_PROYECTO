@@ -48,9 +48,28 @@ type UploadTarget = { id: string; target: 'cover' | 'gallery' | 'doc' | 'pdf' | 
 const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif'
 
 const RESOURCE_ACCEPT: Record<'doc' | 'pdf' | 'video', string> = {
-  doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text',
+  doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/rtf,text/rtf,text/plain',
   pdf: '.pdf,application/pdf',
   video: '.mp4,.webm,.mov,video/mp4,video/webm,video/quicktime',
+}
+
+const RESOURCE_EXTENSIONS: Record<'doc' | 'pdf' | 'video', RegExp> = {
+  doc: /\.(doc|docx|odt|rtf|txt)$/i,
+  pdf: /\.pdf$/i,
+  video: /\.(mp4|webm|mov)$/i,
+}
+
+const RESOURCE_MIMES: Record<'doc' | 'pdf' | 'video', string[]> = {
+  doc: [
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+    'application/rtf',
+    'text/rtf',
+    'text/plain',
+  ],
+  pdf: ['application/pdf'],
+  video: ['video/mp4', 'video/webm', 'video/quicktime'],
 }
 
 
@@ -321,6 +340,15 @@ export function AdminProjectEditor() {
     event.target.value = ''
     if (files.length === 0) return
     const file = files[0]
+    const mime = file.type.toLowerCase().split(';')[0]?.trim() ?? ''
+    const matchesTarget =
+      RESOURCE_EXTENSIONS[target].test(file.name) || RESOURCE_MIMES[target].includes(mime)
+    if (!matchesTarget) {
+      const expected =
+        target === 'pdf' ? 'un archivo PDF' : target === 'video' ? 'un video MP4, WebM o MOV' : 'un documento DOC, DOCX, ODT, RTF o TXT'
+      notify({ tone: 'error', title: 'Tipo no válido', description: `Este campo acepta ${expected}.` })
+      return
+    }
     const kind = inferMediaKind(file.name, file.type)
     if (file.size > UPLOAD_LIMIT_BYTES) {
       notify({ tone: 'error', title: 'Archivo demasiado grande', description: 'El límite por archivo es de 15 MB.' })
@@ -931,15 +959,15 @@ function Field({
   children: ReactNode
 }) {
   return (
-    <label className="block">
-      <span className="mb-2 flex items-center justify-between gap-2">
+    <div className="block">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-xs font-bold tracking-[0.14em] text-legacy-muted uppercase">
           {label} {required ? <span className="text-legacy-gold">*</span> : null}
         </span>
         {hint ? <span className="text-xs text-legacy-muted/80">{hint}</span> : null}
-      </span>
+      </div>
       {children}
-    </label>
+    </div>
   )
 }
 
