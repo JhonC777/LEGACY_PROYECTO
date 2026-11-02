@@ -142,7 +142,7 @@ export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
   const technical = [message, details].filter(Boolean).join(' ').replace(/\\s+/g, ' ').slice(0, 260)
 
   if (/tipo de archivo no permitido/i.test(message)) {
-    return 'El archivo no tiene un formato permitido. Usa JPG, PNG, WebP, GIF, PDF, DOC/DOCX, ODT, TXT, MP4, WebM o MOV.'
+    return 'El archivo no tiene un formato permitido. Usa JPG, PNG, WebP, GIF, PDF, DOC/DOCX, ODT, RTF, TXT, MP4, WebM o MOV.'
   }
   if (/row-level security|rls|permission denied|not authorized|unauthorized|42501/i.test(`${normalized} ${error.code ?? ''}`)) {
     return `Supabase rechazó los permisos durante ${stage}. Revisa que la sesión siga activa y que el administrador tenga acceso a esta institución.${code}`
@@ -348,13 +348,13 @@ async function promoteUrl(url: string | undefined, path: string) {
 
 async function withStoredMedia(project: AdminProject): Promise<AdminProject> {
   const coverImage =
-    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover`)) ??
+    (await promoteUrl(project.coverImage, `${project.institutionId}/${project.id}/cover-${fileNameFrom(project.coverImage, 'portada.jpg')}`)) ??
     project.coverImage
   const gallery: string[] = []
   for (let index = 0; index < project.gallery.length; index += 1) {
     const item = project.gallery[index]
     gallery.push(
-      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}`)) ??
+      (await promoteUrl(item, `${project.institutionId}/${project.id}/gallery-${index + 1}-${fileNameFrom(item, 'imagen.jpg')}`)) ??
         item,
     )
   }
