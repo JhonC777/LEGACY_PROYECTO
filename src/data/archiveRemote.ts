@@ -250,13 +250,16 @@ export async function listRemoteMedia(institutionId: string, projects: AdminProj
             : 'doc'
       const parts = path.split('/')
       const projectId = parts.length > 2 ? parts[1] : undefined
-      const { data: signed } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+      const { data: signed, error: signedError } = await supabase.storage.from('archive').createSignedUrl(path, 60 * 60 * 24)
+      if (signedError || !signed?.signedUrl) {
+        throw new Error(remoteErrorMessage(signedError ?? { message: 'No se pudo generar el enlace temporal del archivo.' }, 'previsualizar los archivos institucionales'))
+      }
       collected.push({
         id: path,
         name: parts.slice(2).join('/') || item.name,
         kind,
         size: metadata.size ?? 0,
-        url: signed?.signedUrl ?? '',
+        url: signed.signedUrl,
         uploadedAt: metadata.lastModified ?? item.updated_at ?? item.created_at ?? undefined,
         status: 'ready',
         progress: 100,
