@@ -27,7 +27,7 @@ import {
 import {
   deleteRemoteProject,
   getRemoteProjects,
-  loadRemoteInstitutionSettings,
+  loadRemoteInstitutionSettings,\n  listRemoteMedia,
   saveRemoteInstitutionSettings,
   overlayProjects,
   refreshRemoteArchive,
