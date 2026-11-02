@@ -48,7 +48,7 @@ type UploadTarget = { id: string; target: 'cover' | 'gallery' | 'doc' | 'pdf' | 
 const RESOURCE_ACCEPT: Record<'doc' | 'pdf' | 'video', string> = {
   doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text',
   pdf: '.pdf,application/pdf',
-  video: 'video/*,.mp4,.webm,.mov',
+  video: '.mp4,.webm,.mov,video/mp4,video/webm,video/quicktime',
 }
 
 
@@ -623,7 +623,7 @@ export function AdminProjectEditor() {
                   Portada <span className="text-legacy-gold">*</span>
                 </p>
                 <label className={cn('admin-dropzone aspect-[4/3]', form.coverImage && 'has-media')}>
-                  <input type="file" accept="image/*" className="sr-only" onChange={onPickFiles('cover')} />
+                  <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onPickFiles('cover')} />
                   {form.coverImage ? (
                     <img src={form.coverImage} alt="Portada actual" />
                   ) : (
