@@ -63,7 +63,7 @@ export function AdminUploads() {
             asset.status === 'uploading' ? 0 : asset.status === 'error' ? 1 : 2
           return rank(a) - rank(b) || (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? '')
         }),
-    [media, kind],
+    [media, kind, query, projects],
   )
 
   const uploading = media.filter((asset) => asset.status === 'uploading')
@@ -302,10 +302,18 @@ export function AdminUploads() {
                   )}
                   <div className="mt-3 flex items-center gap-1">
                     {asset.status === 'ready' ? (
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => copyUrl(asset)}>
-                        <Copy className="h-4 w-4" aria-hidden />
-                        Copiar enlace
-                      </button>
+                      <>
+                        <a href={asset.url} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" aria-label={`Abrir ${asset.name}`}>
+                          Abrir
+                        </a>
+                        <a href={asset.url} download={asset.name} className="btn btn-ghost btn-sm" aria-label={`Descargar ${asset.name}`}>
+                          Descargar
+                        </a>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => copyUrl(asset)}>
+                          <Copy className="h-4 w-4" aria-hidden />
+                          Copiar enlace
+                        </button>
+                      </>
                     ) : null}
                     {asset.status === 'error' && asset.size <= UPLOAD_LIMIT_BYTES ? (
                       <button type="button" className="btn btn-secondary btn-sm" onClick={() => retryUpload(asset.id)}>
