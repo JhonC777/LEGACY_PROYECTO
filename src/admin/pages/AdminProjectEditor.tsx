@@ -41,9 +41,11 @@ import { formatBytes, formatRelative } from '../format'
 import { isValidResourceUrl, resourceFileName, safeHref, withResourceName } from '@/lib/resources'
 import { createId, emptyDraft, getProjectIssues, inferMediaKind, useAdminStore } from '../store'
 import { useToast } from '../toast'
-import type { AdminProject, MediaKind, ProjectDraftInput } from '../types'
+import { UPLOAD_LIMIT_BYTES, type AdminProject, type MediaKind, type ProjectDraftInput } from '../types'
 
 type UploadTarget = { id: string; target: 'cover' | 'gallery' | 'doc' | 'pdf' | 'video' }
+
+const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif'
 
 const RESOURCE_ACCEPT: Record<'doc' | 'pdf' | 'video', string> = {
   doc: '.doc,.docx,.odt,.rtf,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text',
@@ -297,12 +299,20 @@ export function AdminProjectEditor() {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
     if (files.length === 0) return
-    const images = files.filter((file) => file.type.startsWith('image/'))
+    const images = files.filter((file) =>
+      ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type.toLowerCase()) ||
+      /\.(jpe?g|png|webp|gif)$/i.test(file.name),
+    )
     if (images.length !== files.length) {
       notify({ tone: 'error', title: 'Solo imágenes', description: 'La portada y la galería aceptan únicamente archivos de imagen.' })
     }
     if (images.length === 0) return
-    const ids = uploadFiles(target === 'cover' ? images.slice(0, 1) : images, existing?.id)
+    const accepted = images.filter((file) => file.size <= UPLOAD_LIMIT_BYTES)
+    if (accepted.length !== images.length) {
+      notify({ tone: 'error', title: 'Archivo demasiado grande', description: 'Cada archivo debe pesar máximo 15 MB.' })
+    }
+    if (accepted.length === 0) return
+    const ids = uploadFiles(target === 'cover' ? accepted.slice(0, 1) : accepted, existing?.id)
     pendingUploads.current.push(...ids.map((id) => ({ id, target })))
   }
 
@@ -312,6 +322,10 @@ export function AdminProjectEditor() {
     if (files.length === 0) return
     const file = files[0]
     const kind = inferMediaKind(file.name, file.type)
+    if (file.size > UPLOAD_LIMIT_BYTES) {
+      notify({ tone: 'error', title: 'Archivo demasiado grande', description: 'El límite por archivo es de 15 MB.' })
+      return
+    }
     const allowed: Record<'doc' | 'pdf' | 'video', MediaKind[]> = {
       doc: ['doc'],
       pdf: ['pdf'],
@@ -666,7 +680,7 @@ export function AdminProjectEditor() {
                     Galería <span className="font-medium normal-case tracking-normal">· {form.gallery.length} imágenes</span>
                   </p>
                   <label className="btn btn-secondary btn-sm cursor-pointer">
-                    <input type="file" accept="image/*" multiple className="sr-only" onChange={onPickFiles('gallery')} />
+                    <input type="file" accept={IMAGE_ACCEPT} multiple className="sr-only" onChange={onPickFiles('gallery')} />
                     <Plus className="h-4 w-4" aria-hidden />
                     Añadir
                   </label>
