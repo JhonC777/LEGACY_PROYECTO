@@ -27,6 +27,8 @@ import {
 import {
   deleteRemoteProject,
   getRemoteProjects,
+  loadRemoteInstitutionSettings,
+  saveRemoteInstitutionSettings,
   overlayProjects,
   refreshRemoteArchive,
   saveRemoteProject,
@@ -305,7 +307,7 @@ type StoreContextValue = State & {
   uploadFiles: (files: File[], projectId?: string) => string[]
   retryUpload: (id: string) => void
   removeMedia: (id: string) => void
-  updateSettings: (patch: Partial<InstitutionSettings>) => void
+  updateSettings: (patch: Partial<InstitutionSettings>) => Promise<void>
   /** Curaduría de portada: sincroniza `featuredProjectIds` con `isFeatured`. */
   setFeatured: (ids: string[]) => Promise<void>
   log: (type: ActivityType, message: string, project?: Pick<AdminProject, 'id' | 'title'>) => void
@@ -372,6 +374,8 @@ export function AdminStoreProvider({
             : seed(institution),
         )
         const remote = getRemoteProjects()
+        const remoteSettings = await loadRemoteInstitutionSettings(institution.id)
+        if (current !== attempt.current) return
         const institutionProjects =
           remote === null
             ? payload.projects
@@ -380,7 +384,13 @@ export function AdminStoreProvider({
                 .map((project) => ({ ...project, isReal: true }))
         dispatch({
           type: 'LOADED',
-          payload: { ...payload, projects: institutionProjects },
+          payload: {
+            ...payload,
+            projects: institutionProjects,
+            settings: remoteSettings
+              ? { ...payload.settings, ...remoteSettings }
+              : payload.settings,
+          },
         })
       })()
     }, 520)
@@ -704,11 +714,21 @@ export function AdminStoreProvider({
   )
 
   const updateSettings = useCallback<StoreContextValue['updateSettings']>(
-    (patch) => {
-      dispatch({ type: 'SETTINGS', settings: { ...settingsRef.current, ...patch } })
-      log('settings', 'Actualizó los ajustes de la institución')
+    async (patch) => {
+      const next = { ...settingsRef.current, ...patch }
+      const saved = await saveRemoteInstitutionSettings(institution.id, {
+        name: next.name,
+        shortName: next.shortName,
+        description: next.description,
+        accent: next.accent,
+        logoUrl: next.logoUrl,
+      })
+      const confirmed = { ...next, ...saved }
+      dispatch({ type: 'SETTINGS', settings: confirmed })
+      log('settings', 'Actualizó la identidad institucional')
+      flushArchive()
     },
-    [log],
+    [flushArchive, institution.id, log],
   )
 
   const setFeatured = useCallback<StoreContextValue['setFeatured']>(
