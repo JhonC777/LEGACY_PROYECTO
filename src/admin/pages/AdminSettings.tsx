@@ -110,7 +110,7 @@ export function AdminSettings() {
       void (async () => {
         try {
           if (identityDirty) {
-            updateSettings({
+            await updateSettings({
               name: form.name.trim(),
               shortName: form.shortName.trim(),
               description: form.description.trim(),
@@ -122,14 +122,16 @@ export function AdminSettings() {
           notify({
             tone: 'success',
             title: featuredDirty ? 'Destacados guardados' : 'Ajustes actualizados',
-            description: featuredDirty
-              ? 'La selección de proyectos destacados se confirmó en Supabase.'
-              : 'La identidad institucional se mantiene en esta sesión; su persistencia remota requiere una tabla de ajustes.',
+            description: identityDirty && featuredDirty
+              ? 'La identidad institucional y los proyectos destacados se guardaron en Supabase.'
+              : identityDirty
+                ? 'La identidad institucional se guardó en Supabase.'
+                : 'La selección de proyectos destacados se confirmó en Supabase.',
           })
         } catch (error) {
           notify({
             tone: 'error',
-            title: 'No se pudieron guardar los destacados',
+            title: 'No se pudieron guardar los ajustes',
             description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
           })
         } finally {
