@@ -3,7 +3,6 @@ import { getRemoteProjects } from '@/data/archiveRemote'
 import {
   DEMO_PROJECTS,
   getRelatedProjects as relatedFromPool,
-  isRealShowcase,
   type DemoInstitution,
   type DemoProject,
 } from '@/data/demoData'
