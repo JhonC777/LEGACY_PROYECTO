@@ -2517,19 +2517,19 @@ body:has(.admin-shell) {
   min-width: 0;
 }
 
-.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row {
+.admin-content-inner > .flex.flex-col.gap-4.md\:flex-row {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1.25rem;
   margin-bottom: 1.35rem;
 }
 
-.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :first-child {
+.admin-content-inner > .flex.flex-col.gap-4.md\:flex-row > :first-child {
   min-width: 0;
   max-width: 54rem;
 }
 
-.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child {
+.admin-content-inner > .flex.flex-col.gap-4.md\:flex-row > :last-child {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2738,16 +2738,16 @@ body:has(.admin-shell) {
     padding-top: 1.2rem;
   }
 
-  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row {
+  .admin-content-inner > .flex.flex-col.gap-4.md\:flex-row {
     gap: 1rem;
     margin-bottom: 1.1rem;
   }
 
-  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child {
+  .admin-content-inner > .flex.flex-col.gap-4.md\:flex-row > :last-child {
     width: 100%;
   }
 
-  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child > * {
+  .admin-content-inner > .flex.flex-col.gap-4.md\:flex-row > :last-child > * {
     flex: 1 1 auto;
   }
 
