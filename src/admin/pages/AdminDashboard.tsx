@@ -15,11 +15,10 @@ import {
   Pencil,
   Plus,
   Star,
-  Users,
+  Settings,
   type LucideIcon,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { cn } from '@/lib/cn'
 import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '../components/AdminStates'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
@@ -219,341 +218,254 @@ export function AdminDashboard() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow={firstName ? `Hola, ${firstName}` : 'Centro de mando'}
-        title={settings.name}
-        description="Todo el archivo de tu institución: lo público, lo interno y lo que falta por completar."
-        actions={
-          <>
+    <div className="admin-dashboard-v3">
+      <section className="admin-command-hero" aria-labelledby="admin-command-title">
+        <div className="admin-command-copy">
+          <span className="admin-overline"><span className="admin-live-dot" /> CENTRO DE CONTROL · ${today}</span>
+          <p className="admin-command-greeting">{firstName ? `Bienvenido, ${firstName}` : 'Administración institucional'}</p>
+          <h1 id="admin-command-title">{settings.name}</h1>
+          <p className="admin-command-description">
+            El estado de tu archivo académico, sus publicaciones y el trabajo que requiere atención.
+          </p>
+          <div className="admin-command-actions">
+            <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
+              <Plus className="h-4 w-4" aria-hidden /> Crear proyecto
+            </Link>
+            <Link to={publicHref} target="_blank" rel="noreferrer" className="btn btn-secondary btn-md">
+              <ExternalLink className="h-4 w-4" aria-hidden /> Ver sitio público
+            </Link>
             {lastDraft ? (
-              <Link to={`${base}/proyectos/${lastDraft.id}`} className="btn btn-secondary btn-md">
-                <Pencil className="h-4 w-4" aria-hidden />
-                Retomar borrador
+              <Link to={`${base}/proyectos/${lastDraft.id}`} className="admin-command-tertiary">
+                <Pencil className="h-3.5 w-3.5" aria-hidden /> Continuar borrador
               </Link>
             ) : null}
-            <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
-              <Plus className="h-4 w-4" aria-hidden />
-              Nuevo proyecto
-            </Link>
-          </>
-        }
-      />
-
-      <p className="admin-hero-date mt-2">
-        <CalendarDays className="h-3.5 w-3.5 text-legacy-gold" aria-hidden />
-        {today}
-      </p>
+          </div>
+        </div>
+        <div className="admin-command-visual" aria-hidden="true">
+          <div className="admin-command-orbit admin-command-orbit-one" />
+          <div className="admin-command-orbit admin-command-orbit-two" />
+          <div className="admin-command-monogram">L</div>
+          <span className="admin-command-visual-caption">LEGACY <i>·</i> ARCHIVO VIVO</span>
+        </div>
+      </section>
 
       {projects.length === 0 ? (
-        <div className="mt-8">
+        <div className="admin-command-empty">
           <AdminEmptyState
             icon={FolderKanban}
             title="Tu archivo todavía está vacío"
             description="Crea el primer proyecto académico. Podrás guardarlo como borrador y publicarlo cuando esté completo."
             action={
               <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
-                <Plus className="h-4 w-4" aria-hidden />
-                Crear proyecto
+                <Plus className="h-4 w-4" aria-hidden /> Crear proyecto
               </Link>
             }
           />
         </div>
       ) : (
         <>
-          <section className="admin-card admin-focus mt-6 p-5" aria-labelledby="focus-title">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+          <section className="admin-command-metrics" aria-label="Indicadores del archivo">
+            <div className="admin-command-section-heading">
               <div>
-                <h2 id="focus-title" className="font-brand text-xl font-semibold text-legacy-white">
-                  {focus.length > 0 ? 'Lo que necesita tu atención' : 'Todo al día'}
-                </h2>
-                <p className="mt-0.5 text-xs text-legacy-muted">
-                  Hoy el público ve <strong className="text-legacy-white">{published.length}</strong>{' '}
-                  {published.length === 1 ? 'proyecto' : 'proyectos'}. Los borradores y archivados solo
-                  se ven aquí.
+                <span className="admin-overline">VISIÓN GENERAL</span>
+                <h2>Estado del archivo</h2>
+              </div>
+              <span className="admin-section-note">Datos actuales de la institución</span>
+            </div>
+            <div className="admin-metric-grid">
+              {stats.map(({ label, value, icon: Icon, href, hint, tone }, index) => (
+                <Link
+                  key={label}
+                  to={href}
+                  title={hint}
+                  className={`admin-metric-card ${tone === 'gold' ? 'is-primary' : ''}`}
+                >
+                  <span className="admin-metric-topline">
+                    <span className="admin-metric-icon"><Icon className="h-4 w-4" aria-hidden /></span>
+                    <span className="admin-metric-index">0{index + 1}</span>
+                  </span>
+                  <strong className="admin-metric-value">{value.toLocaleString('es-CO')}</strong>
+                  <span className="admin-metric-label">{label}</span>
+                  <span className="admin-metric-hint">{hint}</span>
+                  <ArrowRight className="admin-metric-arrow h-4 w-4" aria-hidden />
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="admin-attention-panel" aria-labelledby="admin-attention-title">
+            <div className="admin-attention-heading">
+              <div>
+                <span className="admin-overline">PRIORIDADES</span>
+                <h2 id="admin-attention-title">{focus.length ? 'Requiere tu atención' : 'Todo está en orden'}</h2>
+                <p>
+                  {focus.length
+                    ? `${focus.length} asunto${focus.length === 1 ? '' : 's'} para revisar en el archivo.`
+                    : 'No hay tareas pendientes que bloqueen la publicación.'}
                 </p>
               </div>
-              <Link to={publicHref} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                Ver sitio público
-              </Link>
+              <span className={`admin-attention-state ${focus.length ? 'is-pending' : 'is-clear'}`}>
+                {focus.length ? 'REVISIÓN PENDIENTE' : 'AL DÍA'}
+              </span>
             </div>
-            {focus.length === 0 ? (
-              <p className="admin-focus-item is-done mt-4 text-sm text-legacy-muted">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-legacy-gold" aria-hidden />
-                No hay pendientes: todos los proyectos activos tienen su ficha completa.
-              </p>
-            ) : (
-              <ul className="mt-4 grid gap-2 md:grid-cols-2">
-                {focus.map((item) => (
-                  <li key={item.key}>
-                    <Link to={item.href} className="admin-focus-item group">
-                      <span className="admin-focus-num">
-                        {item.count > 0 ? item.count : <Star className="h-4 w-4" aria-hidden />}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-legacy-white">{item.title}</span>
-                        <span className="mt-0.5 block truncate text-xs text-legacy-muted">{item.hint}</span>
-                      </span>
-                      <span className="admin-row-action">
-                        {item.cta}
-                        <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                      </span>
-                    </Link>
-                  </li>
+            {focus.length ? (
+              <div className="admin-attention-list">
+                {focus.map((item, index) => (
+                  <Link key={item.key} to={item.href} className="admin-attention-item">
+                    <span className="admin-attention-number">0{index + 1}</span>
+                    <span className="admin-attention-main">
+                      <strong>{item.title}</strong>
+                      <small>{item.hint}</small>
+                    </span>
+                    <span className="admin-attention-cta">{item.cta}<ArrowRight className="h-4 w-4" aria-hidden /></span>
+                  </Link>
                 ))}
-              </ul>
+              </div>
+            ) : (
+              <div className="admin-attention-clear">
+                <CheckCircle2 className="h-5 w-5" aria-hidden />
+                Todos los proyectos activos tienen su ficha completa.
+              </div>
             )}
           </section>
 
-          <h2 className="admin-section-title">Estado del archivo</h2>
-          <section className="admin-stats" aria-label="Estado del archivo">
-            {stats.map(({ label, value, icon: Icon, href, hint, tone }) => (
-              <Link
-                key={label}
-                to={href}
-                title={hint}
-                className={cn('admin-card admin-stat group', tone === 'gold' && 'is-gold')}
-              >
-                <span className="flex items-center justify-between">
-                  <span className="admin-stat-icon">
-                    <Icon className="h-4 w-4" aria-hidden />
-                  </span>
-                  <ArrowRight
-                    className="h-4 w-4 text-white/25 transition-all group-hover:translate-x-0.5 group-hover:text-legacy-gold"
-                    aria-hidden
-                  />
-                </span>
-                <span className="mt-3 block font-brand text-3xl leading-none font-semibold text-legacy-white">
-                  {value}
-                </span>
-                <span className="mt-1.5 block text-sm font-semibold text-white/85">{label}</span>
-                <span className="mt-0.5 hidden text-xs text-legacy-muted sm:block">{hint}</span>
-              </Link>
-            ))}
-          </section>
+          <div className="admin-command-section-heading admin-command-section-heading-spaced">
+            <div>
+              <span className="admin-overline">OPERACIÓN</span>
+              <h2>Actividad del archivo</h2>
+            </div>
+            <Link to={`${base}/proyectos`} className="admin-command-link">Gestionar proyectos <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+          </div>
 
-          <h2 className="admin-section-title">Trabajo reciente</h2>
-          <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-            <section className="admin-card p-5" aria-labelledby="ops-title">
-              <div className="flex items-center justify-between gap-3">
+          <div className="admin-command-workspace">
+            <section className="admin-work-card admin-work-card-wide" aria-labelledby="admin-recent-title">
+              <div className="admin-work-card-header">
                 <div>
-                  <h3 id="ops-title" className="font-brand text-xl font-semibold text-legacy-white">
-                    Últimas ediciones
-                  </h3>
-                  <p className="mt-0.5 text-xs text-legacy-muted">
-                    Lo que tocaste hace poco y lo que le falta a cada ficha.
-                  </p>
+                  <span className="admin-overline">SEGUIMIENTO</span>
+                  <h3 id="admin-recent-title">Últimos proyectos editados</h3>
+                  <p>Acceso directo a las fichas que han tenido actividad reciente.</p>
                 </div>
-                <Link to={`${base}/proyectos`} className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
-                  Ver todos
-                </Link>
+                <span className="admin-work-card-count">{recentlyEdited.length.toString().padStart(2, '0')}</span>
               </div>
-
-              <ul className="mt-4 space-y-2">
-                {recentlyEdited.map((project) => {
-                  const issues = getProjectIssues(project)
-                  return (
-                    <li key={project.id}>
-                      <Link to={`${base}/proyectos/${project.id}`} className="admin-row group">
-                        <span className="admin-thumb" aria-hidden>
-                          {project.coverImage ? (
-                            <img src={project.coverImage} alt="" loading="lazy" />
-                          ) : (
-                            <Images className="h-4 w-4 text-white/30" />
-                          )}
+              {recentlyEdited.length ? (
+                <div className="admin-project-list">
+                  {recentlyEdited.map((project, index) => {
+                    const issues = getProjectIssues(project)
+                    return (
+                      <Link key={project.id} to={`${base}/proyectos/${project.id}`} className="admin-project-line">
+                        <span className="admin-project-number">{String(index + 1).padStart(2, '0')}</span>
+                        <span className="admin-project-cover">
+                          {project.coverImage ? <img src={project.coverImage} alt="" loading="lazy" /> : <Images className="h-5 w-5" aria-hidden />}
                         </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-2">
-                            <span className="truncate text-sm font-semibold text-legacy-white">
-                              {project.title || 'Sin título'}
-                            </span>
-                            <StatusBadge status={project.status} />
-                          </span>
-                          <span className="mt-1 block truncate text-xs text-legacy-muted">
-                            {issues.errors.length > 0
-                              ? issues.errors.slice(0, 2).join(' · ')
-                              : `${project.area} · ${formatRelative(project.updatedAt)}`}
-                          </span>
+                        <span className="admin-project-copy">
+                          <strong>{project.title || 'Sin título'}</strong>
+                          <small>{project.area || 'Sin área'} · {formatRelative(project.updatedAt)}</small>
                         </span>
-                        <span className="admin-row-action">
-                          {issues.errors.length > 0 ? 'Completar' : 'Abrir'}
-                          <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                        <span className="admin-project-status"><StatusBadge status={project.status} /></span>
+                        <span className={`admin-project-completeness ${issues.complete ? 'is-complete' : 'is-incomplete'}`}>
+                          {issues.complete ? 'Ficha completa' : `${issues.errors.length} pendientes`}
                         </span>
+                        <ArrowRight className="admin-project-arrow h-4 w-4" aria-hidden />
                       </Link>
-                    </li>
-                  )
-                })}
-              </ul>
+                    )
+                  })}
+                </div>
+              ) : (
+                <AdminEmptyState compact icon={FolderKanban} title="Sin proyectos recientes" description="Los proyectos editados aparecerán aquí." />
+              )}
             </section>
 
-            <div className="flex flex-col gap-5">
-              <section className="admin-card p-5" aria-labelledby="activity-title">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 id="activity-title" className="font-brand text-xl font-semibold text-legacy-white">
-                    Actividad reciente
-                  </h3>
-                  <Link to={`${base}/historial`} className="text-xs font-semibold text-legacy-gold hover:text-legacy-gold-soft">
-                    Ver historial
-                  </Link>
+            <div className="admin-command-rail">
+              <section className="admin-work-card" aria-labelledby="admin-activity-title">
+                <div className="admin-work-card-header">
+                  <div>
+                    <span className="admin-overline">REGISTRO</span>
+                    <h3 id="admin-activity-title">Actividad reciente</h3>
+                  </div>
+                  <Link to={`${base}/historial`} className="admin-icon-link" aria-label="Ver historial"><ArrowRight className="h-4 w-4" aria-hidden /></Link>
                 </div>
-                {recent.length === 0 ? (
-                  <AdminEmptyState
-                    compact
-                    icon={History}
-                    title="Sin actividad"
-                    description="Aquí aparecerán los cambios que hagas en el panel."
-                    className="mt-4"
-                  />
-                ) : (
-                  <ol className="admin-timeline mt-4">
-                    {recent.map((entry) => (
-                      <li key={entry.id} className="admin-timeline-item">
-                        <span className={cn('admin-timeline-dot', `is-${entry.type}`)} aria-hidden />
-                        <div className="min-w-0">
-                          <p className="text-sm text-legacy-white">{entry.message}</p>
-                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-legacy-muted">
-                            <Clock className="h-3 w-3" aria-hidden />
-                            {formatRelative(entry.at)}
-                            <span aria-hidden>·</span>
-                            {ACTIVITY_LABEL[entry.type]}
-                          </p>
-                        </div>
+                {recent.length ? (
+                  <ol className="admin-event-list">
+                    {recent.slice(0, 5).map((entry) => (
+                      <li key={entry.id} className="admin-event-item">
+                        <span className={`admin-event-marker is-${entry.type}`} />
+                        <div><p>{entry.message}</p><small><Clock className="h-3 w-3" aria-hidden /> {formatRelative(entry.at)} <span>·</span> {ACTIVITY_LABEL[entry.type]}</small></div>
                       </li>
                     ))}
                   </ol>
+                ) : (
+                  <AdminEmptyState compact icon={History} title="Sin actividad" description="Los cambios del panel aparecerán aquí." />
                 )}
               </section>
 
-              <section className="admin-card p-5" aria-labelledby="shortcuts-title">
-                <h3 id="shortcuts-title" className="font-brand text-xl font-semibold text-legacy-white">
-                  Accesos rápidos
-                </h3>
-                <div className="mt-3 grid gap-2">
-                  <Link to={`${base}/proyectos/nuevo`} className="admin-shortcut">
-                    <Plus className="h-4 w-4 text-legacy-gold" aria-hidden />
-                    Crear un proyecto nuevo
-                  </Link>
-                  <Link to={`${base}/cargas`} className="admin-shortcut">
-                    <CloudUpload className="h-4 w-4 text-legacy-gold" aria-hidden />
-                    Subir imágenes o documentos
-                  </Link>
-                  <Link to={`${base}/ajustes`} className="admin-shortcut">
-                    <Pencil className="h-4 w-4 text-legacy-gold" aria-hidden />
-                    Editar identidad y portada pública
-                  </Link>
+              <section className="admin-work-card" aria-labelledby="admin-quick-title">
+                <div className="admin-work-card-header">
+                  <div><span className="admin-overline">ATAJOS</span><h3 id="admin-quick-title">Acciones rápidas</h3></div>
+                </div>
+                <div className="admin-quick-actions">
+                  <Link to={`${base}/proyectos/nuevo`}><Plus className="h-4 w-4" aria-hidden /><span>Crear proyecto</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                  <Link to={`${base}/cargas`}><CloudUpload className="h-4 w-4" aria-hidden /><span>Subir archivos</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                  <Link to={`${base}/ajustes`}><Settings className="h-4 w-4" aria-hidden /><span>Configurar portada</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
                 </div>
               </section>
             </div>
           </div>
 
-          <h2 className="admin-section-title">Portada pública</h2>
-          <section className="admin-card p-5" aria-labelledby="public-title">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 id="public-title" className="font-brand text-xl font-semibold text-legacy-white">
-                  Qué ve el invitado ahora
-                </h3>
-                <p className="mt-0.5 text-xs text-legacy-muted">
-                  Portada pública de {settings.shortName}. Los destacados se eligen en Ajustes.
-                </p>
-              </div>
-              <Link to={`${base}/ajustes`} className="btn btn-secondary btn-sm">
-                <Star className="h-3.5 w-3.5" aria-hidden />
-                Cambiar destacados
-              </Link>
-            </div>
-            {featured.length === 0 ? (
-              <p className="mt-4 text-sm text-legacy-muted">
-                No hay destacados de portada. El invitado verá los publicados más recientes.
-              </p>
-            ) : (
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {featured.map((project) => (
-                  <li key={project.id}>
-                    <Link to={`${base}/proyectos/${project.id}`} className="admin-row group">
-                      <span className="admin-thumb" aria-hidden>
-                        {project.coverImage ? (
-                          <img src={project.coverImage} alt="" loading="lazy" />
-                        ) : (
-                          <Star className="h-4 w-4 text-legacy-gold" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="truncate text-sm font-semibold text-legacy-white">
-                            {project.title}
-                          </span>
-                          <StatusBadge status={project.status} />
-                        </span>
-                        <span className="mt-0.5 block truncate text-xs text-legacy-muted">
-                          {project.area} · {project.year}
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <h2 className="admin-section-title">Explorar el archivo</h2>
-          <div className="grid gap-5 xl:grid-cols-3">
-            <InventoryCard
-              id="areas-title"
-              title="Áreas"
-              icon={Layers3}
-              empty="Sin áreas registradas."
-              items={areas}
-              href={(label) => `${base}/proyectos?area=${encodeURIComponent(label)}`}
-            />
-            <InventoryCard
-              id="years-title"
-              title="Años"
-              icon={CalendarDays}
-              empty="Sin años documentados."
-              items={years}
-              href={(label) => `${base}/proyectos?year=${encodeURIComponent(label)}`}
-            />
-            <InventoryCard
-              id="collections-title"
-              title="Colecciones"
-              icon={BookOpen}
-              empty="Ningún proyecto tiene colección."
-              items={collections}
-              href={(label) => `${base}/proyectos?collection=${encodeURIComponent(label)}`}
-            />
+          <div className="admin-command-section-heading admin-command-section-heading-spaced">
+            <div><span className="admin-overline">PRESENCIA PÚBLICA</span><h2>Lo que ve el invitado</h2></div>
+            <Link to={`${base}/ajustes`} className="admin-command-link">Editar portada <ArrowRight className="h-4 w-4" aria-hidden /></Link>
           </div>
-
-          <section className="admin-card mt-5 p-5" aria-labelledby="authors-title">
-            <div className="flex items-center justify-between gap-3">
-              <h3 id="authors-title" className="inline-flex items-center gap-2 font-brand text-xl font-semibold text-legacy-white">
-                <Users className="h-4 w-4 text-legacy-gold" aria-hidden />
-                Autores del archivo
-              </h3>
-              <span className="admin-count">{authorList.length}</span>
+          <section className="admin-work-card admin-public-preview">
+            <div className="admin-public-summary">
+              <span className="admin-public-emblem"><Star className="h-5 w-5" aria-hidden /></span>
+              <div><strong>{featured.length} proyectos destacados</strong><p>Selección visible en la portada pública de {settings.shortName}.</p></div>
+              <span className="admin-public-count">{published.length} publicados</span>
             </div>
-            {authorList.length === 0 ? (
-              <p className="mt-3 text-sm text-legacy-muted">Todavía no hay autores en las fichas.</p>
-            ) : (
-              <div className="admin-inventory mt-4">
-                {authorList.slice(0, 16).map((item) => (
-                  <Link
-                    key={item.label}
-                    to={`${base}/proyectos?q=${encodeURIComponent(item.label)}`}
-                    className="admin-inventory-link"
-                  >
-                    <span className="truncate">{item.label}</span>
-                    <span className="admin-inventory-count">{item.count}</span>
+            {featured.length ? (
+              <div className="admin-featured-grid">
+                {featured.map((project, index) => (
+                  <Link key={project.id} to={`${base}/proyectos/${project.id}`} className="admin-featured-project">
+                    <span className="admin-featured-index">DESTACADO 0{index + 1}</span>
+                    <span className="admin-featured-image">{project.coverImage ? <img src={project.coverImage} alt="" loading="lazy" /> : <Star className="h-6 w-6" aria-hidden />}</span>
+                    <span className="admin-featured-copy"><strong>{project.title}</strong><small>{project.area} · {project.year}</small></span>
+                    <ArrowRight className="admin-featured-arrow h-4 w-4" aria-hidden />
                   </Link>
                 ))}
               </div>
+            ) : (
+              <p className="admin-public-empty">No hay proyectos destacados. El catálogo mostrará los publicados más recientes.</p>
             )}
+          </section>
+
+          <div className="admin-command-section-heading admin-command-section-heading-spaced">
+            <div><span className="admin-overline">CATALOGACIÓN</span><h2>Composición del archivo</h2></div>
+            <span className="admin-section-note">Distribución por categorías, periodos y autores</span>
+          </div>
+          <div className="admin-command-inventory">
+            <InventoryCard id="areas-title" title="Áreas" icon={Layers3} empty="Sin áreas registradas." items={areas} href={(label) => `${base}/proyectos?area=${encodeURIComponent(label)}`} />
+            <InventoryCard id="years-title" title="Años" icon={CalendarDays} empty="Sin años documentados." items={years} href={(label) => `${base}/proyectos?year=${encodeURIComponent(label)}`} />
+            <InventoryCard id="collections-title" title="Colecciones" icon={BookOpen} empty="Ningún proyecto tiene colección." items={collections} href={(label) => `${base}/proyectos?collection=${encodeURIComponent(label)}`} />
+          </div>
+          <section className="admin-work-card admin-authors-card" aria-labelledby="authors-title">
+            <div className="admin-work-card-header">
+              <div><span className="admin-overline">COMUNIDAD ACADÉMICA</span><h3 id="authors-title">Autores del archivo</h3></div>
+              <span className="admin-work-card-count">{authorList.length.toString().padStart(2, '0')}</span>
+            </div>
+            {authorList.length ? (
+              <div className="admin-author-cloud">
+                {authorList.slice(0, 20).map((item) => (
+                  <Link key={item.label} to={`${base}/proyectos?q=${encodeURIComponent(item.label)}`} className="admin-author-chip">
+                    <span>{item.label}</span><b>{item.count}</b>
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="admin-public-empty">Todavía no hay autores registrados en las fichas.</p>}
           </section>
         </>
       )}
-    </>
+    </div>
   )
+
 }
 
 function InventoryCard({
