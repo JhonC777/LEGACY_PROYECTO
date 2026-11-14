@@ -110,6 +110,10 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
   const isLast = stepIndex === steps.length - 1
 
   useEffect(() => {
+    if (variant === 'public' && location.pathname.startsWith('/admin')) {
+      setOpen(false)
+      return
+    }
     try {
       if (window.localStorage.getItem(storageKey) !== 'done') {
         setStepIndex(0)
