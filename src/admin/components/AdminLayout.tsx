@@ -26,6 +26,7 @@ import { useAdminStore } from '../store'
 import { useToast } from '../toast'
 import { LivingField } from '@/components/atmosphere/LivingField'
 import { ConfirmDialog } from './ConfirmDialog'
+import { OnboardingGuide } from '@/components/onboarding/OnboardingGuide'
 
 type NavItem = {
   to: string
@@ -217,6 +218,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="admin-shell" data-status={status}>
       <LivingField variant="page" />
+      <OnboardingGuide variant="admin" identity={`${institution.slug}:${session?.email ?? 'admin'}`} />
       <aside className="admin-sidebar">{sidebar}</aside>
 
       {drawer}
