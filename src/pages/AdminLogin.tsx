@@ -1,5 +1,5 @@
 import { usePageMeta } from '@/lib/usePageMeta'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useState, type FormEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeftRight, ArrowRight, Building2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { displayNameFromEmail, useAdminSession } from '@/admin/session'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { Button } from '@/components/ui/Button'
 import { GlassInput } from '@/components/ui/GlassInput'
+import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 import { DEMO_INSTITUTIONS, getInstitutionBySlug } from '@/data/demoData'
 import { sendAdminPasswordReset, signInInstitutionAdmin } from '@/data/archiveRemote'
 import { cn } from '@/lib/cn'
@@ -115,6 +116,9 @@ export function AdminLogin() {
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const captchaEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim())
+  const onCaptchaToken = useCallback((token: string) => setCaptchaToken(token), [])
 
   if (session && institution && session.institutionSlug === institution.slug) {
     return <Navigate to={next ?? `/admin/${institution.slug}`} replace />
@@ -151,7 +155,7 @@ export function AdminLogin() {
           window.localStorage.removeItem(REMEMBER_KEY)
           window.localStorage.removeItem(EMAIL_KEY)
         }
-        await signInInstitutionAdmin(email.trim(), password, institution.id)
+        await signInInstitutionAdmin(email.trim(), password, institution.id, captchaToken)
         signIn(
           {
             email: email.trim(),
@@ -180,7 +184,7 @@ export function AdminLogin() {
       return
     }
     setLoading(true)
-    void sendAdminPasswordReset(email.trim())
+    void sendAdminPasswordReset(email.trim(), captchaToken)
       .then(() => {
         setNotice('Si el correo corresponde a una cuenta autorizada, recibirás instrucciones para restablecer el acceso.')
         setForgot(false)
@@ -265,6 +269,8 @@ export function AdminLogin() {
                     aria-invalid={Boolean(error && !EMAIL.test(email.trim()))}
                   />
                 </AuthField>
+                <TurnstileWidget onToken={onCaptchaToken} />
+                <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
                 <Button type="submit" className="w-full" loading={loading}>
                   Enviar enlace
