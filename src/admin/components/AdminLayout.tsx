@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import '@/styles/admin.css'
+import '@/styles/admin-remaster.css'
 import { createPortal } from 'react-dom'
 import {
   ChevronRight,
