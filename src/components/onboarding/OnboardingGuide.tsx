@@ -34,55 +34,55 @@ type GuideStep = {
 
 const PUBLIC_STEPS: GuideStep[] = [
   {
-    eyebrow: '01 · DESCUBRIR',
-    title: 'Explora el archivo académico',
-    description: 'LEGACY reúne proyectos, ideas y trabajos que merecen permanecer.',
-    detail: 'Recorre la portada y descubre proyectos destacados, colecciones y novedades del archivo.',
+    eyebrow: '01 / DESCUBRIR',
+    title: 'El conocimiento merece permanecer.',
+    description: 'LEGACY reúne proyectos, ideas y experiencias académicas en un archivo creado para conservarlas.',
+    detail: 'Comienza en la portada. Allí encontrarás proyectos destacados y las novedades de cada comunidad.',
     icon: Compass,
   },
   {
-    eyebrow: '02 · INSTITUCIONES',
-    title: 'Encuentra cada comunidad',
-    description: 'Cada institución conserva su propio espacio dentro de LEGACY.',
-    detail: 'Entra a una institución para conocer su historia, explorar sus áreas y consultar sus proyectos publicados.',
+    eyebrow: '02 / INSTITUCIONES',
+    title: 'Cada comunidad tiene su espacio.',
+    description: 'Las instituciones conservan su identidad y organizan su memoria dentro de LEGACY.',
+    detail: 'Elige una institución para conocer sus áreas, su historia y los proyectos que ha publicado.',
     icon: Building2,
   },
   {
-    eyebrow: '03 · PROYECTOS',
-    title: 'Consulta cada proyecto',
-    description: 'Cada ficha reúne la información y los recursos de su trabajo.',
-    detail: 'Abre un proyecto para revisar autores, descripción, imágenes, documentos PDF y videos disponibles.',
+    eyebrow: '03 / PROYECTOS',
+    title: 'Una historia detrás de cada proyecto.',
+    description: 'Consulta el trabajo de sus autores y descubre los recursos que documentan cada experiencia.',
+    detail: 'Cada ficha puede incluir descripción, imágenes, documentos PDF y videos.',
     icon: BookOpen,
   },
 ]
 
 const ADMIN_STEPS: GuideStep[] = [
   {
-    eyebrow: '01 · TU ESPACIO',
-    title: 'Este es tu centro de control',
-    description: 'Administra el archivo académico de tu institución desde un solo lugar.',
-    detail: 'El resumen muestra publicaciones, borradores, archivos y tareas que necesitan atención. Tu acceso está limitado a esta institución.',
+    eyebrow: '01 / TU ESPACIO',
+    title: 'La memoria de tu institución, bajo tu cuidado.',
+    description: 'Este espacio reúne las herramientas para organizar y mantener el archivo académico.',
+    detail: 'El panel resume publicaciones, borradores y actividad. Tu acceso corresponde únicamente a esta institución.',
     icon: Layers3,
   },
   {
-    eyebrow: '02 · PROYECTOS',
-    title: 'Crea y organiza proyectos',
-    description: 'Cada proyecto comienza con su información esencial.',
-    detail: 'Añade título, descripción, área, año, colección y autores. Puedes guardar un borrador y continuar después.',
+    eyebrow: '02 / PROYECTOS',
+    title: 'Dale estructura a cada idea.',
+    description: 'Registra la información esencial para que cada proyecto pueda encontrarse y comprenderse.',
+    detail: 'Añade título, descripción, área, año, colección y autores. También puedes guardar un borrador.',
     icon: FolderKanban,
   },
   {
-    eyebrow: '03 · RECURSOS',
-    title: 'Completa la memoria multimedia',
-    description: 'Un proyecto puede reunir distintos formatos en una sola ficha.',
-    detail: 'Adjunta imágenes, documentos y videos. Revisa que los archivos correspondan al proyecto antes de publicarlo.',
+    eyebrow: '03 / RECURSOS',
+    title: 'Conserva más que un documento.',
+    description: 'Reúne en una misma ficha los materiales que dan contexto al trabajo.',
+    detail: 'Adjunta imágenes, documentos PDF y videos. Comprueba que cada recurso corresponda al proyecto.',
     icon: Image,
   },
   {
-    eyebrow: '04 · PUBLICACIÓN',
-    title: 'Revisa antes de publicar',
-    description: 'Tú decides cuándo un proyecto está listo para el público.',
-    detail: 'Comprueba los datos y recursos, publica cuando todo esté completo y consulta el historial para seguir los cambios.',
+    eyebrow: '04 / PUBLICACIÓN',
+    title: 'Publica cuando todo esté listo.',
+    description: 'Una revisión breve ayuda a que cada proyecto llegue al archivo con claridad.',
+    detail: 'Verifica la información y los recursos antes de publicar. Después podrás consultar y actualizar tus proyectos.',
     icon: ShieldCheck,
   },
 ]
@@ -123,7 +123,7 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
     } catch {
       setOpen(false)
     }
-  }, [storageKey, location.pathname])
+  }, [storageKey, location.pathname, variant])
 
   const finish = () => {
     try {
@@ -137,7 +137,7 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
 
   const transition = reduceMotion
     ? { duration: 0 }
-    : { duration: 0.2, ease: 'easeOut' as const }
+    : { duration: 0.24, ease: 'easeOut' as const }
 
   return (
     <>
@@ -171,16 +171,26 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
               aria-modal="true"
               aria-labelledby="legacy-guide-title"
               className="legacy-guide-dialog"
-              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.98 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.985 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.99 }}
               transition={transition}
             >
               <div className="legacy-guide-topline">
-                <span>LEGACY <i>·</i> {variant === 'admin' ? 'GUÍA DEL ADMINISTRADOR' : 'GUÍA DE EXPLORACIÓN'}</span>
+                <div className="legacy-guide-brand">
+                  <span className="legacy-guide-monogram" aria-hidden> L </span>
+                  <span className="legacy-guide-wordmark">LEGACY</span>
+                  <span className="legacy-guide-divider" />
+                  <span className="legacy-guide-context">{variant === 'admin' ? 'ESPACIO ADMINISTRATIVO' : 'ARCHIVO INSTITUCIONAL'}</span>
+                </div>
                 <button type="button" onClick={finish} aria-label="Cerrar guía" className="legacy-guide-close">
                   <X className="h-4 w-4" aria-hidden />
                 </button>
+              </div>
+
+              <div className="legacy-guide-welcome">
+                <span>{variant === 'admin' ? 'BIENVENIDO A TU ESPACIO' : 'BIENVENIDO A LEGACY'}</span>
+                <p>MEMORIA ACADÉMICA <i>·</i> CONOCIMIENTO QUE PERMANECE</p>
               </div>
 
               <div className="legacy-guide-progress" aria-label={`Paso ${stepIndex + 1} de ${steps.length}`}>
@@ -193,15 +203,15 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
                 <motion.div
                   key={step.eyebrow}
                   className="legacy-guide-content"
-                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0, x: 12 }}
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
                   transition={transition}
                 >
-                  <div className="legacy-guide-icon">
-                    <StepIcon className="h-6 w-6" aria-hidden />
+                  <div className="legacy-guide-step-meta">
+                    <span className="legacy-guide-icon"><StepIcon className="h-5 w-5" aria-hidden /></span>
+                    <span className="legacy-guide-eyebrow">{step.eyebrow}</span>
                   </div>
-                  <p className="legacy-guide-eyebrow">{step.eyebrow}</p>
                   <h2 id="legacy-guide-title">{step.title}</h2>
                   <p className="legacy-guide-description">{step.description}</p>
                   <div className="legacy-guide-detail">
@@ -212,7 +222,7 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
               </AnimatePresence>
 
               <div className="legacy-guide-footer">
-                <span className="legacy-guide-count">{String(stepIndex + 1).padStart(2, '0')} / {String(steps.length).padStart(2, '0')}</span>
+                <span className="legacy-guide-count">{String(stepIndex + 1).padStart(2, '0')} <i>/</i> {String(steps.length).padStart(2, '0')}</span>
                 <div className="legacy-guide-actions">
                   {stepIndex > 0 ? (
                     <button type="button" className="legacy-guide-secondary" onClick={() => setStepIndex((value) => Math.max(0, value - 1))}>
@@ -227,7 +237,7 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
                     className="legacy-guide-primary"
                     onClick={() => (isLast ? finish() : setStepIndex((value) => Math.min(steps.length - 1, value + 1)))}
                   >
-                    {isLast ? <><Check className="h-4 w-4" aria-hidden /> Comenzar</> : <>Continuar <ArrowRight className="h-4 w-4" aria-hidden /></>}
+                    {isLast ? <><Check className="h-4 w-4" aria-hidden /> Entrar</> : <>Continuar <ArrowRight className="h-4 w-4" aria-hidden /></>}
                   </button>
                 </div>
               </div>
