@@ -95,7 +95,8 @@ export function ProjectCommunity({ projectId }: { projectId: string }) {
 
     if (statsResult.error || commentsResult.error) {
       setDatabaseReady(false)
-      setNotice(friendlyError(statsResult.error ?? commentsResult.error))
+      const loadError = statsResult.error ?? commentsResult.error
+      setNotice(friendlyError(loadError ?? {}))
       setLoading(false)
       return
     }
