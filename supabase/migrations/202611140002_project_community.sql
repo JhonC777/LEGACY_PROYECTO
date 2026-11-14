@@ -31,7 +31,7 @@ begin
   normalized := translate(normalized, '0134578@$!', 'oieastbasi');
   normalized := regexp_replace(normalized, '[​‌‍﻿]', '', 'g');
   normalized := regexp_replace(normalized, '([a-z])([._*·•|/-])+([a-z])', E'\\1\\3', 'g');
-  normalized := regexp_replace(normalized, '([^[:space:]])\\1{2,}', E'\\1\\1', 'g');
+  normalized := regexp_replace(normalized, E'([^[:space:]])\\1{2,}', E'\\1\\1', 'g');
   normalized := regexp_replace(normalized, '[^a-z0-9]+', ' ', 'g');
   normalized := btrim(regexp_replace(normalized, '[[:space:]]+', ' ', 'g'));
 
