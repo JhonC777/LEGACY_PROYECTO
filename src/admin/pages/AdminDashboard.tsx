@@ -223,21 +223,21 @@ export function AdminDashboard() {
     <div className="admin-dashboard-v3">
       <section className="admin-command-hero" aria-labelledby="admin-command-title">
         <div className="admin-command-copy">
-          <span className="admin-overline"><span className="admin-live-dot" /> CENTRO DE CONTROL · \${today}</span>
-          <p className="admin-command-greeting">{firstName ? \`Bienvenido, \${firstName}\` : 'Administración institucional'}</p>
+          <span className="admin-overline"><span className="admin-live-dot" /> CENTRO DE CONTROL · ${today}</span>
+          <p className="admin-command-greeting">{firstName ? `Bienvenido, ${firstName}` : 'Administración institucional'}</p>
           <h1 id="admin-command-title">{settings.name}</h1>
           <p className="admin-command-description">
             El estado de tu archivo académico, sus publicaciones y el trabajo que requiere atención.
           </p>
           <div className="admin-command-actions">
-            <Link to={\`\${base}/proyectos/nuevo\`} className="btn btn-primary btn-md">
+            <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
               <Plus className="h-4 w-4" aria-hidden /> Crear proyecto
             </Link>
             <Link to={publicHref} target="_blank" rel="noreferrer" className="btn btn-secondary btn-md">
               <ExternalLink className="h-4 w-4" aria-hidden /> Ver sitio público
             </Link>
             {lastDraft ? (
-              <Link to={\`\${base}/proyectos/\${lastDraft.id}\`} className="admin-command-tertiary">
+              <Link to={`${base}/proyectos/${lastDraft.id}`} className="admin-command-tertiary">
                 <Pencil className="h-3.5 w-3.5" aria-hidden /> Continuar borrador
               </Link>
             ) : null}
@@ -258,7 +258,7 @@ export function AdminDashboard() {
             title="Tu archivo todavía está vacío"
             description="Crea el primer proyecto académico. Podrás guardarlo como borrador y publicarlo cuando esté completo."
             action={
-              <Link to={\`\${base}/proyectos/nuevo\`} className="btn btn-primary btn-md">
+              <Link to={`${base}/proyectos/nuevo`} className="btn btn-primary btn-md">
                 <Plus className="h-4 w-4" aria-hidden /> Crear proyecto
               </Link>
             }
@@ -280,7 +280,7 @@ export function AdminDashboard() {
                   key={label}
                   to={href}
                   title={hint}
-                  className={\`admin-metric-card \${tone === 'gold' ? 'is-primary' : ''}\`}
+                  className={`admin-metric-card ${tone === 'gold' ? 'is-primary' : ''}`}
                 >
                   <span className="admin-metric-topline">
                     <span className="admin-metric-icon"><Icon className="h-4 w-4" aria-hidden /></span>
@@ -302,11 +302,11 @@ export function AdminDashboard() {
                 <h2 id="admin-attention-title">{focus.length ? 'Requiere tu atención' : 'Todo está en orden'}</h2>
                 <p>
                   {focus.length
-                    ? \`\${focus.length} asunto\${focus.length === 1 ? '' : 's'} para revisar en el archivo.\`
+                    ? `${focus.length} asunto${focus.length === 1 ? '' : 's'} para revisar en el archivo.`
                     : 'No hay tareas pendientes que bloqueen la publicación.'}
                 </p>
               </div>
-              <span className={\`admin-attention-state \${focus.length ? 'is-pending' : 'is-clear'}\`}>
+              <span className={`admin-attention-state ${focus.length ? 'is-pending' : 'is-clear'}`}>
                 {focus.length ? 'REVISIÓN PENDIENTE' : 'AL DÍA'}
               </span>
             </div>
@@ -336,7 +336,7 @@ export function AdminDashboard() {
               <span className="admin-overline">OPERACIÓN</span>
               <h2>Actividad del archivo</h2>
             </div>
-            <Link to={\`\${base}/proyectos\`} className="admin-command-link">Gestionar proyectos <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            <Link to={`${base}/proyectos`} className="admin-command-link">Gestionar proyectos <ArrowRight className="h-4 w-4" aria-hidden /></Link>
           </div>
 
           <div className="admin-command-workspace">
@@ -354,7 +354,7 @@ export function AdminDashboard() {
                   {recentlyEdited.map((project, index) => {
                     const issues = getProjectIssues(project)
                     return (
-                      <Link key={project.id} to={\`\${base}/proyectos/\${project.id}\`} className="admin-project-line">
+                      <Link key={project.id} to={`${base}/proyectos/${project.id}`} className="admin-project-line">
                         <span className="admin-project-number">{String(index + 1).padStart(2, '0')}</span>
                         <span className="admin-project-cover">
                           {project.coverImage ? <img src={project.coverImage} alt="" loading="lazy" /> : <Images className="h-5 w-5" aria-hidden />}
@@ -364,8 +364,8 @@ export function AdminDashboard() {
                           <small>{project.area || 'Sin área'} · {formatRelative(project.updatedAt)}</small>
                         </span>
                         <span className="admin-project-status"><StatusBadge status={project.status} /></span>
-                        <span className={\`admin-project-completeness \${issues.complete ? 'is-complete' : 'is-incomplete'}\`}>
-                          {issues.complete ? 'Ficha completa' : \`\${issues.errors.length} pendientes\`}
+                        <span className={`admin-project-completeness ${issues.complete ? 'is-complete' : 'is-incomplete'}`}>
+                          {issues.complete ? 'Ficha completa' : `${issues.errors.length} pendientes`}
                         </span>
                         <ArrowRight className="admin-project-arrow h-4 w-4" aria-hidden />
                       </Link>
@@ -384,13 +384,13 @@ export function AdminDashboard() {
                     <span className="admin-overline">REGISTRO</span>
                     <h3 id="admin-activity-title">Actividad reciente</h3>
                   </div>
-                  <Link to={\`\${base}/historial\`} className="admin-icon-link" aria-label="Ver historial"><ArrowRight className="h-4 w-4" aria-hidden /></Link>
+                  <Link to={`${base}/historial`} className="admin-icon-link" aria-label="Ver historial"><ArrowRight className="h-4 w-4" aria-hidden /></Link>
                 </div>
                 {recent.length ? (
                   <ol className="admin-event-list">
                     {recent.slice(0, 5).map((entry) => (
                       <li key={entry.id} className="admin-event-item">
-                        <span className={\`admin-event-marker is-\${entry.type}\`} />
+                        <span className={`admin-event-marker is-${entry.type}`} />
                         <div><p>{entry.message}</p><small><Clock className="h-3 w-3" aria-hidden /> {formatRelative(entry.at)} <span>·</span> {ACTIVITY_LABEL[entry.type]}</small></div>
                       </li>
                     ))}
@@ -405,9 +405,9 @@ export function AdminDashboard() {
                   <div><span className="admin-overline">ATAJOS</span><h3 id="admin-quick-title">Acciones rápidas</h3></div>
                 </div>
                 <div className="admin-quick-actions">
-                  <Link to={\`\${base}/proyectos/nuevo\`}><Plus className="h-4 w-4" aria-hidden /><span>Crear proyecto</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
-                  <Link to={\`\${base}/cargas\`}><CloudUpload className="h-4 w-4" aria-hidden /><span>Subir archivos</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
-                  <Link to={\`\${base}/ajustes\`}><Settings className="h-4 w-4" aria-hidden /><span>Configurar portada</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                  <Link to={`${base}/proyectos/nuevo`}><Plus className="h-4 w-4" aria-hidden /><span>Crear proyecto</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                  <Link to={`${base}/cargas`}><CloudUpload className="h-4 w-4" aria-hidden /><span>Subir archivos</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                  <Link to={`${base}/ajustes`}><Settings className="h-4 w-4" aria-hidden /><span>Configurar portada</span><ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
                 </div>
               </section>
             </div>
@@ -415,7 +415,7 @@ export function AdminDashboard() {
 
           <div className="admin-command-section-heading admin-command-section-heading-spaced">
             <div><span className="admin-overline">PRESENCIA PÚBLICA</span><h2>Lo que ve el invitado</h2></div>
-            <Link to={\`\${base}/ajustes\`} className="admin-command-link">Editar portada <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            <Link to={`${base}/ajustes`} className="admin-command-link">Editar portada <ArrowRight className="h-4 w-4" aria-hidden /></Link>
           </div>
           <section className="admin-work-card admin-public-preview">
             <div className="admin-public-summary">
@@ -426,7 +426,7 @@ export function AdminDashboard() {
             {featured.length ? (
               <div className="admin-featured-grid">
                 {featured.map((project, index) => (
-                  <Link key={project.id} to={\`\${base}/proyectos/\${project.id}\`} className="admin-featured-project">
+                  <Link key={project.id} to={`${base}/proyectos/${project.id}`} className="admin-featured-project">
                     <span className="admin-featured-index">DESTACADO 0{index + 1}</span>
                     <span className="admin-featured-image">{project.coverImage ? <img src={project.coverImage} alt="" loading="lazy" /> : <Star className="h-6 w-6" aria-hidden />}</span>
                     <span className="admin-featured-copy"><strong>{project.title}</strong><small>{project.area} · {project.year}</small></span>
@@ -444,9 +444,9 @@ export function AdminDashboard() {
             <span className="admin-section-note">Distribución por categorías, periodos y autores</span>
           </div>
           <div className="admin-command-inventory">
-            <InventoryCard id="areas-title" title="Áreas" icon={Layers3} empty="Sin áreas registradas." items={areas} href={(label) => \`\${base}/proyectos?area=\${encodeURIComponent(label)}\`} />
-            <InventoryCard id="years-title" title="Años" icon={CalendarDays} empty="Sin años documentados." items={years} href={(label) => \`\${base}/proyectos?year=\${encodeURIComponent(label)}\`} />
-            <InventoryCard id="collections-title" title="Colecciones" icon={BookOpen} empty="Ningún proyecto tiene colección." items={collections} href={(label) => \`\${base}/proyectos?collection=\${encodeURIComponent(label)}\`} />
+            <InventoryCard id="areas-title" title="Áreas" icon={Layers3} empty="Sin áreas registradas." items={areas} href={(label) => `${base}/proyectos?area=${encodeURIComponent(label)}`} />
+            <InventoryCard id="years-title" title="Años" icon={CalendarDays} empty="Sin años documentados." items={years} href={(label) => `${base}/proyectos?year=${encodeURIComponent(label)}`} />
+            <InventoryCard id="collections-title" title="Colecciones" icon={BookOpen} empty="Ningún proyecto tiene colección." items={collections} href={(label) => `${base}/proyectos?collection=${encodeURIComponent(label)}`} />
           </div>
           <section className="admin-work-card admin-authors-card" aria-labelledby="authors-title">
             <div className="admin-work-card-header">
@@ -456,7 +456,7 @@ export function AdminDashboard() {
             {authorList.length ? (
               <div className="admin-author-cloud">
                 {authorList.slice(0, 20).map((item) => (
-                  <Link key={item.label} to={\`\${base}/proyectos?q=\${encodeURIComponent(item.label)}\`} className="admin-author-chip">
+                  <Link key={item.label} to={`${base}/proyectos?q=${encodeURIComponent(item.label)}`} className="admin-author-chip">
                     <span>{item.label}</span><b>{item.count}</b>
                   </Link>
                 ))}
