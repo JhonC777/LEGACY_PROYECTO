@@ -35,7 +35,7 @@ begin
   normalized := translate(normalized, 'áàäâãéèëêíìïîóòöôõúùüûñ', 'aaaaaeeeeiiiiooooouuuun');
   normalized := translate(normalized, '0134578@$!', 'oieastbasi');
   normalized := regexp_replace(normalized, '[​‌‍﻿]', '', 'g');
-  normalized := regexp_replace(normalized, '([a-z])([._*·•|/\\-])+([a-z])', '\\1\\3', 'g');
+  normalized := regexp_replace(normalized, '([a-z])([._*·•|/-])+([a-z])', '\\1\\3', 'g');
   normalized := regexp_replace(normalized, '([^[:space:]])\1{2,}', '\1\1', 'g');
   normalized := regexp_replace(normalized, '[^a-z0-9]+', ' ', 'g');
   normalized := btrim(regexp_replace(normalized, '[[:space:]]+', ' ', 'g'));
