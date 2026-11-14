@@ -137,36 +137,34 @@ type RemoteError = {
 export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
   const message = error.message ?? ''
   const normalized = message.toLowerCase()
-  const code = error.code ? ` · código ${error.code}` : ''
-  const details = [error.details, error.hint].filter(Boolean).join(' ')
-  const technical = [message, details].filter(Boolean).join(' ').replace(/\\s+/g, ' ').slice(0, 260)
+  const code = error.code ?? 'unknown'
 
   if (/tipo de archivo no permitido/i.test(message)) {
     return 'El archivo no tiene un formato permitido. Usa JPG, PNG, WebP, GIF, PDF, DOC/DOCX, ODT, RTF, TXT, MP4, WebM o MOV.'
   }
   if (/row-level security|rls|permission denied|not authorized|unauthorized|42501/i.test(`${normalized} ${error.code ?? ''}`)) {
-    return `Supabase rechazó los permisos durante ${stage}. Revisa que la sesión siga activa y que el administrador tenga acceso a esta institución.${code}`
+    return 'No tienes permisos para completar esta acción.'
   }
   if (/bucket.*not found|object not found|no such bucket/i.test(message)) {
-    return `No se encontró el almacenamiento de archivos durante ${stage}. Revisa el bucket archive en Supabase.${code}`
+    return 'No se pudo acceder al archivo solicitado.'
   }
   if (/payload too large|file size|entity too large|413/i.test(message)) {
-    return `El archivo supera el límite permitido durante ${stage}. Reduce su tamaño e inténtalo de nuevo.${code}`
+    return 'El archivo supera el tamaño permitido. Reduce su tamaño e inténtalo de nuevo.'
   }
   if (/claim_admin|schema cache|relation .* does not exist|function .* does not exist/i.test(message)) {
-    return `La base de datos no reconoce un objeto necesario durante ${stage}. Hay que revisar el esquema de Supabase.${code}`
+    return 'No se pudo completar la operación. Inténtalo de nuevo más tarde.'
   }
   if (/email not confirmed/i.test(message)) {
-    return 'Confirma el correo que te envió Supabase y vuelve a entrar con la misma contraseña.'
+    return 'No se pudo iniciar sesión. Comprueba tus datos e inténtalo de nuevo.'
   }
   if (/invalid login|invalid_credentials/i.test(message) || error.code === 'invalid_credentials') {
     return 'Correo o contraseña incorrectos.'
   }
   if (/not an admin|already has an admin/i.test(message)) {
-    return 'Ese correo no es el administrador de esta institución.'
+    return 'No se pudo iniciar sesión. Comprueba tus datos e inténtalo de nuevo.'
   }
   if (/redirect|not allowed/i.test(message)) {
-    return 'Falta autorizar en Supabase la dirección de recuperación.'
+    return 'No se pudo procesar la solicitud. Inténtalo más tarde.'
   }
   if (/rate limit|too many/i.test(message)) {
     return 'Espera un momento antes de pedir otro correo.'
@@ -175,11 +173,8 @@ export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
     return `No se pudo conectar con Supabase durante ${stage}. Comprueba la conexión e inténtalo otra vez.${code}`
   }
 
-  if (technical) {
-    console.error('[legacy] error remoto:', { stage, code: error.code, message, details, status: error.status })
-    return `Falló ${stage}: ${technical}${code}`
-  }
-  return `No se pudo completar ${stage}. Supabase no devolvió detalles del error.${code}`
+  console.error('[legacy] operación remota fallida:', { stage, code, status: error.status })
+  return 'No se pudo completar la operación. Inténtalo de nuevo más tarde.'
 }
 
 function canonicalMedia(value: string): string
@@ -306,7 +301,7 @@ export async function signInInstitutionAdmin(
   institutionId: string,
 ) {
   const supabase = await getClient()
-  if (!supabase) return
+  if (!supabase) throw new Error('Authentication unavailable')
   const existing = await supabase.auth.signInWithPassword({ email, password })
   if (existing.error) throw new Error(remoteErrorMessage(existing.error))
   const { error } = await supabase.rpc('claim_admin', { inst_id: institutionId })
