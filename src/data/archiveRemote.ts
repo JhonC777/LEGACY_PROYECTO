@@ -170,7 +170,7 @@ export function remoteErrorMessage(error: RemoteError, stage = 'Supabase') {
     return 'Espera un momento antes de pedir otro correo.'
   }
   if (/failed to fetch|networkerror|fetch failed|network request failed/i.test(message)) {
-    return `No se pudo conectar con Supabase durante ${stage}. Comprueba la conexión e inténtalo otra vez.${code}`
+    return 'No se pudo completar la operación. Comprueba tu conexión e inténtalo de nuevo.'
   }
 
   console.error('[legacy] operación remota fallida:', { stage, code, status: error.status })
