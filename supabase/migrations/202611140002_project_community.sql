@@ -46,6 +46,7 @@ end;
 $$;
 
 revoke all on function public.legacy_comment_language_allowed(text) from public, anon, authenticated;
+grant execute on function public.legacy_comment_language_allowed(text) to authenticated;
 
 create table if not exists public.project_comments (
   id uuid primary key default gen_random_uuid(),
