@@ -5,7 +5,6 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Circle,
   User,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -13,6 +12,7 @@ import { SmartImage } from '@/components/ui/SmartImage'
 import { MOCK_FEATURED_PROJECTS } from '@/data/mockExplore'
 import { DEMO_PROJECTS, getProjectHref, PILOT_CATALOG_PATH } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { subjectTagStyle } from '@/lib/subjectTags'
 
 function hrefFor(projectId: string) {
   const project =
@@ -162,11 +162,8 @@ export function FeaturedProjects() {
                 </Link>
               </h3>
               <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-explore-muted">
-                <span className="inline-flex items-center gap-1">
-                  <Circle
-                    className="h-2 w-2 fill-explore-purple text-explore-purple"
-                    aria-hidden
-                  />
+                <span className="subject-tag" style={subjectTagStyle(project.category)}>
+                  <span className="subject-tag-dot" aria-hidden />
                   {project.category}
                 </span>
                 <span className="inline-flex min-w-0 items-center gap-1">

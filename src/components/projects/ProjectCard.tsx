@@ -11,6 +11,7 @@ import {
   type DemoProject,
 } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { subjectTagStyle } from '@/lib/subjectTags'
 import { openableResourceHref, resourceFileName } from '@/lib/resources'
 
 type ProjectCardProps = {
@@ -88,14 +89,22 @@ export function ProjectCard({
 
   const kicker = (
     <p className="knowledge-fragment-kicker">
-      <Link to={filterHref('area', project.area)} title={`Filtrar por área: ${project.area}`}>
+      <Link
+        to={filterHref('area', project.area)}
+        title={`Filtrar por área: ${project.area}`}
+        className="subject-tag subject-tag-link"
+        style={subjectTagStyle(project.area)}
+      >
+        <span className="subject-tag-dot" aria-hidden />
         {project.area}
       </Link>
-      <span aria-hidden>·</span>
       <Link
         to={filterHref('category', project.category)}
         title={`Filtrar por categoría: ${project.category}`}
+        className="subject-tag subject-tag-link"
+        style={subjectTagStyle(project.category)}
       >
+        <span className="subject-tag-dot" aria-hidden />
         {project.category}
       </Link>
     </p>
