@@ -50,7 +50,7 @@ export function normalizeCommentForModeration(value: string): string {
 
   // Une letras separadas por signos/espacios: h.i.j.u.e.p.u.t.a -> hijueputa.
   // Los espacios entre palabras normales se conservan para evitar unir frases.
-  normalized = normalized.replace(/([a-z])(?:[\s._*\-·•|/\\])+([a-z])/g, '$1$2')
+  normalized = normalized.replace(/([a-z])(?:[._*\\-·•|/\\\\])+([a-z])/g, '$1$2')
   normalized = normalized.replace(/(.)\1{2,}/g, '$1$1')
   return normalized.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ')
 }
