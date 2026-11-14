@@ -162,6 +162,7 @@ export function AdminProjectEditor() {
           isReal: existing.isReal,
         }
       : emptyDraft()
+    setActiveStep(0)
     setForm(source)
     setTagsText(source.tags.join(', '))
     setTechText(source.technologies.join(', '))
