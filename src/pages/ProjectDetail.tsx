@@ -31,6 +31,7 @@ import { ExploreFooter } from '@/components/explore/ExploreFooter'
 import { ExploreShell } from '@/components/layout/ExploreShell'
 import { ProcessTimeline } from '@/components/project/ProcessTimeline'
 import { ProjectGallery } from '@/components/project/ProjectGallery'
+import { ProjectCommunity } from '@/components/project/ProjectCommunity'
 import { ProjectPager } from '@/components/project/ProjectPager'
 import { ProjectResources } from '@/components/project/ProjectResources'
 import { ProjectSheet } from '@/components/project/ProjectSheet'
@@ -467,6 +468,8 @@ export function ProjectDetail() {
             nextHref={nextHref}
           />
         </div>
+
+        <ProjectCommunity projectId={project.id} />
 
         {related.length > 0 ? (
           <section className="project-related px-6 py-12 lg:px-8">
