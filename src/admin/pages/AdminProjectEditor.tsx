@@ -33,6 +33,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { DEMO_PROJECTS, getProjectHref } from '@/data/demoData'
 import { cn } from '@/lib/cn'
+import { subjectTagStyle } from '@/lib/subjectTags'
+import '@/styles/info.css'
 import { useDeferredAction } from '@/lib/useDeferredAction'
 import { AdminEmptyState, AdminErrorState, Skeleton } from '../components/AdminStates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -551,6 +553,15 @@ export function AdminProjectEditor() {
                 <datalist id="areas-list">
                   {suggestions.areas.map((area) => <option key={area} value={area} />)}
                 </datalist>
+                {form.area.trim() ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-2" aria-live="polite">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-legacy-muted">Vista de etiqueta</span>
+                    <span className="subject-tag" style={subjectTagStyle(form.area)}>
+                      <span className="subject-tag-dot" aria-hidden />
+                      {form.area}
+                    </span>
+                  </div>
+                ) : null}
               </Field>
               <Field label="Categoría" required>
                 <input
@@ -563,6 +574,15 @@ export function AdminProjectEditor() {
                 <datalist id="categories-list">
                   {suggestions.categories.map((item) => <option key={item} value={item} />)}
                 </datalist>
+                {form.category.trim() ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-2" aria-live="polite">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-legacy-muted">Vista de etiqueta</span>
+                    <span className="subject-tag" style={subjectTagStyle(form.category)}>
+                      <span className="subject-tag-dot" aria-hidden />
+                      {form.category}
+                    </span>
+                  </div>
+                ) : null}
               </Field>
               <Field label="Año" required>
                 <input
@@ -595,7 +615,17 @@ export function AdminProjectEditor() {
                   onChange={(event) => setTagsText(event.target.value)}
                   placeholder="agua, sensores, sostenibilidad"
                 />
-                <Chips items={splitList(tagsText)} />
+                <div className="mt-2 flex min-h-7 flex-wrap gap-2" aria-live="polite">
+                  {splitList(tagsText).map((tag) => (
+                    <span key={tag} className="subject-tag" style={subjectTagStyle(tag)}>
+                      <span className="subject-tag-dot" aria-hidden />
+                      {tag}
+                    </span>
+                  ))}
+                  {splitList(tagsText).length === 0 ? (
+                    <span className="text-xs text-legacy-muted">Las etiquetas aparecerán aquí con su estilo visual.</span>
+                  ) : null}
+                </div>
               </Field>
               <Field label="Tecnologías o herramientas" hint="Separadas por coma">
                 <input
