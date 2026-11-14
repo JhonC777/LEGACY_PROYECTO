@@ -304,9 +304,8 @@ export async function signInInstitutionAdmin(
   if (!supabase) throw new Error('Authentication unavailable')
   const existing = await supabase.auth.signInWithPassword({ email, password })
   if (existing.error) throw new Error(remoteErrorMessage(existing.error))
-  const { error } = await supabase.rpc('claim_admin', { inst_id: institutionId })
-  if (error) throw new Error(remoteErrorMessage(error))
-  await refreshRemoteArchive()
+  // RequireAdmin verifies TOTP and checks institutional membership before mounting the archive.
+  void institutionId
 }
 
 export async function signOutRemote() {
