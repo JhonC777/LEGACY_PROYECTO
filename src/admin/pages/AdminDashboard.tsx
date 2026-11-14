@@ -16,11 +16,9 @@ import {
   Plus,
   Star,
   Settings,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { cn } from '@/lib/cn'
 import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '../components/AdminStates'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
