@@ -302,7 +302,7 @@ export async function signInInstitutionAdmin(
 ) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Authentication unavailable')
-  const existing = await supabase.auth.signInWithPassword({ email, password })
+  const existing = await supabase.auth.signInWithPassword({ email, password, options: captchaToken ? { captchaToken } : undefined })
   if (existing.error) throw new Error(remoteErrorMessage(existing.error))
   // RequireAdmin verifies TOTP and checks institutional membership before mounting the archive.
   void institutionId
@@ -314,11 +314,11 @@ export async function signOutRemote() {
   await supabase.auth.signOut()
 }
 
-export async function sendAdminPasswordReset(email: string) {
+export async function sendAdminPasswordReset(email: string, captchaToken?: string) {
   const supabase = await getClient()
   if (!supabase) throw new Error('El archivo remoto no está conectado.')
   const redirectTo = `${window.location.origin}/admin/nueva-clave`
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo, captchaToken })
   if (error) throw new Error(remoteErrorMessage(error))
 }
 
