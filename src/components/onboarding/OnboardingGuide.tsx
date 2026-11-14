@@ -108,6 +108,7 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
   const step = steps[stepIndex]
   const StepIcon = step.icon
   const isLast = stepIndex === steps.length - 1
+  const isVisible = variant !== 'public' || !location.pathname.startsWith('/admin')
 
   useEffect(() => {
     if (variant === 'public' && location.pathname.startsWith('/admin')) {
@@ -140,19 +141,21 @@ export function OnboardingGuide({ variant, identity }: OnboardingGuideProps) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => {
-          setStepIndex(0)
-          setOpen(true)
-        }}
-        className={`legacy-guide-trigger ${variant === 'admin' ? 'is-admin' : 'is-public'}`}
-        aria-label="Abrir guía de LEGACY"
-        title="Guía de LEGACY"
-      >
-        <HelpCircle className="h-4 w-4" aria-hidden />
-        <span>Guía</span>
-      </button>
+      {isVisible ? (
+        <button
+          type="button"
+          onClick={() => {
+            setStepIndex(0)
+            setOpen(true)
+          }}
+          className={`legacy-guide-trigger ${variant === 'admin' ? 'is-admin' : 'is-public'}`}
+          aria-label="Abrir guía de LEGACY"
+          title="Guía de LEGACY"
+        >
+          <HelpCircle className="h-4 w-4" aria-hidden />
+          <span>Guía</span>
+        </button>
+      ) : null}
 
       <AnimatePresence>
         {open ? (
