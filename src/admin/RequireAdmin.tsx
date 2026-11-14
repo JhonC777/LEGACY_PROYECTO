@@ -84,6 +84,19 @@ export function RequireAdmin() {
 
   if (!institution) return <Navigate to="/" replace />
 
+  if (!supabaseConfigured || !supabase) {
+    return (
+      <div
+        role="alert"
+        className="flex min-h-[100dvh] items-center justify-center bg-legacy-black px-6 text-center"
+      >
+        <p className="max-w-sm text-sm leading-relaxed text-legacy-muted">
+          El panel está temporalmente no disponible. El acceso requiere autenticación segura.
+        </p>
+      </div>
+    )
+  }
+
   if (!session) {
     const next = safeAdminNext(`${location.pathname}${location.search}`)
     const target = `/admin/login?institution=${institution.slug}${
