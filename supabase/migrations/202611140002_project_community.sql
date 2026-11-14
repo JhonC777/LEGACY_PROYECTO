@@ -88,6 +88,7 @@ create policy "visitors create comments on published projects"
   to authenticated
   with check (
     author_id = (select auth.uid())
+    and coalesce((select (auth.jwt()->>'is_anonymous')::boolean), false)
     and exists (
       select 1 from public.projects project
       where project.id = project_comments.project_id
@@ -99,7 +100,10 @@ drop policy if exists "visitors read own likes" on public.project_likes;
 create policy "visitors read own likes"
   on public.project_likes for select
   to authenticated
-  using (user_id = (select auth.uid()));
+  using (
+    user_id = (select auth.uid())
+    and coalesce((select (auth.jwt()->>'is_anonymous')::boolean), false)
+  );
 
 drop policy if exists "visitors add own likes" on public.project_likes;
 create policy "visitors add own likes"
@@ -107,6 +111,7 @@ create policy "visitors add own likes"
   to authenticated
   with check (
     user_id = (select auth.uid())
+    and coalesce((select (auth.jwt()->>'is_anonymous')::boolean), false)
     and exists (
       select 1 from public.projects project
       where project.id = project_likes.project_id
@@ -118,7 +123,10 @@ drop policy if exists "visitors remove own likes" on public.project_likes;
 create policy "visitors remove own likes"
   on public.project_likes for delete
   to authenticated
-  using (user_id = (select auth.uid()));
+  using (
+    user_id = (select auth.uid())
+    and coalesce((select (auth.jwt()->>'is_anonymous')::boolean), false)
+  );
 
 create or replace function public.guard_project_comment()
 returns trigger
