@@ -6,6 +6,7 @@
 @import "./styles/glass.css";
 @import "./styles/readable.css";
 @import "./styles/buttons-glass.css";
+@import "./styles/ios.css";
 
 @theme {
   --color-legacy-black: #08090c;
