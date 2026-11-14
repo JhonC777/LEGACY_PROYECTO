@@ -2476,3 +2476,339 @@ body:has(.admin-shell) {
     background: #101117;
   }
 }
+
+
+/* =========================================================
+   LEGACY ADMIN · REMASTER V2
+   Espaciado consistente, jerarquía real y drawer flotante.
+========================================================= */
+
+.admin-shell {
+  --admin-space-1: 0.5rem;
+  --admin-space-2: 0.75rem;
+  --admin-space-3: 1rem;
+  --admin-space-4: 1.25rem;
+  --admin-space-5: 1.5rem;
+  --admin-space-6: 2rem;
+  --admin-space-7: 2.5rem;
+  --admin-space-8: 3rem;
+}
+
+.admin-main,
+.admin-content,
+.admin-content-inner {
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-content {
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.admin-content-inner {
+  box-sizing: border-box;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 2.4vw, 2.5rem);
+  padding-top: clamp(1.35rem, 2.6vw, 2.6rem);
+}
+
+.admin-content-inner > * {
+  min-width: 0;
+}
+
+.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.35rem;
+}
+
+.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :first-child {
+  min-width: 0;
+  max-width: 54rem;
+}
+
+.admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.admin-content-inner h1 {
+  max-width: 100%;
+  line-height: 1.08;
+}
+
+.admin-content-inner p {
+  overflow-wrap: anywhere;
+}
+
+.admin-section-title {
+  margin-top: clamp(2rem, 3.2vw, 2.8rem);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.admin-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-stats {
+  align-items: stretch;
+}
+
+.admin-stat {
+  min-width: 0;
+  min-height: 9rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.admin-stat > :last-child {
+  overflow-wrap: anywhere;
+}
+
+.admin-focus {
+  margin-top: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.admin-row {
+  min-width: 0;
+  gap: 0.85rem;
+}
+
+.admin-row > * {
+  min-width: 0;
+}
+
+.admin-row-action {
+  flex: 0 0 auto;
+}
+
+.admin-timeline-item {
+  display: grid;
+  grid-template-columns: 0.75rem minmax(0, 1fr);
+  gap: 0.8rem;
+  padding-block: 0.75rem;
+}
+
+.admin-shortcut {
+  min-width: 0;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  line-height: 1.4;
+}
+
+.admin-inventory {
+  gap: 0.6rem;
+}
+
+.admin-inventory-link {
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+}
+
+.admin-toolbar,
+.admin-filters {
+  min-width: 0;
+  align-items: center;
+}
+
+.admin-table {
+  max-width: 100%;
+}
+
+.admin-content-inner :is(input, select, textarea, button, a) {
+  scroll-margin-block: 6rem;
+}
+
+.admin-content-inner :is(input, select, textarea) {
+  max-width: 100%;
+}
+
+.admin-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: max(0.65rem, env(safe-area-inset-top, 0px))
+    0.65rem
+    max(0.65rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: stretch;
+}
+
+.admin-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(3 4 7 / 0.76);
+  -webkit-backdrop-filter: blur(8px) saturate(115%);
+  backdrop-filter: blur(8px) saturate(115%);
+}
+
+.admin-sidebar.admin-sidebar-drawer {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  display: flex;
+  flex: 0 1 min(88vw, 21.5rem);
+  width: min(88vw, 21.5rem);
+  max-width: calc(100vw - 1.3rem);
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 4.1rem 1rem 1rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(ellipse 90% 35% at 0% 0%, rgb(214 184 120 / 0.12), transparent 72%),
+    linear-gradient(160deg, rgb(255 255 255 / 0.045), transparent 34%),
+    #0d0f15;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.075),
+    0 28px 90px -24px rgb(0 0 0 / 0.95);
+  animation: admin-drawer-float-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.admin-drawer-close {
+  position: absolute !important;
+  z-index: 3;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 2.55rem;
+  height: 2.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(255 255 255 / 0.12) !important;
+  border-radius: 0.85rem !important;
+  background: rgb(255 255 255 / 0.055) !important;
+  color: #f7f5ef !important;
+}
+
+.admin-sidebar-drawer .admin-brand {
+  padding: 0.35rem 0.3rem 0.9rem;
+}
+
+.admin-sidebar-drawer .admin-institution {
+  margin-top: 0.15rem;
+}
+
+.admin-sidebar-drawer .admin-nav {
+  gap: 1.25rem;
+  padding-block: 0.35rem;
+}
+
+.admin-sidebar-drawer .admin-nav-group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-sidebar-drawer .admin-nav-link {
+  min-height: 3rem;
+  padding-inline: 0.85rem;
+}
+
+.admin-sidebar-drawer .admin-sidebar-footer {
+  gap: 0.45rem;
+  padding-top: 1rem;
+}
+
+@keyframes admin-drawer-float-in {
+  from { transform: translate3d(-1rem, 0, 0) scale(0.985); opacity: 0; }
+  to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+@media (min-width: 1024px) {
+  .admin-drawer {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-content-inner {
+    padding-inline: 0.9rem;
+    padding-top: 1.2rem;
+  }
+
+  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row {
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child {
+    width: 100%;
+  }
+
+  .admin-content-inner > .flex.flex-col.gap-4.md\\:flex-row > :last-child > * {
+    flex: 1 1 auto;
+  }
+
+  .admin-section-title {
+    margin-top: 1.8rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .admin-stats {
+    gap: 0.65rem;
+  }
+
+  .admin-stat {
+    min-height: 8.2rem;
+    padding: 0.85rem;
+  }
+
+  .admin-focus {
+    margin-top: 1.15rem;
+  }
+
+  .admin-row {
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .admin-row-action {
+    display: none;
+  }
+
+  .admin-content-inner .grid {
+    min-width: 0;
+  }
+
+  .admin-content-inner .admin-card {
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-content-inner {
+    padding-inline: 0.72rem;
+  }
+
+  .admin-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-stat {
+    min-height: 6.8rem;
+  }
+
+  .admin-sidebar.admin-sidebar-drawer {
+    width: min(90vw, 20rem);
+    flex-basis: min(90vw, 20rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar.admin-sidebar-drawer {
+    animation: none;
+  }
+}
