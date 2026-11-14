@@ -36,8 +36,8 @@ export function AdminNewPassword() {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     setError(null)
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+    if (password.length < 12) {
+      setError('Usa una contraseña de al menos 12 caracteres.')
       return
     }
     if (password !== confirm) {
@@ -66,8 +66,8 @@ export function AdminNewPassword() {
           return
         }
         navigate('/admin/login?institution=fe-y-alegria&restablecida=1', { replace: true })
-      } catch (caught) {
-        setError(caught instanceof Error ? caught.message : 'No se pudo cambiar la contraseña.')
+      } catch {
+        setError('No se pudo actualizar la contraseña. Comprueba el enlace e inténtalo de nuevo.')
       } finally {
         setLoading(false)
       }
@@ -84,7 +84,7 @@ export function AdminNewPassword() {
       {ready ? (
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <p className="text-sm leading-relaxed text-legacy-muted">
-            Esta será la clave del administrador. Mínimo 6 caracteres.
+            Usa una contraseña única de al menos 12 caracteres. Recomendamos una frase larga generada por un gestor de contraseñas.
           </p>
           <label className="block">
             <span className="mb-2 block text-xs font-semibold tracking-wide text-legacy-muted uppercase">
