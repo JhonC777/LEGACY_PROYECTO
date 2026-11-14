@@ -1,0 +1,188 @@
+/* LEGACY Global Polish — capa transversal de acabado visual.
+   No cambia rutas, datos, permisos ni componentes funcionales. */
+
+:root {
+  --legacy-motion-standard: cubic-bezier(.22, 1, .36, 1);
+  --legacy-motion-enter: cubic-bezier(.16, 1, .3, 1);
+  --legacy-panel-border: rgba(255,255,255,.095);
+  --legacy-panel-highlight: rgba(255,255,255,.055);
+}
+
+/* Entrada de vistas: breve y discreta, sin animar cada elemento por separado. */
+@keyframes legacy-view-enter {
+  from { opacity: 0; transform: translate3d(0, 9px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.explore-shell .explore-scroll,
+.admin-content-inner,
+.home-entry-stage {
+  animation: legacy-view-enter .48s var(--legacy-motion-enter) both;
+}
+.legacy-header,
+.admin-topbar {
+  transition: background-color .3s ease, border-color .3s ease, box-shadow .35s ease;
+}
+
+/* Tarjetas del archivo: jerarquía, profundidad y respuesta al puntero. */
+.knowledge-fragment {
+  border: 1px solid var(--legacy-panel-border);
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.045), transparent 42%),
+    linear-gradient(180deg, rgba(19,21,29,.96), rgba(10,11,16,.98));
+  box-shadow: 0 18px 44px -30px rgba(0,0,0,.9), inset 0 1px var(--legacy-panel-highlight);
+  transition: transform .42s var(--legacy-motion-standard), border-color .32s ease,
+    box-shadow .42s ease, background-color .32s ease;
+  transform: translateZ(0);
+}
+.knowledge-fragment:hover {
+  transform: translateY(-5px);
+  border-color: rgba(214,184,120,.34);
+  box-shadow: 0 28px 58px -32px rgba(0,0,0,.95),
+    0 0 0 1px rgba(214,184,120,.07), inset 0 1px rgba(255,255,255,.08);
+}
+.knowledge-fragment-cover {
+  background: #0b0c11;
+}
+.knowledge-fragment-image {
+  transition: transform .75s var(--legacy-motion-standard), filter .55s ease;
+  will-change: transform;
+}
+.knowledge-fragment:hover .knowledge-fragment-image {
+  transform: scale(1.035);
+  filter: saturate(1.06);
+}
+.knowledge-fragment-body {
+  position: relative;
+  z-index: 1;
+}
+.knowledge-fragment-title {
+  text-wrap: balance;
+  transition: color .25s ease;
+}
+.knowledge-fragment-copy:hover .knowledge-fragment-title,
+.knowledge-fragment-cta:hover {
+  color: var(--color-legacy-gold-soft);
+}
+.knowledge-fragment-cta {
+  transition: color .25s ease, gap .3s var(--legacy-motion-standard);
+}
+.knowledge-fragment-cta:hover { gap: .7rem; }
+.knowledge-fragment-stamp {
+  transition: transform .22s var(--legacy-motion-standard), border-color .22s ease,
+    background-color .22s ease;
+}
+.knowledge-fragment-stamp:hover {
+  transform: translateY(-2px);
+  border-color: rgba(214,184,120,.42);
+  background-color: rgba(214,184,120,.1);
+}
+
+/* Superficies compartidas y controles. */
+.explore-card,
+.glass-surface,
+.admin-card,
+.admin-work-card,
+.process-card,
+.institution-stat {
+  border-color: var(--legacy-panel-border);
+  transition: border-color .3s ease, box-shadow .35s ease, transform .38s var(--legacy-motion-standard);
+}
+.explore-card:hover,
+.process-card:hover {
+  border-color: rgba(214,184,120,.25);
+  box-shadow: inset 0 1px rgba(255,255,255,.075), 0 22px 48px -32px rgba(0,0,0,.9);
+}
+button, a, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled), a {
+  touch-action: manipulation;
+}
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(240,217,160,.9);
+  outline-offset: 3px;
+}
+.header-action,
+.header-chip,
+.nav-liquid,
+.project-subnav-link,
+.admin-nav-link,
+.admin-tab {
+  transition-timing-function: var(--legacy-motion-standard);
+}
+
+/* Panel administrativo: continuidad visual entre escritorio y móvil. */
+.admin-sidebar {
+  border-right-color: rgba(255,255,255,.075);
+}
+.admin-topbar {
+  box-shadow: 0 10px 30px -28px rgba(0,0,0,.9);
+}
+.admin-nav-link {
+  transition: transform .24s var(--legacy-motion-standard), background .24s ease,
+    color .24s ease, border-color .24s ease, box-shadow .24s ease;
+}
+.admin-nav-link.is-active {
+  box-shadow: inset 2px 0 var(--legacy-gold), 0 8px 22px -18px rgba(214,184,120,.4);
+}
+.admin-card,
+.admin-work-card {
+  transition: transform .32s var(--legacy-motion-standard), border-color .28s ease,
+    box-shadow .32s ease;
+}
+.admin-card:hover,
+.admin-work-card:hover {
+  border-color: rgba(214,184,120,.24);
+  box-shadow: 0 22px 48px -34px rgba(0,0,0,.95), inset 0 1px rgba(255,255,255,.055);
+}
+.admin-content :is(input, textarea, select) {
+  transition: border-color .22s ease, box-shadow .22s ease, background-color .22s ease;
+}
+
+/* Ajustes táctiles y de legibilidad en pantallas estrechas. */
+@media (max-width: 767px) {
+  .knowledge-fragment {
+    border-radius: 1rem;
+  }
+  .knowledge-fragment:hover {
+    transform: none;
+  }
+  .knowledge-fragment:active {
+    transform: scale(.992);
+  }
+  .admin-content-inner {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+  .header-main {
+    padding-left: max(.85rem, env(safe-area-inset-left));
+    padding-right: max(.85rem, env(safe-area-inset-right));
+  }
+}
+@media (hover: none) {
+  .knowledge-fragment:hover,
+  .admin-card:hover,
+  .admin-work-card:hover,
+  .explore-card:hover {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .explore-shell .explore-scroll,
+  .admin-content-inner,
+  .home-entry-stage {
+    animation: none !important;
+  }
+  .knowledge-fragment,
+  .knowledge-fragment-image,
+  .knowledge-fragment-stamp,
+  .admin-card,
+  .admin-work-card,
+  .admin-nav-link {
+    transition: none !important;
+  }
+  .knowledge-fragment:hover,
+  .knowledge-fragment:active {
+    transform: none !important;
+  }
+}
