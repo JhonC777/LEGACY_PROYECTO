@@ -12,7 +12,7 @@ const SUBJECT_PALETTE: Array<{ terms: string[]; color: string }> = [
 ]
 
 function normalizeSubject(value: string) {
-  return value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('es')
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es')
 }
 
 export function getSubjectColor(label: string) {
