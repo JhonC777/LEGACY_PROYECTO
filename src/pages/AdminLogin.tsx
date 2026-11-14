@@ -270,7 +270,6 @@ export function AdminLogin() {
                   />
                 </AuthField>
                 <TurnstileWidget onToken={onCaptchaToken} />
-                <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
                 <Button type="submit" className="w-full" loading={loading}>
                   Enviar enlace
@@ -336,7 +335,7 @@ export function AdminLogin() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="Tu contraseña"
-                      aria-invalid={Boolean(error && password.length < 6)}
+                      aria-invalid={Boolean(error && password.length < 12)}
                     />
                     <button
                       type="button"
@@ -364,9 +363,10 @@ export function AdminLogin() {
                   />
                 </div>
 
+                <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
 
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full" loading={loading} disabled={captchaEnabled && !captchaToken}>
                   <LockKeyhole className="h-4 w-4" aria-hidden />
                   Entrar al panel
                 </Button>
