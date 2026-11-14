@@ -295,7 +295,11 @@ export async function refreshRemoteArchive() {
   return projects
 }
 
-export async function signInInstitutionAdmin(\n  email: string,\n  password: string,\n  captchaToken?: string,\n) {
+export async function signInInstitutionAdmin(
+  email: string,
+  password: string,
+  captchaToken?: string,
+) {
   const supabase = await getClient()
   if (!supabase) throw new Error('Authentication unavailable')
   const existing = await supabase.auth.signInWithPassword({ email, password, options: captchaToken ? { captchaToken } : undefined })
