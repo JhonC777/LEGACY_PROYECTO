@@ -5,13 +5,14 @@ import { RouteFallback } from '@/components/navigation/RouteFallback'
 import { getInstitutionBySlug } from '@/data/demoData'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 import { AdminLayout } from './components/AdminLayout'
+import { AdminMfaGate } from './components/AdminMfaGate'
 import { AdminNoAccess } from './pages/AdminNoAccess'
 import { safeAdminNext } from './safeNext'
 import { useAdminSession } from './session'
 import { AdminStoreProvider } from './store'
 import { ToastProvider } from './toast'
 
-type AdminGate = 'skip' | 'checking' | 'ok' | 'anonymous' | 'forbidden' | 'error'
+type AdminGate = 'skip' | 'checking' | 'mfa_setup' | 'mfa_challenge' | 'ok' | 'anonymous' | 'forbidden' | 'error'
 
 function isAnonymousAuthError(message: string) {
   return /session missing|invalid claim|invalid jwt|jwt expired|not authenticated|user not found/i.test(
@@ -56,6 +57,27 @@ export function RequireAdmin() {
           setGate(error && !isAnonymousAuthError(error.message) ? 'error' : 'anonymous')
           return
         }
+
+        // AAL2 is required before membership or institutional data is queried.
+        const [assurance, factors] = await Promise.all([
+          client.auth.mfa.getAuthenticatorAssuranceLevel(),
+          client.auth.mfa.listFactors(),
+        ])
+        if (cancelled) return
+        if (assurance.error || factors.error) {
+          setGate('error')
+          return
+        }
+        const hasVerifiedTotp = factors.data.totp.some((factor) => factor.status === 'verified')
+        if (!hasVerifiedTotp) {
+          setGate('mfa_setup')
+          return
+        }
+        if (assurance.data.currentLevel !== 'aal2') {
+          setGate('mfa_challenge')
+          return
+        }
+
         const membership = await client
           .from('institution_admins')
           .select('institution_id')
@@ -84,6 +106,19 @@ export function RequireAdmin() {
 
   if (!institution) return <Navigate to="/" replace />
 
+  if (!supabaseConfigured || !supabase) {
+    return (
+      <div
+        role="alert"
+        className="flex min-h-[100dvh] items-center justify-center bg-legacy-black px-6 text-center"
+      >
+        <p className="max-w-sm text-sm leading-relaxed text-legacy-muted">
+          El panel está temporalmente no disponible. El acceso requiere autenticación segura.
+        </p>
+      </div>
+    )
+  }
+
   if (!session) {
     const next = safeAdminNext(`${location.pathname}${location.search}`)
     const target = `/admin/login?institution=${institution.slug}${
@@ -97,6 +132,16 @@ export function RequireAdmin() {
   }
 
   if (supabaseConfigured && gate === 'checking') return <RouteFallback />
+
+  if (gate === 'mfa_setup' || gate === 'mfa_challenge') {
+    return (
+      <AdminMfaGate
+        mode={gate === 'mfa_setup' ? 'setup' : 'challenge'}
+        onComplete={() => setAttempt((value) => value + 1)}
+        onSignOut={signOut}
+      />
+    )
+  }
 
   if (supabaseConfigured && gate === 'anonymous') return <RouteFallback />
 

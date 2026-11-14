@@ -132,7 +132,7 @@ export function AdminSettings() {
           notify({
             tone: 'error',
             title: 'No se pudieron guardar los ajustes',
-            description: error instanceof Error ? error.message : 'Error de conexión con Supabase.',
+            description: 'No se pudieron guardar los ajustes. Inténtalo de nuevo más tarde.',
           })
         } finally {
           setSaving(false)

@@ -1,5 +1,5 @@
 import { usePageMeta } from '@/lib/usePageMeta'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useState, type FormEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeftRight, ArrowRight, Building2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { displayNameFromEmail, useAdminSession } from '@/admin/session'
 import { InstitutionLogo } from '@/components/institution/InstitutionLogo'
 import { Button } from '@/components/ui/Button'
 import { GlassInput } from '@/components/ui/GlassInput'
+import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 import { DEMO_INSTITUTIONS, getInstitutionBySlug } from '@/data/demoData'
 import { sendAdminPasswordReset, signInInstitutionAdmin } from '@/data/archiveRemote'
 import { cn } from '@/lib/cn'
@@ -88,8 +89,8 @@ function SwitchRow({
 
 /**
  * Login administrativo.
- * Con Supabase exige la cuenta del administrador de la institución.
- * Sin Supabase, cualquier correo válido y una clave de 6+ caracteres abren el panel demo.
+ * El acceso administrativo requiere Supabase Auth y membresía institucional válida.
+ * Si el servicio no está configurado, el panel permanece bloqueado.
  */
 export function AdminLogin() {
   const [params] = useSearchParams()
@@ -115,6 +116,9 @@ export function AdminLogin() {
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const captchaEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim())
+  const onCaptchaToken = useCallback((token: string) => setCaptchaToken(token), [])
 
   if (session && institution && session.institutionSlug === institution.slug) {
     return <Navigate to={next ?? `/admin/${institution.slug}`} replace />
@@ -125,12 +129,17 @@ export function AdminLogin() {
     if (!institution) return
     setError(null)
 
+    if (!supabaseConfigured) {
+      setError('El acceso administrativo no está disponible en este momento.')
+      return
+    }
+
     if (!EMAIL.test(email.trim())) {
       setError('Escribe un correo válido.')
       return
     }
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+    if (password.length < 12) {
+      setError('Usa una contraseña de al menos 12 caracteres.')
       return
     }
 
@@ -146,9 +155,7 @@ export function AdminLogin() {
           window.localStorage.removeItem(REMEMBER_KEY)
           window.localStorage.removeItem(EMAIL_KEY)
         }
-        if (supabaseConfigured) {
-          await signInInstitutionAdmin(email.trim(), password, institution.id)
-        }
+        await signInInstitutionAdmin(email.trim(), password, captchaToken)
         signIn(
           {
             email: email.trim(),
@@ -160,8 +167,8 @@ export function AdminLogin() {
         navigate(next ?? `/admin/${institution.slug}`, {
           replace: true,
         })
-      } catch (caught) {
-        setError(caught instanceof Error ? caught.message : 'No se pudo entrar al panel.')
+      } catch {
+        setError('No se pudo iniciar sesión. Comprueba tus datos o espera un momento antes de volver a intentarlo.')
       } finally {
         setLoading(false)
       }
@@ -172,18 +179,22 @@ export function AdminLogin() {
     event.preventDefault()
     setError(null)
     setNotice(null)
+    if (captchaEnabled && !captchaToken) {
+      setError('Completa la verificación anti-bots.')
+      return
+    }
     if (!EMAIL.test(email.trim())) {
       setError('Escribe el correo del administrador.')
       return
     }
     setLoading(true)
-    void sendAdminPasswordReset(email.trim())
+    void sendAdminPasswordReset(email.trim(), captchaToken)
       .then(() => {
-        setNotice(`Te enviamos un enlace a ${email.trim()}. Ábrelo y elige la clave nueva.`)
+        setNotice('Si el correo corresponde a una cuenta autorizada, recibirás instrucciones para restablecer el acceso.')
         setForgot(false)
       })
-      .catch((caught: unknown) => {
-        setError(caught instanceof Error ? caught.message : 'No se pudo enviar el correo.')
+      .catch(() => {
+        setError('No se pudo procesar la solicitud. Comprueba el correo e inténtalo más tarde.')
       })
       .finally(() => setLoading(false))
   }
@@ -262,8 +273,9 @@ export function AdminLogin() {
                     aria-invalid={Boolean(error && !EMAIL.test(email.trim()))}
                   />
                 </AuthField>
+                <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full" loading={loading} disabled={captchaEnabled && !captchaToken}>
                   Enviar enlace
                 </Button>
                 <button
@@ -327,7 +339,7 @@ export function AdminLogin() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="Tu contraseña"
-                      aria-invalid={Boolean(error && password.length < 6)}
+                      aria-invalid={Boolean(error && password.length < 12)}
                     />
                     <button
                       type="button"
@@ -355,9 +367,10 @@ export function AdminLogin() {
                   />
                 </div>
 
+                <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
 
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full" loading={loading} disabled={captchaEnabled && !captchaToken}>
                   <LockKeyhole className="h-4 w-4" aria-hidden />
                   Entrar al panel
                 </Button>
@@ -369,7 +382,7 @@ export function AdminLogin() {
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             {supabaseConfigured
               ? 'Usa el correo y la contraseña del administrador de esta institución.'
-              : 'Modo demostración en este navegador: el archivo remoto no está conectado.'}
+              : 'El acceso administrativo está temporalmente deshabilitado.'}
           </p>
         </>
       ) : (
