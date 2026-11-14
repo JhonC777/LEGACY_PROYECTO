@@ -332,7 +332,7 @@ export function ProjectsPage() {
     category
       ? { key: 'category', label: `Categoría: ${category}`, value: category }
       : null,
-    tag ? { key: 'tag', label: `Tema: ${tag}`, value: tag } : null,
+    tag ? { key: 'tag', label: `Etiqueta: ${tag}`, value: tag } : null,
     year ? { key: 'year', label: `Año: ${year}`, value: year } : null,
     collection
       ? { key: 'collection', label: `Colección: ${collection}`, value: collection }
@@ -418,7 +418,7 @@ export function ProjectsPage() {
         options={available.categories}
       />
       <FilterSelect
-        label="Tema"
+        label="Etiqueta"
         value={tag}
         onChange={(value) => updateParam('tag', value)}
         options={available.tags}
