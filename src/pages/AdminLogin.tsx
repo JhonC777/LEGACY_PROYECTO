@@ -155,7 +155,7 @@ export function AdminLogin() {
           window.localStorage.removeItem(REMEMBER_KEY)
           window.localStorage.removeItem(EMAIL_KEY)
         }
-        await signInInstitutionAdmin(email.trim(), password, institution.id, captchaToken)
+        await signInInstitutionAdmin(email.trim(), password, captchaToken)
         signIn(
           {
             email: email.trim(),
