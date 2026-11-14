@@ -197,10 +197,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               aria-label="Cerrar menú"
               onClick={() => setDrawerOpen(false)}
             />
-            <aside className="admin-sidebar admin-sidebar-drawer">
+            <aside className="admin-sidebar admin-sidebar-drawer" aria-label="Navegación del administrador">
               <button
                 type="button"
-                className="btn btn-ghost btn-sm absolute top-3 right-3"
+                className="btn btn-ghost btn-sm admin-drawer-close"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Cerrar menú"
               >
