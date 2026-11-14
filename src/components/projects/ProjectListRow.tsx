@@ -5,6 +5,7 @@ import { GeneratedCover } from '@/components/projects/GeneratedCover'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { DEMO_INSTITUTIONS, getProjectHref, type DemoProject } from '@/data/demoData'
 import { getProjectResources } from '@/lib/projectResources'
+import { subjectTagStyle } from '@/lib/subjectTags'
 import '@/styles/info.css'
 
 /** Vista de lista del catálogo: una fila por proyecto, toda la fila es el enlace. */
@@ -37,9 +38,12 @@ export function ProjectListRow({ project }: { project: DemoProject }) {
         </span>
         <span className="catalog-row-main">
           <span className="catalog-row-kicker">
-            {project.area}
-            <span aria-hidden> · </span>
-            {project.category}
+            <span className="subject-tag" style={subjectTagStyle(project.area)}>
+              <span className="subject-tag-dot" aria-hidden />{project.area}
+            </span>
+            <span className="subject-tag" style={subjectTagStyle(project.category)}>
+              <span className="subject-tag-dot" aria-hidden />{project.category}
+            </span>
           </span>
           <span className="catalog-row-title">{project.title}</span>
           <span className="catalog-row-dek">{project.subtitle}</span>
