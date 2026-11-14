@@ -179,6 +179,10 @@ export function AdminLogin() {
     event.preventDefault()
     setError(null)
     setNotice(null)
+    if (captchaEnabled && !captchaToken) {
+      setError('Completa la verificación anti-bots.')
+      return
+    }
     if (!EMAIL.test(email.trim())) {
       setError('Escribe el correo del administrador.')
       return
@@ -271,7 +275,7 @@ export function AdminLogin() {
                 </AuthField>
                 <TurnstileWidget onToken={onCaptchaToken} />
                 <Status notice={notice} error={error} />
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full" loading={loading} disabled={captchaEnabled && !captchaToken}>
                   Enviar enlace
                 </Button>
                 <button
