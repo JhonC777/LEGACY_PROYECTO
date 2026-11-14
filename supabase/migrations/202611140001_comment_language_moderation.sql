@@ -32,11 +32,8 @@ begin
   end if;
 
   normalized := lower(comment_text);
-  normalized := translate(
-    normalized,
-    'áàäâãéèëêíìïîóòöôõúùüûñÁÀÄÂÃÉÈËÊÍÌÏÎÓÒÖÔÕÚÙÜÛÑ0134578@$!',
-    'aaaaaeeeeiiiiooooouuuunAAAAAEEEEIIIIOOOOOUUUUNoieastbas i'
-  );
+  normalized := translate(normalized, 'áàäâãéèëêíìïîóòöôõúùüûñ', 'aaaaaeeeeiiiiooooouuuun');
+  normalized := translate(normalized, '0134578@$!', 'oieastbasi');
   normalized := regexp_replace(normalized, '[​‌‍﻿]', '', 'g');
   normalized := regexp_replace(normalized, '([a-z])([[:space:]._*·•|/\\-])+([a-z])', '\1\3', 'g');
   normalized := regexp_replace(normalized, '([^[:space:]])\1{2,}', '\1\1', 'g');
