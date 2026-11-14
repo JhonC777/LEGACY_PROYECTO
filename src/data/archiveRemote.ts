@@ -305,7 +305,6 @@ export async function signInInstitutionAdmin(
   const existing = await supabase.auth.signInWithPassword({ email, password, options: captchaToken ? { captchaToken } : undefined })
   if (existing.error) throw new Error(remoteErrorMessage(existing.error))
   // RequireAdmin verifies TOTP and checks institutional membership before mounting the archive.
-  void institutionId
 }
 
 export async function signOutRemote() {
