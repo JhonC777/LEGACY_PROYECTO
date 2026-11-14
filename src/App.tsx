@@ -8,6 +8,7 @@ import { AdminSessionProvider } from '@/admin/session'
 import { PILOT_CATALOG_PATH, PILOT_COLLECTIONS_PATH } from '@/data/demoData'
 import { HomeEntry } from '@/pages/HomeEntry'
 import { NotFound } from '@/pages/NotFound'
+import { OnboardingGuide } from '@/components/onboarding/OnboardingGuide'
 
 const ExploreHome = lazy(() =>
   import('@/pages/ExploreHome').then((m) => ({ default: m.ExploreHome })),
@@ -60,6 +61,7 @@ export default function App() {
         <RouteScrollManager />
         <GlassButtonEffects />
         <ParticleSky />
+        <OnboardingGuide variant="public" />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<HomeEntry />} />
