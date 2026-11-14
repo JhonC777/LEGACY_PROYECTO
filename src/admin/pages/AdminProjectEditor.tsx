@@ -75,12 +75,10 @@ const RESOURCE_MIMES: Record<'doc' | 'pdf' | 'video', string[]> = {
 }
 
 
-const SECTIONS = [
-  { id: 'basicos', label: 'Datos básicos', icon: FolderKanban },
-  { id: 'contenido', label: 'Contenido académico', icon: BookOpen },
-  { id: 'autores', label: 'Autores', icon: Users },
-  { id: 'medios', label: 'Portada y galería', icon: Images },
-  { id: 'recursos', label: 'Recursos', icon: Paperclip },
+const EDITOR_STEPS = [
+  { label: 'Información', description: 'Datos y contenido del proyecto', icon: FolderKanban },
+  { label: 'Equipo y medios', description: 'Autores, portada y galería', icon: Images },
+  { label: 'Recursos', description: 'PDF, documentos y video', icon: Paperclip },
 ] as const
 
 const splitList = (value: string) =>
@@ -119,6 +117,7 @@ export function AdminProjectEditor() {
   const [saving, setSaving] = useState(false)
   const [pendingUploadCount, setPendingUploadCount] = useState(0)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [activeStep, setActiveStep] = useState(0)
   const [confirm, setConfirm] = useState<'leave' | 'delete' | 'publish' | null>(null)
   const pendingUploads = useRef<UploadTarget[]>([])
 
@@ -163,6 +162,7 @@ export function AdminProjectEditor() {
           isReal: existing.isReal,
         }
       : emptyDraft()
+    setActiveStep(0)
     setForm(source)
     setTagsText(source.tags.join(', '))
     setTechText(source.technologies.join(', '))
@@ -514,6 +514,40 @@ export function AdminProjectEditor() {
         </section>
       ) : null}
 
+      <section className="admin-card mt-6 p-3 sm:p-4" aria-label="Progreso del formulario">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-legacy-muted">Creación de proyecto</p>
+            <p className="mt-1 text-sm font-semibold text-legacy-white">{EDITOR_STEPS[activeStep].description}</p>
+          </div>
+          <span className="text-xs tabular-nums text-legacy-muted">{activeStep + 1}/{EDITOR_STEPS.length}</span>
+        </div>
+        <div className="mb-3 h-1 overflow-hidden rounded-full bg-white/10">
+          <span className="block h-full rounded-full bg-legacy-gold transition-all" style={{ width: `${((activeStep + 1) / EDITOR_STEPS.length) * 100}%` }} />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {EDITOR_STEPS.map(({ label, icon: Icon }, index) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setActiveStep(index)}
+              aria-current={activeStep === index ? 'step' : undefined}
+              className={cn(
+                'flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 py-2 text-xs font-semibold transition-colors',
+                activeStep === index
+                  ? 'border-legacy-gold/45 bg-legacy-gold/10 text-legacy-gold'
+                  : index < activeStep
+                    ? 'border-white/12 bg-white/[0.04] text-legacy-white/80'
+                    : 'border-transparent bg-white/[0.02] text-legacy-muted hover:bg-white/[0.06]',
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">{label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <form
           className="space-y-5"
@@ -522,6 +556,8 @@ export function AdminProjectEditor() {
             handleSave()
           }}
         >
+          {activeStep === 0 ? (
+            <>
           <Section id="basicos" icon={FolderKanban} title="Datos básicos" description="Identifican el proyecto en el catálogo y en los filtros.">
             <Field label="Título" required hint={`${form.title.length}/120`}>
               <input
@@ -647,6 +683,11 @@ export function AdminProjectEditor() {
             <TextArea label="Resultados" required value={form.results} onChange={(v) => set('results', v)} rows={3} />
           </Section>
 
+            </>
+          ) : null}
+
+          {activeStep === 1 ? (
+            <>
           <Section
             id="autores"
             icon={Users}
@@ -808,6 +849,11 @@ export function AdminProjectEditor() {
             ) : null}
           </Section>
 
+            </>
+          ) : null}
+
+          {activeStep === 2 ? (
+            <>
           <Section id="recursos" icon={Paperclip} title="Recursos" description="Pega una URL o sube el archivo desde el computador, igual que las imágenes. El invitado podrá abrirlo y descargarlo.">
             <ResourceField
               label="Documento"
@@ -850,6 +896,9 @@ export function AdminProjectEditor() {
             />
           </Section>
 
+            </>
+          ) : null}
+
           {existing ? (
             <section className="admin-card border-red-400/20 p-5">
               <h2 className="font-brand text-lg font-semibold text-legacy-white">Zona de riesgo</h2>
@@ -862,18 +911,39 @@ export function AdminProjectEditor() {
               </button>
             </section>
           ) : null}
+
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              type="button"
+              className="btn btn-ghost btn-md"
+              onClick={() => setActiveStep((step) => Math.max(0, step - 1))}
+              disabled={activeStep === 0}
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Anterior
+            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-xs text-legacy-muted">Paso {activeStep + 1} de {EDITOR_STEPS.length}</span>
+              {activeStep < EDITOR_STEPS.length - 1 ? (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-md"
+                  onClick={() => setActiveStep((step) => Math.min(EDITOR_STEPS.length - 1, step + 1))}
+                >
+                  Continuar
+                  <span aria-hidden>→</span>
+                </button>
+              ) : (
+                <button type="button" className="btn btn-primary btn-md" onClick={handleSave} disabled={saving || pendingUploadCount > 0 || (!dirty && !isNew)}>
+                  <Save className="h-4 w-4" aria-hidden />
+                  {isNew ? 'Guardar borrador' : 'Guardar cambios'}
+                </button>
+              )}
+            </div>
+          </div>
         </form>
 
         <aside className="space-y-4 xl:sticky xl:top-0 xl:self-start">
-          <nav className="admin-card p-3" aria-label="Secciones del formulario">
-            {SECTIONS.map(({ id, label, icon: Icon }) => (
-              <a key={id} href={`#${id}`} className="admin-nav-link">
-                <Icon className="h-4 w-4" aria-hidden />
-                {label}
-              </a>
-            ))}
-          </nav>
-
           <section className={cn('admin-card p-5', issues.complete ? 'is-gold' : '')} aria-labelledby="checklist-title">
             <div className="flex items-center gap-2">
               {issues.complete ? (
