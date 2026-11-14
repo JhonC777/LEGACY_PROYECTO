@@ -15,6 +15,7 @@ import {
   Pencil,
   Plus,
   Star,
+  Settings,
   Users,
   type LucideIcon,
 } from 'lucide-react'
