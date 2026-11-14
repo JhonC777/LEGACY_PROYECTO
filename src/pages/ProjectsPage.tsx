@@ -42,16 +42,18 @@ import { ArchiveSelect } from '@/components/ui/ArchiveSelect'
 import { cn } from '@/lib/cn'
 import { useDeferredAction } from '@/lib/useDeferredAction'
 import { resourceKindsOf, type ResourceKind } from '@/lib/projectResources'
+import { subjectTagStyle } from '@/lib/subjectTags'
 import '@/styles/info.css'
 
 type LoadState = 'loading' | 'ready' | 'error'
-type FilterName = 'institution' | 'area' | 'category' | 'year' | 'collection' | 'resource'
+type FilterName = 'institution' | 'area' | 'category' | 'tag' | 'year' | 'collection' | 'resource'
 
 type CatalogFilters = {
   query: string
   institution: string
   area: string
   category: string
+  tag: string
   year: string
   collection: string
   resource: string
@@ -96,6 +98,7 @@ function projectMatches(
     (omitted === 'category' ||
       !filters.category ||
       project.category === filters.category) &&
+    (omitted === 'tag' || !filters.tag || project.tags.includes(filters.tag)) &&
     (omitted === 'year' || !filters.year || String(project.year) === filters.year) &&
     (omitted === 'collection' ||
       !filters.collection ||
@@ -127,6 +130,7 @@ export function ProjectsPage() {
   const query = params.get('q') ?? ''
   const area = params.get('area') ?? ''
   const category = params.get('category') ?? ''
+  const tag = params.get('tag') ?? ''
   const year = params.get('year') ?? ''
   const collection = params.get('collection') ?? ''
   const institutionFilter = institution?.id ?? params.get('institution') ?? ''
@@ -168,11 +172,12 @@ export function ProjectsPage() {
       institution: institutionFilter,
       area,
       category,
+      tag,
       year,
       collection,
       resource,
     }),
-    [area, category, collection, institutionFilter, query, resource, year],
+    [area, category, collection, institutionFilter, query, resource, tag, year],
   )
 
   const available = useMemo(() => {
@@ -195,6 +200,7 @@ export function ProjectsPage() {
     const categories = [...new Set(source.map((project) => project.category))].sort(
       (a, b) => a.localeCompare(b, 'es'),
     )
+    const tags = [...new Set(source.flatMap((project) => project.tags))].sort((a, b) => a.localeCompare(b, 'es'))
     const years = getAvailableYears(source).map(String)
     const collections = [
         ...new Set(
@@ -211,6 +217,7 @@ export function ProjectsPage() {
         'category',
         (project, value) => project.category === value,
       ),
+      tags: facet(tags, 'tag', (project, value) => project.tags.includes(value)),
       years: facet(years, 'year', (project, value) => String(project.year) === value),
       collections: facet(
         collections,
@@ -290,6 +297,7 @@ export function ProjectsPage() {
     query ||
       area ||
       category ||
+      tag ||
       year ||
       collection ||
       resource ||
@@ -299,6 +307,7 @@ export function ProjectsPage() {
     query,
     area,
     category,
+    tag,
     year,
     collection,
     resource,
@@ -323,6 +332,7 @@ export function ProjectsPage() {
     category
       ? { key: 'category', label: `Categoría: ${category}`, value: category }
       : null,
+    tag ? { key: 'tag', label: `Tema: ${tag}`, value: tag } : null,
     year ? { key: 'year', label: `Año: ${year}`, value: year } : null,
     collection
       ? { key: 'collection', label: `Colección: ${collection}`, value: collection }
@@ -406,6 +416,12 @@ export function ProjectsPage() {
         value={category}
         onChange={(value) => updateParam('category', value)}
         options={available.categories}
+      />
+      <FilterSelect
+        label="Tema"
+        value={tag}
+        onChange={(value) => updateParam('tag', value)}
+        options={available.tags}
       />
       <FilterSelect
         label="Colección"
@@ -525,6 +541,26 @@ export function ProjectsPage() {
           </div>
           <div id="catalog-filters" className={cn('catalog-filters', filtersOpen && 'is-open')}>
             {filterControls}
+          </div>
+        </section>
+
+        <section className="catalog-subject-filter" aria-label="Filtrar por área académica">
+          <span className="catalog-subject-filter-label">Explorar por área</span>
+          <div className="catalog-subject-filter-options">
+            {available.areas.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`subject-tag subject-tag-button${area === option.value ? ' is-active' : ''}`}
+                style={subjectTagStyle(option.value)}
+                aria-pressed={area === option.value}
+                onClick={() => updateParam('area', area === option.value ? '' : option.value)}
+              >
+                <span className="subject-tag-dot" aria-hidden />
+                {option.label}
+                <span className="subject-tag-count">{option.count}</span>
+              </button>
+            ))}
           </div>
         </section>
 
